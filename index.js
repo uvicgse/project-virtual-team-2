@@ -24,7 +24,7 @@ function createMainWindow() {
 		icon: __dirname + "/assets/icons/Icon.png"
 	});
 
-
+	// Set minimum size
 	win.setMinimumSize(900, 720);
 
 	win.maximize();
