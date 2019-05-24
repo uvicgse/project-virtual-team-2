@@ -10,6 +10,7 @@ import { WikiComponent } from "../wiki/wiki.component";
 import {selectedCommitDiffPanelComponent} from "../selectedCommitDiffPanel/selected.commit.diff.panel.component";
 import { IssuePanelComponent } from "../issuePanel/issue.panel.component";
 import { PullRequestPanelComponent } from "../pullRequestPanel/pull.request.panel.component";
+declare let createSettingsDir:any;
 
 @Component({
   selector: "my-app",
@@ -18,6 +19,8 @@ import { PullRequestPanelComponent } from "../pullRequestPanel/pull.request.pane
 })
 
 export class AppComponent {
+  createSettingsDir:any;
+
   ngOnInit(): void {
     const userColorFilePath = ".settings/user_color.txt";
 
@@ -28,6 +31,11 @@ export class AppComponent {
         let color = buffer.toString();
         changeColor(color);
       });
+      
     }
+    createSettingsDir();
+
   }
+
+
 }

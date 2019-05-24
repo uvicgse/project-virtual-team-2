@@ -13,6 +13,12 @@ let span;
 let contributors: [any] = [0];
 let previousOpen;
 let repoName : string = "";
+let fs = require('fs').promises;
+let jsonfile = require('jsonfile');
+let path = require('path');
+
+let settingsPath = path.join(__dirname, ".settings");
+const recentFiles = path.join(settingsPath, 'recent_repos.json');
 
 function downloadRepository() {
   let fullLocalPath;
@@ -38,6 +44,73 @@ function downloadRepository() {
     downloadFunc(cloneURL, fullLocalPath);
   }
 }
+
+// On app load, create .settings directory if does not exist
+function createSettingsDir() {
+  try {
+    fs.mkdirSync(settingsPath)
+  } catch (err) {
+    if (err.code != 'EEXIST') throw err
+  }
+}
+// If record of recently opened repos exist, return list of recently opened repos
+function loadMostRecentRepos() {
+  try {
+    let fd = fs.readFileSync(recentFiles,'utf8');
+    let recentRepos = JSON.parse(fd);
+    return recentRepos.last5Repos.map(function (item) { return item.filePath});
+  } catch {
+    return [];
+  }
+}
+
+// Append opened repo path into recent_repos.json. If recent_repos.json does not exist, create it before appending repo path. 
+// Note: only the 5 most recently opened and distinct repos will be stored. 
+function saveMostRecentRepos(fullLocalPath) {
+  
+  let now = new Date();
+  let date = JSON.stringify(now);
+  let recentRepos;
+  let index=-1;
+
+  try {
+    let fd = fs.readFileSync(recentFiles,'utf8');
+    recentRepos = JSON.parse(fd);
+  } catch (e) {
+    console.log(e);
+  }
+  
+  let obj = { 
+    filePath: fullLocalPath, 
+    date: date
+  }
+  // Find if current repo is among 5 most recently opened repos. If true, then replace current repo's previous timestamp with 
+  // current timestamp and push current repo to end of array. 
+  if (recentRepos === undefined) {
+    recentRepos = {
+      last5Repos: [obj]
+    }
+  } else {
+    index = recentRepos.last5Repos.map(function (item) { return item.filePath}).indexOf(fullLocalPath);
+
+    if (index >= 0) {
+      recentRepos.last5Repos.splice(index, 1);
+      recentRepos.last5Repos.push(obj);
+    } else {
+      if (recentRepos.last5Repos.length > 4) {
+        recentRepos.last5Repos.splice(0, 1);
+      } 
+      recentRepos.last5Repos.push(obj);
+      
+    }
+  }
+
+  try {
+    jsonfile.writeFileSync(recentFiles, recentRepos, { flag: 'w'});
+  } catch (err) {
+    console.log(err);
+  } 
+} 
 
 function downloadFunc(cloneURL, fullLocalPath) {
   console.log("Path of cloning repo: " + fullLocalPath);
@@ -79,6 +152,7 @@ function downloadFunc(cloneURL, fullLocalPath) {
       document.getElementById('spinner').style.display = 'block';
       refreshAll(repository);
       switchToMainPanel();
+      saveMostRecentRepos(fullLocalPath);
     },
       function (err) {
         updateModalText("Clone Failed - " + err);
@@ -183,6 +257,7 @@ function openRepository() {
       refreshAll(repository);
       console.log("Repo successfully opened");
       updateModalText("Repository successfully opened");
+      saveMostRecentRepos(fullLocalPath);
     },
       function (err) {
         updateModalText("No repository found. Select a folder with a repository.");
@@ -200,6 +275,7 @@ function openRepository() {
       let fullLocalPath = document.getElementById("dirPickerCreateLocal").files[0].path;
       document.getElementById("repoCreate").value = fullLocalPath;
       document.getElementById("repoCreate").text = fullLocalPath;
+      saveMostRecentRepos(fullLocalPath);
     } else {
       let localPath = document.getElementById("repoCreate").value;
       let fullLocalPath;

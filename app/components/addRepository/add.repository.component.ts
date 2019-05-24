@@ -1,13 +1,22 @@
 import { Component } from "@angular/core";
-
+declare let loadMostRecentRepos:any;
 @Component({
   selector: "add-repository-panel",
   templateUrl: 'app/components/addRepository/add.repository.component.html'
 })
 
 export class AddRepositoryComponent {
+  recentRepos: [];
+  loadMostRecentRepos:any;
+  ngOnInit(): void {
+    console.log('test');
+    TODO: Jamie and Srishti need to display the returned list from loadMostRecentRepos() in the front end 
+    this.recentRepos = loadMostRecentRepos();
+    console.log(this.recentRepos);
+  }
 
-
+    
+  
   selectClone(): void {
     if (document.getElementById("repoClone").value == null || document.getElementById("repoClone").value == "") {
       window.alert("Please enter the URL of the repository you wish to clone");
@@ -64,6 +73,8 @@ export class AddRepositoryComponent {
   returnToMainPanel(): void {
     switchToMainPanel();
   }
+
+
   prepareDontMissDND :  function() {
 
       $(document.body).bind("dragover", function(e) {
@@ -76,6 +87,9 @@ export class AddRepositoryComponent {
           fileUpload(e);
           return false;
       });
+
+
+  
 }
 
 function fileUpload(ev){
