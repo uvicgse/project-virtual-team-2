@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, HostListener } from "@angular/core";
 declare let loadMostRecentRepos:any;
 @Component({
   selector: "add-repository-panel",
@@ -9,13 +9,30 @@ export class AddRepositoryComponent {
   recentRepos: [];
   loadMostRecentRepos:any;
   ngOnInit(): void {
+   
+    //TODO: Jamie and Srishti need to display the returned list from loadMostRecentRepos() in the front end
+    // TODO: remove console.logs before final push 
     console.log('test');
-    TODO: Jamie and Srishti need to display the returned list from loadMostRecentRepos() in the front end 
     this.recentRepos = loadMostRecentRepos();
     console.log(this.recentRepos);
   }
 
-    
+  //TODO: Jamie and Srishti need to display the returned list from loadMostRecentRepos() in the front end 
+  // TODO: remove console.logs before final push 
+  // Custom event listener that is called 
+  @HostListener('window:loadRecentRepos', ['$event']) 
+  updateRepos(event) {
+    console.log(this.recentRepos);
+    this.recentRepos = loadMostRecentRepos();
+    console.log(this.recentRepos);
+  }
+
+  // loadMostRecentRepos(): void {
+  //   console.log(this.recentRepos);
+  //   this.recentRepos = loadMostRecentRepos();
+  //   console.log(this.recentRepos);
+  // }
+  
   
   selectClone(): void {
     if (document.getElementById("repoClone").value == null || document.getElementById("repoClone").value == "") {

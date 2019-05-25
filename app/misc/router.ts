@@ -71,6 +71,11 @@ function switchToAddRepositoryPanelWhenNotSignedIn() {
 }
 
 function switchToAddRepositoryPanel() {
+  
+  // document.getElementById("testButton").click();
+  window.dispatchEvent(new Event('loadRecentRepos'));
+
+  document.getElementById("Button_Sign_out").style.display = "block";
   inTheApp = true
   console.log("Switching to add repo panel");
   hideAuthenticatePanel();

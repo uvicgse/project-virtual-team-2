@@ -60,7 +60,11 @@
 	        </div>
 	
       </div>
-      <div id="testing" (load)="loadMostRecentRepos()">    
+      <!-- TODO: Jamie and Srishti please use this div to show list of elements. You are probably going to use
+      *ngif to display the list of repos? -->
+      <div (load)="loadMostRecentRepos()"> 
+        <div (window:loadRecentRepos)="updateRepos($event)"></div> 
+        <!-- <button class="button-open" id = "testButton" (click)="loadMostRecentRepos()">Refresh List</button> -->
 	    </div>
   </div>
 </div>
