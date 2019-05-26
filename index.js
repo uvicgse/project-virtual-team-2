@@ -185,5 +185,6 @@ app.on('activate', () => {
 app.on('ready', () => {
 	mainWindow = createMainWindow();
 	Menu.setApplicationMenu(Menu.buildFromTemplate(setMyMenu()));
+	// disable the F5 key from reloading the app (caused by electron-debug)
 	globalShortcut.register('F5', function(){});
 });
