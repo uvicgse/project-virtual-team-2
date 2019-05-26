@@ -8,13 +8,15 @@ declare let loadMostRecentRepos:any;
 export class AddRepositoryComponent {
   recentRepos: [];
   loadMostRecentRepos:any;
+  showRecent: boolean;
   ngOnInit(): void {
    
     //TODO: Jamie and Srishti need to display the returned list from loadMostRecentRepos() in the front end
     // TODO: remove console.logs before final push 
-    console.log('test');
     this.recentRepos = loadMostRecentRepos();
-    console.log(this.recentRepos);
+    if(this.recentRepos.length >0){
+      this.showRecent = true
+    }
   }
 
   //TODO: Jamie and Srishti need to display the returned list from loadMostRecentRepos() in the front end 
@@ -22,17 +24,18 @@ export class AddRepositoryComponent {
   // Custom event listener that is called 
   @HostListener('window:loadRecentRepos', ['$event']) 
   updateRepos(event) {
-    console.log(this.recentRepos);
     this.recentRepos = loadMostRecentRepos();
-    console.log(this.recentRepos);
+    if(this.recentRepos.length >0){
+      this.showRecent = true
+    }
   }
 
-  // loadMostRecentRepos(): void {
-  //   console.log(this.recentRepos);
-  //   this.recentRepos = loadMostRecentRepos();
-  //   console.log(this.recentRepos);
-  // }
-  
+  openRecentRepository(repo): void {
+    console.log(repo);
+    (<HTMLInputElement>document.getElementById("repoOpen")).value = repo;
+    openRepository();
+    switchToMainPanel();
+  }
   
   selectClone(): void {
     if (document.getElementById("repoClone").value == null || document.getElementById("repoClone").value == "") {

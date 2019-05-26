@@ -42,29 +42,30 @@
         </div>
       </div>
     </div>
-    
     <div id="create-local-repository">
 	      <div class="title">
 	        <h1>Create a local repository</h1>
 	      </div>
-	
 	      <div class="block">
 	        <div class="left">
 	          <p>Location of folder</p>
 	        </div>
-	
 	        <div class="right">
 	          <input type="text" name="folderLocal" class = "path-textbox" id="repoCreate"/>
 	          <button class="button-open" (click)="selectLocalRepoDirectory()">Create</button>
 	          <input type="file" id="dirPickerCreateLocal" name="localDir" (change)="createLocalRepository()" style="display: none;" webkitdirectory />
 	        </div>
-	
+        </div>
+    </div>
+    <div id="recent-repository" *ngIf="showRecent" (load)="loadMostRecentRepos()"> 
+      <div class="title"><h1>Recent Repositories</h1></div>
+      <div class="block" (window:loadRecentRepos)="updateRepos($event)">
+        <div class="left">&nbsp;</div>
+        <div class="right">
+          <ul>
+            <li *ngFor="let repo of recentRepos; let i = index" [attr.data-index]="i"><button class="btn btn-default" (click)="openRecentRepository(repo)"><span class="badge">{{  i + 1 }}</span>{{ repo }}</button></li>
+          </ul>
+        </div>
       </div>
-      <!-- TODO: Jamie and Srishti please use this div to show list of elements. You are probably going to use
-      *ngif to display the list of repos? -->
-      <div (load)="loadMostRecentRepos()"> 
-        <div (window:loadRecentRepos)="updateRepos($event)"></div> 
-        <!-- <button class="button-open" id = "testButton" (click)="loadMostRecentRepos()">Refresh List</button> -->
-	    </div>
-  </div>
+    </div>
 </div>
