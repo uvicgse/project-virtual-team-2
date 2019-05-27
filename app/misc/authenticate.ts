@@ -139,7 +139,7 @@ function getUserInfo(callback) {
           $("#otpModal").modal('show');
         });
       }
-      else if (err == "Error: getaddrinfo ENOTFOUND api.github.com api.github.com:443" || err == "Error: getaddrinfo ENOENT api.github.com:443"){
+      else if (err == "Error: getaddrinfo ENOTFOUND api.github.com api.github.com:443" || err == "Error: getaddrinfo ENOENT api.github.com:443" || err == "Error: getaddrinfo EAI_AGAIN api.github.com:443"){
         displayModal("No internet connection - Unable to complete sign in");
       }else{
         displayModal(err);
