@@ -14,6 +14,7 @@ export class AddRepositoryComponent {
     //TODO: Jamie and Srishti need to display the returned list from loadMostRecentRepos() in the front end
     // TODO: remove console.logs before final push 
     this.recentRepos = loadMostRecentRepos();
+    this.recentRepos.reverse()
     if(this.recentRepos.length >0){
       this.showRecent = true
     }
@@ -25,6 +26,7 @@ export class AddRepositoryComponent {
   @HostListener('window:loadRecentRepos', ['$event']) 
   updateRepos(event) {
     this.recentRepos = loadMostRecentRepos();
+    this.recentRepos.reverse()
     if(this.recentRepos.length >0){
       this.showRecent = true
     }

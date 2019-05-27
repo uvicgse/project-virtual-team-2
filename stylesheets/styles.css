@@ -391,7 +391,7 @@ body .add-repository-panel .path-textbox {
   font-size:10px;
   float:left;
   box-shadow: 1px 1px 1px black;
-  margin:2px;
+  margin:2px 6px 2px 2px
 }
 
 #recent-repository button {
@@ -401,6 +401,9 @@ body .add-repository-panel .path-textbox {
   float:left;
   border-radius: 7px;
   box-shadow: 2px 2px 2px white;
+  text-align: left;
+  white-space: normal;
+  font-size: 14px;
 }
 
 #recent-repository ul {
