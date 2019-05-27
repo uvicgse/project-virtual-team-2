@@ -9,10 +9,9 @@ export class AddRepositoryComponent {
   recentRepos: [];
   loadMostRecentRepos:any;
   showRecent: boolean;
+
   ngOnInit(): void {
-   
-    //TODO: Jamie and Srishti need to display the returned list from loadMostRecentRepos() in the front end
-    // TODO: remove console.logs before final push 
+    // Show list of recent repos in order by most recently opened
     this.recentRepos = loadMostRecentRepos();
     this.recentRepos.reverse()
     if(this.recentRepos.length >0){
@@ -20,9 +19,7 @@ export class AddRepositoryComponent {
     }
   }
 
-  //TODO: Jamie and Srishti need to display the returned list from loadMostRecentRepos() in the front end 
-  // TODO: remove console.logs before final push 
-  // Custom event listener that is called 
+  // Custom event listener that is called whenever addRepository component is displayed
   @HostListener('window:loadRecentRepos', ['$event']) 
   updateRepos(event) {
     this.recentRepos = loadMostRecentRepos();
@@ -32,6 +29,7 @@ export class AddRepositoryComponent {
     }
   }
 
+  // Open user selected recently opened repo 
   openRecentRepository(repo): void {
     console.log(repo);
     (<HTMLInputElement>document.getElementById("repoOpen")).value = repo;
