@@ -401,6 +401,7 @@ body .add-repository-panel .path-textbox {
   float:left;
   border-radius: 7px;
   box-shadow: 2px 2px 2px white;
+  white-space: normal;
 }
 
 #recent-repository ul {
