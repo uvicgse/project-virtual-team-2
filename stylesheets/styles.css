@@ -404,6 +404,7 @@ body .add-repository-panel .path-textbox {
   text-align: left;
   white-space: normal;
   font-size: 14px;
+  white-space: normal;
 }
 
 #recent-repository ul {
