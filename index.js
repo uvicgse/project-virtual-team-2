@@ -172,7 +172,7 @@ function setMyMenu() {
 
 function registerF5() {
 	// disable the F5 key from reloading the app (caused by electron-debug)
-	globalShortcut.register('F5', function(){});
+	globalShortcut.register('F5', () => {});
 }
 
 app.on('window-all-closed', () => {
