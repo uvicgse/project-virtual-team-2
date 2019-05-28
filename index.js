@@ -170,6 +170,11 @@ function setMyMenu() {
 	return myMenu;
 }
 
+function registerF5() {
+	// disable the F5 key from reloading the app (caused by electron-debug)
+	globalShortcut.register('F5', function(){});
+}
+
 app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
 		app.quit();
@@ -182,9 +187,12 @@ app.on('activate', () => {
 	}
 });
 
+app.on('browser-window-blur', () => {
+	registerF5();
+});
+
 app.on('ready', () => {
 	mainWindow = createMainWindow();
 	Menu.setApplicationMenu(Menu.buildFromTemplate(setMyMenu()));
-	// disable the F5 key from reloading the app (caused by electron-debug)
-	globalShortcut.register('F5', function(){});
+	registerF5();
 });
