@@ -393,6 +393,10 @@ function pullFromRemote() {
 }
 
 function pushToRemote() {
+    if (CommitButNoPush === 0) {
+        window.alert("Cannot push without a commit.");
+        return;
+    }
   let branch = document.getElementById("branch-name").innerText;
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
