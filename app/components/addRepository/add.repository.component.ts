@@ -1,13 +1,42 @@
-import { Component } from "@angular/core";
-
+import { Component, HostListener } from "@angular/core";
+declare let loadMostRecentRepos:any;
 @Component({
   selector: "add-repository-panel",
   templateUrl: 'app/components/addRepository/add.repository.component.html'
 })
 
 export class AddRepositoryComponent {
+  recentRepos: [];
+  loadMostRecentRepos:any;
+  showRecent: boolean;
 
+  ngOnInit(): void {
+    // Show list of recent repos in order by most recently opened
+    this.recentRepos = loadMostRecentRepos();
+    this.recentRepos.reverse()
+    if(this.recentRepos.length >0){
+      this.showRecent = true
+    }
+  }
 
+  // Custom event listener that is called whenever addRepository component is displayed
+  @HostListener('window:loadRecentRepos', ['$event']) 
+  updateRepos(event) {
+    this.recentRepos = loadMostRecentRepos();
+    this.recentRepos.reverse()
+    if(this.recentRepos.length >0){
+      this.showRecent = true
+    }
+  }
+
+  // Open user selected recently opened repo 
+  openRecentRepository(repo): void {
+    console.log(repo);
+    (<HTMLInputElement>document.getElementById("repoOpen")).value = repo;
+    openRepository();
+    switchToMainPanel();
+  }
+  
   selectClone(): void {
     if (document.getElementById("repoClone").value == null || document.getElementById("repoClone").value == "") {
       window.alert("Please enter the URL of the repository you wish to clone");
@@ -64,6 +93,8 @@ export class AddRepositoryComponent {
   returnToMainPanel(): void {
     switchToMainPanel();
   }
+
+
   prepareDontMissDND :  function() {
 
       $(document.body).bind("dragover", function(e) {
@@ -76,6 +107,9 @@ export class AddRepositoryComponent {
           fileUpload(e);
           return false;
       });
+
+
+  
 }
 
 function fileUpload(ev){

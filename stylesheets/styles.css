@@ -361,22 +361,56 @@ body .add-repository-panel input {
 }
 
 body .add-repository-panel .button-clone, body .add-repository-panel .button-open {
-  display: inline-block;
+  /*display: inline-block;*/
   height: 30px;
-  border-radius: 10px;
+  border-radius: 7px;
   border: 0;
   padding: 0 15px;
-  margin: 15px 40px;
-  margin-left: 10px;
+  margin: 12px 40px;
+  /* margin-left: 10px; */
   background-color: #39c0ba;
   color: #fff;
   float: right;
+  font-weight:bold;
+  width:150px;
+  text-shadow: 1px 1px 1px black;
+  box-shadow: 1px 1px 1px #39c0ba;
 }
 
 body .add-repository-panel .path-textbox {
   width: 50%;
   min-width: 10%;
+  height:20%;
+  font-size:15px;
+  border-radius: 7px;
+  padding:5px;
+  box-shadow: 1px 1px 1px white;
 }
+
+#recent-repository span {
+  font-size:10px;
+  float:left;
+  box-shadow: 1px 1px 1px black;
+  margin:2px 6px 2px 2px
+}
+
+#recent-repository button {
+  width:50%; 
+  margin: 4px 30px;
+  padding:2px;
+  float:left;
+  border-radius: 7px;
+  box-shadow: 2px 2px 2px white;
+  text-align: left;
+  white-space: normal;
+  font-size: 14px;
+  white-space: normal;
+}
+
+#recent-repository ul {
+  padding: 0;
+}
+
 
 body .add-repository-panel .button-clone:hover, body .add-repository-panel .button-open:hover {
   opacity: 0.8;
@@ -384,6 +418,7 @@ body .add-repository-panel .button-clone:hover, body .add-repository-panel .butt
 
 body .add-repository-panel .title {
   width: 100%;
+  text-shadow: .5px .5px .5px white;
 }
 
 body .add-repository-panel .title .clone-title {
@@ -398,6 +433,7 @@ body .add-repository-panel .block {
 body .add-repository-panel .block p {
   display: inline-block;
   margin: 15px 0px;
+  font-size: 15px
 }
 
 body .add-repository-panel .left {
