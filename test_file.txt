@@ -1,3 +1,0 @@
-test commits
-test if commit remains local
-test2
