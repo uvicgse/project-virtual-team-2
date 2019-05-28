@@ -261,10 +261,10 @@ function clearModifiedFilesList() {
 function clearCommitMessage() {
   document.getElementById('commit-message-input').value = "";
 }
-
+/* See line 207 for details
 function clearSelectAllCheckbox() {
   document.getElementById('select-all-checkbox').checked = false;
-}
+}*/
 
 function getAllCommits(callback) {
   clearModifiedFilesList();
