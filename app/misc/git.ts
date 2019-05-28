@@ -204,6 +204,13 @@ function addAndCommit() {
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
+      /*
+        Issue 8: Making a commit through visual git does not cause the graph to update
+        'addAndCommit' function was not reaching beyond this point therefore 'refreshAll(repository)'
+        was not able to update the graph and labels for the new commit. It is believed that the functionality
+        of a 'SelectAllCheckbox' was either removed or has yet to be implemented. Commenting out this function fixes the issue.
+        A new issue will be opened such that we may implement this feature. -mdesco18
+      */
       //clearSelectAllCheckbox();
       for (let i = 0; i < filesToAdd.length; i++) {
         addCommand("git add " + filesToAdd[i]);
