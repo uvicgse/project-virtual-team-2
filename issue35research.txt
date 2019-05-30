@@ -1,0 +1,34 @@
+Git stash notes:
+
+git stash //only stashes files that are tracked (git add)
+
+found in VisGit:  
+let stagedFileElements = document.getElementById('files-staged').children;
+
+git stash -u //stashes all files including untracked
+
+git stash apply //reinstate stashed changes ontop of current working tree (fails if conflicts)
+git stash pop //applies and removed from stash list
+[--index n] //option for which stash to operate on
+
+- nodegit API seems to only support pop and apply
+- graph/app must refresh after stash
+- clear modified files list (like in addAndCommit)
+
+code to write:
+function addAndStash(){
+	git.ts:126-182
+	displayModal("stashing working directory...")
+	addCommand("git stash")
+	//Git.Stash.save or something
+	updateModalText("Stash successful")
+	refreshAll(repo)
+}
+
+GUI ideas:
+	- must have files staged
+	- have button next to commit in bottom left for stashing
+	- have button in top bar for stashing (with options) and popping/applying (with options)
+	- options can be drop down or pop up modal
+
+
