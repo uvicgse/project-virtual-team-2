@@ -1039,3 +1039,9 @@ body .pull-request-panel {
 /*
  End of pull request css.
 */
+
+/* Nav bar hamburger menu*/
+.nav-ham-menu {
+  margin-top: 26px;
+  z-index: 1;
+}

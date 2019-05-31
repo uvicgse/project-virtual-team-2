@@ -1,40 +1,40 @@
 <nav class="navbar navbar-inverse" role="navigation">
   <div class="container-fluid row">
-    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+    <button type="button" class="navbar-toggle collapsed nav-ham-menu" data-toggle="collapse" data-target="#navbar"
       aria-expanded="false">
       <span class="sr-only">Toggle navigation</span>
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
     </button>
+    <ul class="nav navbar-nav col-md-5">
+      <li>
+        <a href="#"><img src="./assets/AddRepositoryFolder.svg" onclick="switchToAddRepositoryPanel()"
+            class="add-repository-button" title="Add Repository"></a>
+      </li>
+      <li class="hidden-xs"><img src="./assets/RightArrow.svg" class="right-arrow"></li>
+      <li class="repo-name dropdown-toggle hidden-xs">
+        <a href="#" id="repo-name" data-toggle="modal" data-target="#repo-modal"
+          onclick="checkSignedIn()">repository</a>
+      </li>
+      <li class="hidden-xs"><img src="./assets/RightArrow.svg" class="right-arrow"></li>
+      <li class="branch-name dropdown hidden-xs">
+        <a href="#" class="dropdown-toggle" id="branch-name" data-toggle="dropdown" onclick="switchToMainPanel()">
+          branch<span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
+          <li role="presentation" id="create-branch">
+            <div class="input-group menuitem">
+              <input type="text" id="branchName" class="form-control" placeholder="Search or create branch">
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
+              </span>
+            </div>
+          </li>
+        </ul>
+      </li>
+    </ul>
     <div class="collapse navbar-collapse" id="navbar">
-      <ul class="nav navbar-nav col-md-5 hidden-xs">
-        <li>
-          <a href="#"><img src="./assets/AddRepositoryFolder.svg" onclick="switchToAddRepositoryPanel()"
-              class="add-repository-button" title="Add Repository"></a>
-        </li>
-        <li><img src="./assets/RightArrow.svg" class="right-arrow"></li>
-        <li class="repo-name dropdown-toggle">
-          <a href="#" id="repo-name" data-toggle="modal" data-target="#repo-modal"
-            onclick="checkSignedIn()">repository</a>
-        </li>
-        <li><img src="./assets/RightArrow.svg" class="right-arrow"></li>
-        <li class="branch-name dropdown">
-          <a href="#" class="dropdown-toggle" id="branch-name" data-toggle="dropdown" onclick="switchToMainPanel()">
-            branch<span class="caret"></span>
-          </a>
-          <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
-            <li role="presentation" id="create-branch">
-              <div class="input-group menuitem">
-                <input type="text" id="branchName" class="form-control" placeholder="Search or create branch">
-                <span class="input-group-btn">
-                  <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
-                </span>
-              </div>
-            </li>
-          </ul>
-        </li>
-      </ul>
 
       <!--Toolbar-->
       <ul class="navbar-nav col-md-4 hidden-xs toolbar-Container">
