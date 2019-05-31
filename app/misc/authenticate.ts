@@ -139,12 +139,20 @@ function getUserInfo(callback) {
           $("#otpModal").modal('show');
         });
       }
-      else if (err == "Error: getaddrinfo ENOTFOUND api.github.com api.github.com:443" || err == "Error: getaddrinfo ENOENT api.github.com:443" || err == "Error: getaddrinfo EAI_AGAIN api.github.com:443"
-)
-      {
-        displayModal("No internet connection - Unable to complete sign in"); //catch any sign inerrors related to internet connectivity and display a clear message
-      }else{
-        displayModal(err); //catch any unanticipated errors 
+      else if (err == "Error: getaddrinfo ENOTFOUND api.github.com api.github.com:443" || err == "Error: getaddrinfo ENOENT api.github.com:443" || err == "Error: getaddrinfo EAI_AGAIN api.github.com:443") {
+
+        displayModal("No internet connection - Unable to complete sign in"); //catch any sign in errors related to internet connectivity and display a clear message
+
+      }
+      else if(err == "Error: Bad credentials"){   //if github sends as err, replace with the more complete message below
+
+          displayModal("Incorrect username or password - Unable to complete sign in");
+
+      }
+      else{
+
+        displayModal(err); //catch any unanticipated errors
+
       }
       document.getElementById('grey-out').style.display = 'none';
     }
