@@ -1,18 +1,18 @@
 <nav class="navbar navbar-inverse" role="navigation">
   <div class="container-fluid row">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
-        aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a href="#"><img src="./assets/AddRepositoryFolder.svg" onclick="switchToAddRepositoryPanel()"
-          class="add-repository-button" title="Add Repository"></a>
-    </div>
+    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+      aria-expanded="false">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
     <div class="collapse navbar-collapse" id="navbar">
       <ul class="nav navbar-nav col-md-5 hidden-xs">
+        <li>
+          <a href="#"><img src="./assets/AddRepositoryFolder.svg" onclick="switchToAddRepositoryPanel()"
+              class="add-repository-button" title="Add Repository"></a>
+        </li>
         <li><img src="./assets/RightArrow.svg" class="right-arrow"></li>
         <li class="repo-name dropdown-toggle">
           <a href="#" id="repo-name" data-toggle="modal" data-target="#repo-modal"
@@ -51,7 +51,7 @@
 
         <!--Push-->
         <li class="toolbar-Icons" onclick="pushToRemote()">
-          <a href="#"><img src="./assets/Push.svg" height="40" width="48"class="upload" title="Push"></a>
+          <a href="#"><img src="./assets/Push.svg" height="40" width="48" class="upload" title="Push"></a>
           <span class="toolbar-Text">Push</span>
         </li>
 
@@ -70,28 +70,32 @@
 
         <!--Branch-->
         <li class="toolbar-Icons" onclick="openBranchModal()">
-          <a href="#"><img src="./assets/Branch.svg" height="40" width="48"  class="add-repository-button" title="Branch"></a>
+          <a href="#"><img src="./assets/Branch.svg" height="40" width="48" class="add-repository-button"
+              title="Branch"></a>
           <span class="toolbar-Text">Branch</span>
         </li>
 
         <!--Revert-->
         <li class="toolbar-Icons" onclick="revertCommit()">
-            <a href="#"><img src="./assets/Revert.svg" height="40" width="48" class="add-repository-button" title="Revert"></a>
-            <span class="toolbar-Text">Revert</span>
-          </li>
+          <a href="#"><img src="./assets/Revert.svg" height="40" width="48" class="add-repository-button"
+              title="Revert"></a>
+          <span class="toolbar-Text">Revert</span>
+        </li>
       </ul>
 
-      
+
       <ul class="navbar-nav navbar-right hidden-xs">
         <li>
           <label id="githubname" style="color:white"></label>
           <div id="Button_Sign_out">
-              <a class="btn btn-default btn-outline btn-circle"  id="avatar" data-toggle="collapse" href="#nav-collapse1" aria-expanded="false" aria-controls="nav-collapse1" onclick="signInOrOut()">Sign out</a>
+            <a class="btn btn-default btn-outline btn-circle" id="avatar" data-toggle="collapse" href="#nav-collapse1"
+              aria-expanded="false" aria-controls="nav-collapse1" onclick="signInOrOut()">Sign out</a>
           </div>
           <div id="Button_Sign_in">
-              <a class="btn btn-default btn-outline btn-circle"  id="avatar" data-toggle="collapse" href="#nav-collapse1" aria-expanded="false" aria-controls="nav-collapse1" onclick="hideSignInButton()">Sign in</a>
+            <a class="btn btn-default btn-outline btn-circle" id="avatar" data-toggle="collapse" href="#nav-collapse1"
+              aria-expanded="false" aria-controls="nav-collapse1" onclick="hideSignInButton()">Sign in</a>
           </div>
-          </li>
+        </li>
       </ul>
 
 
@@ -100,7 +104,8 @@
           <div class="form-group">
             <label class="sr-only" for="Email">User name</label>
             <img src="./assets/error.png" class="error-icon" id="username-error-icon">
-            <input type="text" class="form-control" id="Email1" placeholder="Username or Email" autofocus required style="width: 206px !important"/>
+            <input type="text" class="form-control" id="Email1" placeholder="Username or Email" autofocus required
+              style="width: 206px !important" />
           </div>
           <div class="form-group">
             <label class="sr-only" for="Password">Password</label>
@@ -158,7 +163,8 @@
   </div>
 </nav>
 
-<div id="otpModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+<div id="otpModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
       <div class="modal-header">
@@ -171,7 +177,8 @@
         Please enter your authentication code (SMS or from authenticator app)
         <div class="input-group">
           <br>
-          <input id="otp" type="text" class="form-control" placeholder="Authentication Code" aria-describedby="basic-addon1">
+          <input id="otp" type="text" class="form-control" placeholder="Authentication Code"
+            aria-describedby="basic-addon1">
         </div>
       </div>
       <div class="modal-footer">
@@ -313,7 +320,7 @@
       <span class="input-group-btn">
         <button class="btn btn-default" type="button" onclick="searchRepoName()">Search</button>
       </span>
-      <ul class="list-group"id="repo-dropdown" role="menu" aria-labelledby="repo-name">
+      <ul class="list-group" id="repo-dropdown" role="menu" aria-labelledby="repo-name">
       </ul>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary disabled" id="cloneButton" onclick="cloneRepo()">Clone</button>
@@ -334,7 +341,8 @@
       </div>
       <div class="modal-body" id="modal-text-box">
         Please provide the HTTP path to the original repository:
-        <input type="text" id="origin-path" style=" width: 554px !important" placeholder="https://github.com/ORIGINAL_OWNER/ORIGINAL_OWNER_REPOSITORY.git">
+        <input type="text" id="origin-path" style=" width: 554px !important"
+          placeholder="https://github.com/ORIGINAL_OWNER/ORIGINAL_OWNER_REPOSITORY.git">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="fetchFromOrigin()">Confirm</button>
@@ -350,7 +358,7 @@
     <!---->
     <div class="modal-content" id="rep-modal">
       <div class="modal-header branchModalHeader">
-        <h4 class="modal-title branchModalTitle branchModalComponents" >Create a new Branch</h4>
+        <h4 class="modal-title branchModalTitle branchModalComponents">Create a new Branch</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true" onclick="clearBranchErrorText()" class="branchModalComponents">&times;</span>
         </button>
@@ -366,12 +374,12 @@
 
 
 
-        <!--<input type="text" id="asdasda" class="form-control" placeholder="Search Repository">-->
-        <!--<span class="input-group-btn">-->
-          <!--<button class="btn btn-default" type="button" onclick="searchRepoName()">Search</button>-->
-        <!--</span>-->
-        <!--<ul class="list-group"id="adadadada" role="menu" aria-labelledby="repo-name">-->
-        <!--</ul>-->
+      <!--<input type="text" id="asdasda" class="form-control" placeholder="Search Repository">-->
+      <!--<span class="input-group-btn">-->
+      <!--<button class="btn btn-default" type="button" onclick="searchRepoName()">Search</button>-->
+      <!--</span>-->
+      <!--<ul class="list-group"id="adadadada" role="menu" aria-labelledby="repo-name">-->
+      <!--</ul>-->
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" id="createBranchButton" onclick="createBranch()">Create</button>
       </div>
@@ -393,8 +401,10 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-warning" id="localDeleteButton" onClick="deleteLocalBranch()">Delete Local Branch</button>
-        <button type="button" class="btn btn-warning" id="remoteDeleteButton" onClick="deleteRemoteBranch()">Delete Remote Branch</button>
+        <button type="button" class="btn btn-warning" id="localDeleteButton" onClick="deleteLocalBranch()">Delete Local
+          Branch</button>
+        <button type="button" class="btn btn-warning" id="remoteDeleteButton" onClick="deleteRemoteBranch()">Delete
+          Remote Branch</button>
       </div>
     </div>
   </div>
