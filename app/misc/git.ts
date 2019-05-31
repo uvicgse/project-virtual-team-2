@@ -119,10 +119,26 @@ function stage() {
 
 function addAndCommit() {
   commitMessage = document.getElementById('commit-message-input').value;
+  let tagMessage = document.getElementById('tag-message-input').value;
+  let tagName = document.getElementById('tag-name-input').value;
+
   if (commitMessage == null || commitMessage == "") {
     window.alert("Cannot commit without a commit message. Please add a commit message before committing");
     return;
   }
+  // A new tag must include a tag name and tag message or tag cannot be created
+  if (tagName == "" && tagMessage != "") {
+    window.alert("Cannot create tag without a tag name. Please add a tag name before committing");
+    return;
+  }
+  // A new tag must include a tag name and tag message or tag cannot be created
+  if (tagMessage == "" && tagName != "") {
+    
+    window.alert("Cannot create tag without a tag message. Please add a tag message before committing");
+    return;
+
+  }
+
   let repository;
 
   Git.Repository.open(repoFullPath)
@@ -201,6 +217,15 @@ function addAndCommit() {
       CommitButNoPush = 1;
       console.log("Commit successful: " + oid.tostrS());
       stagedFiles = null;
+      // If no tag is specified by user, then continue without creating tag
+      if (tagMessage == "" || tagName == "") {
+        return 
+      } else {
+        return repository.createTag(oid, tagName, tagMessage);
+      }
+    })
+    // will update user interface after new commit and tag has been handled
+    .then(function (tag: any) {
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
@@ -216,13 +241,20 @@ function addAndCommit() {
         addCommand("git add " + filesToAdd[i]);
       }
       addCommand('git commit -m "' + commitMessage + '"');
+      
+      // Check that tag was created
+      if (tag) {
+        addCommand('git tag -a '+ tagName + ' -m ' + '"' + tagMessage + '"');
+      }
       refreshAll(repository);
-    }, function (err) {
+    })
+    .catch ((err) => {
       console.log("git.ts, line 112, could not commit, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to commit.") {
         displayModal(err.message);
       } else {
+        console.log(err);
         updateModalText("You have not logged in. Please login to commit a change");
       }
     });
@@ -271,6 +303,8 @@ function getAllCommits(callback) {
   let repos;
   let allCommits = [];
   let aclist = [];
+  let singleReference;
+  let name;
   console.log("Finding all commits");
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
@@ -287,25 +321,54 @@ function getAllCommits(callback) {
         },
 
         function (cb) {
-          if (!refs[count].isRemote()) {
+          // try {
+          //   if (refs[count].isTag()) {
+          //     console.log('Tag!!!')
+          //     count++;
+          //     continue;
+          //   } else {
+          //     console.log('not tag');
+          //   }
+          // } catch (e) {
+          //   console.log(e);
+          // }
+          
+          // name = refs[count]
+          // console.log(name);
+          // Git.Reference.nameToId(repos, name)
+          //   .then(function(referenceId){
+          //     return Git.Reference.lookup(repos, referenceId.tostrS());
+          //   })
+          //   .then(function(localReference) {
+          //     console.log(localReference);
+          //     singleReference = localReference;
+          //   })
+          //   .catch((err) => {
+          //     console.log(err);
+          //   })
+          
+          // Remove tag references or because getReferenceCommit does not recognize tag references
+          if (!refs[count].isTag() && !refs[count].isRemote()) {
             console.log("referenced branch exists on remote repository");
             repos.getReferenceCommit(refs[count])
-              .then(function (commit) {
-                let history = commit.history(Git.Revwalk.SORT.Time);
-                history.on("end", function (commits) {
-                  for (let i = 0; i < commits.length; i++) {
-                    if (aclist.indexOf(commits[i].toString()) < 0) {
-                      allCommits.push(commits[i]);
-                      aclist.push(commits[i].toString());
-                    }
+            .then(function (commit) {
+              let history = commit.history(Git.Revwalk.SORT.Time);
+              history.on("end", function (commits) {
+                for (let i = 0; i < commits.length; i++) {
+                  if (aclist.indexOf(commits[i].toString()) < 0) {
+                    allCommits.push(commits[i]);
+                    aclist.push(commits[i].toString());
                   }
-                  count++;
-                  console.log(count + " out of " + allCommits.length + " commits");
-                  cb();
-                });
-
-                history.start();
+                }
+                count++;
+                console.log(count + " out of " + allCommits.length + " commits");
+                cb();
               });
+
+              history.start();
+            }).catch ((err) => {
+              console.log(err);
+            });
           } else {
             console.log('current branch does not exist on remote');
             count++;
