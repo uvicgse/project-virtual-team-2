@@ -1040,8 +1040,28 @@ body .pull-request-panel {
  End of pull request css.
 */
 
-/* Nav bar hamburger menu*/
+/*
+ Nav bar stying
+*/
+
 .nav-ham-menu {
   margin-top: 26px;
+  z-index: 1;
+}
+
+#Button_Sign_in {
+  padding-right: 15px;
+}
+
+#navbar-repo {
+  display: flex;
+  align-items: center;
+}
+
+.repo-name {
+  z-index: 1;
+}
+
+.branch-name {
   z-index: 1;
 }
