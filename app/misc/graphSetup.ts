@@ -258,7 +258,7 @@ function drawGraph() {
 
                     imageForUser(name, email, function (pic) {
                         document.getElementById("authorModalImage")!.src = pic;
-                        $("#authorProfileModal").modal('show');
+                        $("#graphNodeClickModal").modal('show');
                     })
                 }
             }

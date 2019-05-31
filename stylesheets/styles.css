@@ -490,6 +490,13 @@ body .footer .commit-panel .commit-message-input {
   padding: 5px;
 }
 
+#tag-name-input, #tag-message-input {
+  padding: 2px;
+  margin: 5px 5px 0px 15px;
+  background-color: #000;
+  width: 42%;
+}
+
 body .footer .commit-panel .commit-button-wrapper {
   display: flex;
   justify-content: center;
@@ -882,6 +889,46 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 
 .branchModalError {
   color: darkorange;
+}
+
+#graphNodeClickModal .row {
+  padding: 5px 10px;
+}
+
+#graphNodeClickModal .row:first-child{
+  border-bottom: 2px solid lightgray;
+}
+
+#graphNodeClickModal table{
+  margin: 0 5%;
+}
+#graphNodeClickModal table td:first-child{
+  width:40%;
+}
+#graphNodeClickModal table td:nth-child(2){
+  width:60%;
+}
+#tagDiv {
+  padding: 0 10px;
+  background-color: darkgray;
+  border-radius: 5px;
+}
+
+#tagDiv .badge:first-child {
+  margin-right: 10px;
+  background-color:green;
+}
+#tagDiv .glyphicon-ok{
+  color:lightgreen;
+}
+#tagDiv .badge:nth-child(2) {
+  background-color: red;
+}
+#tagDiv .glyphicon-remove{
+  color: rgb(247, 97, 97);
+}
+#tagDiv input{
+  border-radius: 3px;
 }
 .error {
   background-color: #fce4e4;

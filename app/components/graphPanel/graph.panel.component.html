@@ -45,16 +45,38 @@
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div>
-  <div class="modal fade" id="authorProfileModal" tabindex="-1" role="dialog">
+  <!--TODO: redesign graph node click modal-->
+  <!--Changed id for berevity-->
+  <div class="modal fade" id="graphNodeClickModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title">Author</h4>
+          
         </div>
         <div class="modal-body">
-          <img id="authorModalImage" src="" style="padding-right: 10px; float: left" width="90" height="80">
-          <div id="authorModalDetails">
+          <div class="row">
+            <h4>Author</h4>
+            <img id="authorModalImage" src="" style="padding-right: 10px; float: left" width="90" height="80">
+            <div id="authorModalDetails"></div>
+          </div>
+          <div class="row">
+            
+            <div class="col-lg-12">
+                <h4>Commit History</h4>
+                <table>
+                  <tbody>
+                    <!-- TODO: this will be an *ngFor that populates the commits and and tag names-->
+                    <tr>
+                      <td>Commit #1</td>
+                      <td id="tagDiv">
+                        <span class="badge"><span class="glyphicon glyphicon-ok"></span></span>
+                        <input placeholder="Tag Name #1" />
+                        <span class="badge"><span class="glyphicon glyphicon-remove"></span></span></td>
+                    </tr>
+                  </tbody>
+                </table>
+            </div>
           </div>
           <p class="clear">&nbsp;</p>
         </div>
