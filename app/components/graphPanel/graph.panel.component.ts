@@ -16,4 +16,8 @@ export class GraphPanelComponent {
     let p2 = document.getElementById('toRebase').innerHTML;
     rebaseCommits(p1, p2);
   }
+
+  deleteTag(tagName): void {
+    deleteTag(tagName);
+  }
 }

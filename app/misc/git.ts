@@ -260,6 +260,23 @@ function addAndCommit() {
     });
 }
 
+// Delete tag based on tag name and display corresponding git command to footer in VisualGit
+function deleteTag(tagName) {
+  let repository;
+  console.log(repoFullPath);
+  Git.Repository.open(repoFullPath)
+    .then(function (repoResult) {
+      repository = repoResult;
+      repository.deleteTagByName(tagName)
+        .then(function() {
+          console.log(`${tagName} deleted`);
+          addCommand('git tag -d '+ tagName);
+        })
+        .catch((err) => console.log(err));
+    })
+    .catch((err) => console.log(err));
+}
+
 function clearStagedFilesList() {
   let filePanel = document.getElementById("files-staged");
   while (filePanel.firstChild) {
