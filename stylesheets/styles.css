@@ -895,40 +895,54 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
   padding: 5px 10px;
 }
 
-#graphNodeClickModal .row:first-child{
-  border-bottom: 2px solid lightgray;
+#graphNodeClickModal .row:nth-child(2){
+  background-color: lightgray;
 }
 
 #graphNodeClickModal table{
   margin: 0 5%;
 }
+#graphNodeClickModal h4 {
+  color: black;
+}
+#graphNodeClickModal table td{
+  padding:5px;
+}
 #graphNodeClickModal table td:first-child{
   width:40%;
 }
 #graphNodeClickModal table td:nth-child(2){
-  width:60%;
+  width:100%;
 }
 #tagDiv {
   padding: 0 10px;
-  background-color: darkgray;
+  background-color: black;
+  box-shadow: 3px 3px 3px darkgrey;
   border-radius: 5px;
 }
 
 #tagDiv .badge:first-child {
-  margin-right: 10px;
+  margin-right: 3px;
   background-color:green;
+  box-shadow: 1px 1px 1px green;
+  cursor: pointer;
 }
 #tagDiv .glyphicon-ok{
   color:lightgreen;
 }
-#tagDiv .badge:nth-child(2) {
+#tagDiv .badge:last-child {
   background-color: red;
+  box-shadow: 1px 1px 1px red;
+  cursor: pointer;
+  margin: 5px 0 5px 5px;
+  float: right;
 }
 #tagDiv .glyphicon-remove{
   color: rgb(247, 97, 97);
 }
 #tagDiv input{
   border-radius: 3px;
+  padding: 2px;
 }
 .error {
   background-color: #fce4e4;

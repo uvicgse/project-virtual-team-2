@@ -47,6 +47,7 @@
   </div>
   <!--TODO: redesign graph node click modal-->
   <!--Changed id for berevity-->
+  <!-- ** The commit name needs to be only a maximum number of characters **-->
   <div class="modal fade" id="graphNodeClickModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -62,14 +63,14 @@
           </div>
           <div class="row">
             
-            <div class="col-lg-12">
+            
                 <h4>Commit History</h4>
                 <table>
-                  <tbody>
+                  <tbody id="commitTagList" *ngIf="showCommitList">
                     <!-- TODO: this will be an *ngFor that populates the commits and and tag names-->
                     <!-- TODO: change the t1 in deleteTag('t1') to tag name variable-->
-                    <tr>
-                      <td>Commit #1</td>
+                    <tr *ngFor="let c of commitList">
+                      <td><h4>{{ c.message()}}</h4></td>
                       <td id="tagDiv">
                         <span class="badge"><span class="glyphicon glyphicon-ok"></span></span>
                         <input placeholder="Tag Name #1" class="tag-div-name-input" id="tag-div-name-input"/>
@@ -78,9 +79,8 @@
                     </tr>
                   </tbody>
                 </table>
-            </div>
+                
           </div>
-          <p class="clear">&nbsp;</p>
         </div>
         <div class="modal-footer">
           <button id="authorModalProfileButton" type="button" class="btn btn-primary" data-dismiss="modal">View Github Profile</button>

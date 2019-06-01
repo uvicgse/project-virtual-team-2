@@ -1,4 +1,9 @@
-import { Component } from "@angular/core";
+import { Component, HostListener} from "@angular/core";
+import * as nodegit from "git";
+
+
+declare let getCommitHistory:any;
+
 
 @Component({
   selector: "graph-panel",
@@ -6,6 +11,21 @@ import { Component } from "@angular/core";
 })
 
 export class GraphPanelComponent {
+  commitList: [any];
+  showCommitList: boolean;
+  getCommitHistory: any;
+
+
+  //
+  // This Event listener shouuld be more specific
+  //
+  @HostListener('click', ['$event']) 
+  onClick() {
+    this.showCommitList = true;
+    let currentPath = document.getElementById("repo-name").innerHTML  
+    this.commitList = getCommitHistory(currentPath);
+  }
+
   mergeBranches(): void {
     let p1 = document.getElementById('fromMerge').innerHTML;
     mergeCommits(p1);
@@ -20,4 +40,13 @@ export class GraphPanelComponent {
   deleteTag(tagName): void {
     deleteTag(tagName);
   }
-}
+
+  
+  
+  
+  }
+
+
+
+
+

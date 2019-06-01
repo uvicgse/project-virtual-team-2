@@ -16,7 +16,7 @@ let repoName : string = "";
 let fs = require('fs').promises;
 let jsonfile = require('jsonfile');
 let path = require('path');
-
+let commitHistory: [any];
 let settingsPath = path.join(__dirname, ".settings");
 const recentFiles = path.join(settingsPath, 'recent_repos.json');
 
@@ -43,6 +43,33 @@ function downloadRepository() {
   } else {
     downloadFunc(cloneURL, fullLocalPath);
   }
+}
+
+// Get commit history and TODO: tag history
+export function getCommitHistory(currentPath){
+  Git.Repository.open(currentPath).then(function (repo) {
+    return repo.getCurrentBranch().then(function (ref) {
+        return repo.getBranchCommit(ref.shorthand());
+    }).then(function (commit) {
+        var hist = commit.history(), p = new Promise(function (resolve, reject) {
+            hist.on("end", resolve);
+            hist.on("error", reject);
+        });
+        hist.start();
+        return p;
+    }).then(function (commits) {
+        for (var i = 0; i < 10; i++) {
+            var msg = commits[i].message().split('\n')[0];
+            commitHistory.push(msg)
+        }
+    });
+  }).catch(function (err) {
+    console.log(err);
+  }).done(function () {
+    console.log('Finished');
+  });
+  return commitHistory
+
 }
 
 // On app load, create .settings directory if does not exist
