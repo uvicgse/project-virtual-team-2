@@ -133,7 +133,7 @@ function addAndCommit() {
   }
   // A new tag must include a tag name and tag message or tag cannot be created
   if (tagMessage == "" && tagName != "") {
-    
+
     window.alert("Cannot create tag without a tag message. Please add a tag message before committing");
     return;
 
@@ -219,7 +219,7 @@ function addAndCommit() {
       stagedFiles = null;
       // If no tag is specified by user, then continue without creating tag
       if (tagMessage == "" || tagName == "") {
-        return 
+        return
       } else {
         return repository.createTag(oid, tagName, tagMessage);
       }
@@ -241,7 +241,7 @@ function addAndCommit() {
         addCommand("git add " + filesToAdd[i]);
       }
       addCommand('git commit -m "' + commitMessage + '"');
-      
+
       // Check that tag was created
       if (tag) {
         addCommand('git tag -a '+ tagName + ' -m ' + '"' + tagMessage + '"');
@@ -275,6 +275,18 @@ function deleteTag(tagName) {
         .catch((err) => console.log(err));
     })
     .catch((err) => console.log(err));
+}
+
+// View a tag upon the hover or a click of a mouse over a nodeg
+// Function written by Henri De Boever 2019/06/01
+// The function takes a node object as a parameter, and returns the tag associated with that commit
+// This function is called when the user hovers their cursor over a commit node
+function viewTag(commitNode){
+
+  //get the commit ID of the node
+  //look up the tag associated with that commit id
+  // return the tag as a string to the calling function for display
+
 }
 
 function clearStagedFilesList() {
@@ -349,7 +361,7 @@ function getAllCommits(callback) {
           // } catch (e) {
           //   console.log(e);
           // }
-          
+
           // name = refs[count]
           // console.log(name);
           // Git.Reference.nameToId(repos, name)
@@ -363,7 +375,7 @@ function getAllCommits(callback) {
           //   .catch((err) => {
           //     console.log(err);
           //   })
-          
+
           // Remove tag references or because getReferenceCommit does not recognize tag references
           if (!refs[count].isTag() && !refs[count].isRemote()) {
             console.log("referenced branch exists on remote repository");
