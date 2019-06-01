@@ -301,7 +301,7 @@ function viewTag(commitID){
     repository.getTagByCommitID(commitID)
       .then(function() {
       console.log("Getting tag name for commit with ID: " + commitID);
-      addCommand('git describe --exact-match' + commitID)
+      addCommand('git describe --exact-match ' + commitID)
     })
     .catch((err) => console.log(err));
   })
