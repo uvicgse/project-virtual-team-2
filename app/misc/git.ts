@@ -293,20 +293,23 @@ function viewTag(commitID){
 
   console.log("Inside viewTag in git.ts")
 
-  let repository
-  Git.Repository.open(repoFullPath)
-  .then(function(repoResult) {
-    repository = repoResult;
-    console.log(repository)
-    repository.getTagByCommitID(commitID)
-      .then(function() {
-      console.log("Getting tag name for commit with ID: " + commitID);
-      addCommand('git describe --exact-match ' + commitID)
-    })
-    .catch((err) => console.log(err));
-  })
-  .catch((err) => console.log(err));
+  try{
+    addCommand('git describe --exact-match ' + commitID)
+  }catch(err){
+    console.log(err)
+  }
 
+  // let repository
+  // Git.Repository.open(repoFullPath).then(function(repoResult) {
+  //   repository = repoResult;
+  //   console.log(repository)
+  //   repository.getTagByCommitID(commitID).then(function() {
+  //     console.log("Getting tag name for commit with ID: " + commitID);
+  //     addCommand('git describe --exact-match ' + commitID)
+  //   })
+  //   .catch((err) => console.log(err));
+  // })
+  // .catch((err) => console.log(err));
 }
 
 function clearStagedFilesList() {
