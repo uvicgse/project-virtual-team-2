@@ -277,15 +277,35 @@ function deleteTag(tagName) {
     .catch((err) => console.log(err));
 }
 
-// View a tag upon the hover or a click of a mouse over a nodeg
+// View a tag upon the hover or a click of a mouse over a node in VisualGit
 // Function written by Henri De Boever 2019/06/01
-// The function takes a node object as a parameter, and returns the tag associated with that commit
+// The function takes a commitID as a parameter, and returns the tag associated with that commit
 // This function is called when the user hovers their cursor over a commit node
-function viewTag(commitNode){
+function viewTag(commitID){
 
   //get the commit ID of the node
   //look up the tag associated with that commit id
   // return the tag as a string to the calling function for display
+
+  // attempt to look for tag by commitID
+  // if tag is present, return tag
+  // else concole.log(this commit has no tag associated with it), return empty string
+
+  console.log("Inside viewTag in git.ts")
+
+  let repository
+  Git.Repository.open(repoFullPath)
+  .then(function(repoResult) {
+    repository = repoResult;
+    console.log(repository)
+    repository.getTagByCommitID(commitID)
+      .then(function() {
+      console.log("Getting tag name for commit with ID: " + commitID);
+      addCommand('git describe --exact-match' + commitID)
+    })
+    .catch((err) => console.log(err));
+  })
+  .catch((err) => console.log(err));
 
 }
 
