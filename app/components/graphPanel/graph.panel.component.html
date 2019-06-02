@@ -69,13 +69,13 @@
                   <tbody id="commitTagList" *ngIf="showCommitList">
                     <!-- TODO: this will be an *ngFor that populates the commits and and tag names-->
                     <!-- TODO: change the t1 in deleteTag('t1') to tag name variable-->
-                    <tr *ngFor="let c of commitList">
-                      <td><h4>{{ c.message()}}</h4></td>
+                    <tr *ngFor="let tagItem of tagObjList">
+                      <td><h4></h4></td>
                       <td id="tagDiv">
                         <span class="badge"><span class="glyphicon glyphicon-ok"></span></span>
-                        <input placeholder="Tag Name #1" class="tag-div-name-input" id="tag-div-name-input"/>
+                        <input placeholder="test" class="tag-div-name-input" id="tag-div-name-input"/>
                         <input placeholder="Tag Message #1" class="tag-div-message-input" id="tag-div-message-input"/>
-                        <span class="badge"><span class="glyphicon glyphicon-remove" (click)="deleteTag('t1')"></span></span></td>
+                        <span class="badge"><span class="glyphicon glyphicon-remove" (click)="deleteTag('test')"></span></span></td>
                     </tr>
                   </tbody>
                 </table>

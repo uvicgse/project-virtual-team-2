@@ -13,14 +13,68 @@ let filesToAdd = [];
 let theirCommit = null;
 let modifiedFiles;
 let warnbool;
-var CommitButNoPush = 0;
+let CommitButNoPush = 0;
 let stagedFiles: any;
 let vis = require("vis");
 let commitHistory = [];
+let commitList: [any];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
+let tagObjList: tagItem[] = [];
 
+
+// View a tag upon the hover or a click of a mouse over a node in VisualGit
+// Function written by Henri De Boever 2019/06/01
+// The function takes a commitID as a parameter, and returns the tag associated with that commit
+// This function is called when the user hovers their cursor over a commit node
+export class tagItem {
+  public tagName: string;
+  public commitMsg: string;
+  constructor(tagName:string, commitMsg:string){
+    this.tagName = tagName;
+    this.commitMsg = commitMsg;
+  }
+}
+
+export function getTags(){
+  tagObjList = []
+  Git.Repository.open(repoFullPath).then(function(repo){
+    repo.getReferences(Git.Reference.TYPE.OID).then(function(refs){
+      refs.forEach(function(r){
+        // tag is defined
+        if(r.isTag && r.name().indexOf('refs/tags/') >=0){
+          //console.log(r.name())
+          r.peel(Git.Object.TYPE.COMMIT).then(function(c){
+            repo.getCommit(c).then(function(commit){
+              //console.log(commit.message())
+              let tItem  = new tagItem(r.name(), commit.message())
+              //console.log(tItem)
+              tagObjList.push(tItem)
+              
+            })
+          })
+
+        // tag is not defined
+        } else if (r.isTag && r.name().indexOf('refs/tags/') < 0) {
+          r.peel(Git.Object.TYPE.COMMIT).then(function(c){
+            repo.getCommit(c).then(function(commit){
+              //console.log(commit.message())
+              let tItem  = new tagItem(" ", commit.message())
+              //console.log(tItem)
+              tagObjList.push(tItem)
+              //console.log(tagObjList)
+            })
+          })
+
+        }
+      })
+
+    })
+
+  })
+  return tagObjList
+}   
 
 
 function passReferenceCommits(){
@@ -277,40 +331,9 @@ function deleteTag(tagName) {
     .catch((err) => console.log(err));
 }
 
-// View a tag upon the hover or a click of a mouse over a node in VisualGit
-// Function written by Henri De Boever 2019/06/01
-// The function takes a commitID as a parameter, and returns the tag associated with that commit
-// This function is called when the user hovers their cursor over a commit node
-function viewTag(commitID){
 
-  //get the commit ID of the node
-  //look up the tag associated with that commit id
-  // return the tag as a string to the calling function for display
 
-  // attempt to look for tag by commitID
-  // if tag is present, return tag
-  // else concole.log(this commit has no tag associated with it), return empty string
 
-  console.log("Inside viewTag in git.ts")
-
-  try{
-    addCommand('git describe --exact-match ' + commitID)
-  }catch(err){
-    console.log(err)
-  }
-
-  // let repository
-  // Git.Repository.open(repoFullPath).then(function(repoResult) {
-  //   repository = repoResult;
-  //   console.log(repository)
-  //   repository.getTagByCommitID(commitID).then(function() {
-  //     console.log("Getting tag name for commit with ID: " + commitID);
-  //     addCommand('git describe --exact-match ' + commitID)
-  //   })
-  //   .catch((err) => console.log(err));
-  // })
-  // .catch((err) => console.log(err));
-}
 
 function clearStagedFilesList() {
   let filePanel = document.getElementById("files-staged");
