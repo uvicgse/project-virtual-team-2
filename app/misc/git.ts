@@ -8,15 +8,17 @@ let fs = require("fs");
 let async = require("async");
 let readFile = require("fs-sync");
 let green = "#84db00";
-let repo, index, oid, remote, commitMessage;
+let repo, index, oid, remote, commitMessage, stashMessage;
 let filesToAdd = [];
 let theirCommit = null;
+//let theirStash = null; maybe necessary for proper merging
 let modifiedFiles;
 let warnbool;
 var CommitButNoPush = 0;
 let stagedFiles: any;
 let vis = require("vis");
 let commitHistory = [];
+let stashHistory = [];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
@@ -204,14 +206,6 @@ function addAndCommit() {
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
-      /*
-        Issue 8: Making a commit through visual git does not cause the graph to update
-        'addAndCommit' function was not reaching beyond this point therefore 'refreshAll(repository)'
-        was not able to update the graph and labels for the new commit. It is believed that the functionality
-        of a 'SelectAllCheckbox' was either removed or has yet to be implemented. Commenting out this function fixes the issue.
-        A new issue will be opened such that we may implement this feature. -mdesco18
-      */
-      //clearSelectAllCheckbox();
       for (let i = 0; i < filesToAdd.length; i++) {
         addCommand("git add " + filesToAdd[i]);
       }
@@ -224,6 +218,193 @@ function addAndCommit() {
         displayModal(err.message);
       } else {
         updateModalText("You have not logged in. Please login to commit a change");
+      }
+    });
+}
+
+/* Issue 35: Add stashing functionality
+   Copied from addAndCommit
+    - Function entered from Stash button
+    - Can have a stash message if text is input in commit-message-input
+    - Will be named WIP on <branch>: <commit-head>... <stash-message>
+*/
+function addAndStash() {
+  let repository;
+
+  Git.Repository.open(repoFullPath)
+    .then(function (repoResult) {
+      repository = repoResult;
+      console.log("found a repository");
+      return repository.refreshIndex();
+    })
+
+    .then(function (indexResult) {
+      console.log("found a file to stage");
+      index = indexResult;
+      let filesToStage = [];
+      filesToAdd = [];
+      let fileElements = document.getElementsByClassName('file');
+      for (let i = 0; i < fileElements.length; i++) {
+        let fileElementChildren = fileElements[i].childNodes;
+        if (fileElementChildren[1].checked === true) {
+          filesToStage.push(fileElementChildren[0].innerHTML);
+          filesToAdd.push(fileElementChildren[0].innerHTML);
+        }
+      }
+      if (filesToStage.length > 0) {
+        console.log("staging files");
+        return index.addAll(filesToStage);
+      } else {
+        //If no files checked, then throw error to stop empty commits
+        throw new Error("No files selected to commit.");
+      }
+    })
+
+    .then(function () {
+      console.log("found an index to write result to");
+      return index.write();
+    })
+
+    .then(function () {
+      console.log("creating a tree object using current index");
+      return index.writeTree();
+    })
+
+    .then(function (oidResult) {
+      console.log("changing " + oid + " to " + oidResult);
+      oid = oidResult;
+      return Git.Reference.nameToId(repository, "HEAD");
+    })
+
+    .then(function (head) {
+      console.log("found the current commit");
+      return repository.getCommit(head);
+    })
+
+    .then(function (parent) {
+      console.log("Verifying account");
+      let sign;
+
+      sign = repository.defaultSignature();
+
+      stashMessage = document.getElementById('commit-message-input').value;
+      console.log("Signature to be put on stash: " + sign.toString());
+
+      if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
+        let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
+        console.log("head commit on remote: " + tid);
+        console.log("head commit on local repository: " + parent.id.toString());
+        //TODO: change to Stash.save
+        return repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent.id().toString(), tid.trim()]);
+      } else {
+        console.log('no other commits');
+        //TODO: change to Stash.save
+        return repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent]);
+      }
+    })
+    .then(function (oid) {
+      //theirStash = null;
+      theirCommit = null;
+      console.log("Stashing");
+      changes = 0;
+      let branch = document.getElementById("branch-name").innerText;
+      console.log("Current branch: " + branch);
+      var stashName = ("WIP on " + branch + ": " + oid.tostrS());
+      console.log("Stash successful: "+ stashName);
+      stagedFiles = null;
+      hideDiffPanel();
+      clearStagedFilesList();
+      clearCommitMessage();
+      for (let i = 0; i < filesToAdd.length; i++) {
+        addCommand("git add " + filesToAdd[i]);
+      }
+      if (stashMessage != null || stashMessage != ""){
+        stashName = stashName + " " + stashMessage;
+        addCommand('git stash -m "' + stashMessage + '"');
+      } else {
+        addCommand('git stash');
+      }
+      refreshAll(repository);
+    }, function (err) {
+      console.log("git.ts, line 325, could not stash, " + err);
+      // Added error thrown for if files not selected
+      if (err.message == "No files selected to stash.") {
+        displayModal(err.message);
+      } else {
+        updateModalText("You have not logged in. Please login to commit a change");
+      }
+    });
+}
+
+/* copied from pullFromRemote()
+    - Function entered from onclick of the stash in Stashing options window
+    - pops stash from given index
+
+    //TODO: Display list of stashes and have them reference this function when clicked
+*/
+function popStash(index, stashName) {
+
+  let repository;
+  let branch = document.getElementById("branch-name").innerText;
+  if (modifiedFiles.length > 0) {
+    updateModalText("Please commit before popping stash!");
+  }
+  Git.Repository.open(repoFullPath)
+    .then(function (repo) {
+      if (index == null) index = 0;
+      repository = repo;
+      console.log("Popping stash at index " + index);
+      addCommand("git stash pop --index " + index);
+      displayModal("Popping stash: "+ stashName);
+
+      /* Not sure if this is necessary
+      return repository.fetchAll({
+        callbacks: {
+          credentials: function () {
+            return cred;
+          },
+          certificateCheck: function () {
+            return 1;
+          }
+        }
+      });
+      */
+    })
+    // Now that we're finished fetching, go ahead and merge our local branch
+    // with the new one
+    .then(function () {
+      return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
+    })
+    .then(function (oid) {
+      console.log("Looking up commit with id " + oid + " in all repositories");
+      return Git.AnnotatedCommit.lookup(repository, oid);
+    }, function (err) {
+      console.log("fetching all remgit.ts, line 251, cannot find repository with old id" + err);
+    })
+    .then(function (annotated) {
+      console.log("merging " + annotated + "with local forcefully");
+      Git.Merge.merge(repository, annotated, null, {
+        checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
+      });
+      theirCommit = annotated;
+    })
+    .then(function () {
+      let conflicsExist = false;
+      let tid = "";
+      if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
+        tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
+        conflicsExist = tid.indexOf("Conflicts") !== -1;
+      }
+
+      if (conflicsExist) {
+        let conflictedFiles = tid.split("Conflicts:")[1];
+        refreshAll(repository);
+
+        window.alert("Conflicts exists! Please check the following files:" + conflictedFiles +
+         "\n Solve conflicts before you pop again!");
+      } else {
+        updateModalText("Successfully popped stash on branch " + branch + ", and your repo is up to date now!");
+        refreshAll(repository);
       }
     });
 }
@@ -261,10 +442,7 @@ function clearModifiedFilesList() {
 function clearCommitMessage() {
   document.getElementById('commit-message-input').value = "";
 }
-/* See line 207 for details
-function clearSelectAllCheckbox() {
-  document.getElementById('select-all-checkbox').checked = false;
-}*/
+
 
 function getAllCommits(callback) {
   clearModifiedFilesList();
