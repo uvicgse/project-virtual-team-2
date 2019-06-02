@@ -345,7 +345,7 @@ function pullFromRemote() {
       return repository.fetchAll({
         callbacks: {
           credentials: function () {
-            return cred;
+            return createCred();
           },
           certificateCheck: function () {
             return 1;
@@ -412,7 +412,9 @@ function pushToRemote() {
                 {
                   callbacks: {
                     credentials: function () {
-                      return cred;
+                      console.log('the cred is: ', createCred());
+                      console.log('testttt');
+                      return createCred();
                     }
                   }
                 }
