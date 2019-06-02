@@ -1,3 +1,5 @@
+//THIS IS A STASHING TEST
+
 Git stash notes:
 
 git stash //only stashes files that are tracked (git add)
