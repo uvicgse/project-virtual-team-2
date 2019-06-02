@@ -705,9 +705,8 @@ div.selected-commit-diff-panel button.close-button {
   text-align: center;
   cursor: pointer;
   padding: 10px;
-  margin: 0 auto;
-  max-height: 65px;
-  max-width: 55px;
+  display: flex;
+  flex-direction: column;
 }
 
 .toolbar-Icons:hover {
@@ -715,7 +714,6 @@ div.selected-commit-diff-panel button.close-button {
   text-align: center;
   cursor: pointer;
   padding: 10px;
-  margin: 0 auto;
   max-height: 80px;
   max-width: 75px;
   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
@@ -1044,7 +1042,28 @@ body .pull-request-panel {
  Nav bar stying
 */
 
+#navbar {
+  flex: 1;
+  justify-content: center;
+}
+
+#navbar>.toolbar-Container {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  justify-content: center;
+}
+
+#nav-bar-container {
+  display: flex;
+}
+
+#nav-git-commands {
+  flex: 1;
+}
+
 .nav-ham-menu {
+  height: 49px;
   margin-top: 26px;
   z-index: 1;
 }
@@ -1064,4 +1083,14 @@ body .pull-request-panel {
 
 .branch-name {
   z-index: 1;
+}
+
+#sign-in-btn {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+}
+
+#nav-git-commands-dropdown {
+  display: none;
 }
