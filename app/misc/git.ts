@@ -11,7 +11,7 @@ let green = "#84db00";
 let repo, index, oid, remote, commitMessage, stashMessage;
 let filesToAdd = [];
 let theirCommit = null;
-//let theirStash = null; maybe necessary for proper merging
+let theirStash = null; // maybe necessary for proper merging
 let modifiedFiles;
 let warnbool;
 var CommitButNoPush = 0;
@@ -212,7 +212,7 @@ function addAndCommit() {
       addCommand('git commit -m "' + commitMessage + '"');
       refreshAll(repository);
     }, function (err) {
-      console.log("git.ts, line 112, could not commit, " + err);
+      console.log("git.ts, func addAndCommit(), could not commit, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to commit.") {
         displayModal(err.message);
@@ -230,12 +230,6 @@ function addAndCommit() {
     - Will be named WIP on <branch>: <commit-head>... <stash-message>
 */
 function addAndStash() {
-
-  stashMessage = document.getElementById('commit-message-input').value;
-  if (stashMessage == null || stashMessage == "") {
-    window.alert("Cannot stash without a message. Please enter a message before stashing.");
-    return;
-  }
   let repository;
 
   Git.Repository.open(repoFullPath)
@@ -289,37 +283,30 @@ function addAndStash() {
     })
 
     .then(function (parent) {
-      console.log("Verifying account");
-      let sign;
-
-      sign = repository.defaultSignature();
-
-      stashMessage = document.getElementById('commit-message-input').value;
-      console.log("Signature to be put on stash: " + sign.toString());
 
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
         console.log("head commit on remote: " + tid);
         console.log("head commit on local repository: " + parent.id.toString());
         //TODO: change to Stash.save
-        return repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent.id().toString(), tid.trim()]);
+        //return repository.createCommit("HEAD", sign, sign, stashMessage, oid, [parent.id().toString(), tid.trim()]);
+        return parent.id.toString();
       } else {
         console.log('no other commits');
         //TODO: change to Stash.save
-        return repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent]);
+        //return repository.createCommit("HEAD", sign, sign, stashMessage, oid, [parent]);
+        return oid;
       }
     })
     .then(function (oid) {
-      //theirStash = null;
+      theirStash = null;
       theirCommit = null;
-      console.log("Stashing");
       changes = 0;
       let branch = document.getElementById("branch-name").innerText;
       console.log("Current branch: " + branch);
-      var stashName = ("WIP on " + branch + ": " + oid.tostrS());
-      console.log("Stash successful: "+ stashName);
-      stashName = stashName + " " + stashMessage;
-      stashHistory.unshift(stashName);
+      var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0,8));
+      console.log("Stashing: "+ stashName);
+      stashMessage = document.getElementById("commit-message-input").value;
       stagedFiles = null;
       hideDiffPanel();
       clearStagedFilesList();
@@ -327,10 +314,17 @@ function addAndStash() {
       for (let i = 0; i < filesToAdd.length; i++) {
         addCommand("git add " + filesToAdd[i]);
       }
-      addCommand('git stash -m "' + stashMessage + '"');
-      refreshAll(repository);
+      if(stashMessage != null){
+        stashName = stashName + " " + stashMessage;
+        addCommand('git stash -m "' + stashMessage + '"');
+      } else {
+        addCommand('git stash');
+      }
+     updateModalText("Stash successful!");
+     stashHistory.unshift(stashName);
+     refreshAll(repository);
     }, function (err) {
-      console.log("git.ts, line 325, could not stash, " + err);
+      console.log("git.ts, func addAndStash(), could not stash, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to stash.") {
         displayModal(err.message);
@@ -362,7 +356,7 @@ function popStash(index, stashName) {
       addCommand("git stash pop --index " + index);
       displayModal("Popping stash: "+ stashName);
 
-      /* Not sure if this is necessary
+      /* Not sure if this is necessary for popping
       return repository.fetchAll({
         callbacks: {
           credentials: function () {
@@ -377,6 +371,7 @@ function popStash(index, stashName) {
     })
     // Now that we're finished fetching, go ahead and merge our local branch
     // with the new one
+    //TODO: might want to merge refs/stash for applying
     .then(function () {
       return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
     })
@@ -384,13 +379,14 @@ function popStash(index, stashName) {
       console.log("Looking up commit with id " + oid + " in all repositories");
       return Git.AnnotatedCommit.lookup(repository, oid);
     }, function (err) {
-      console.log("fetching all remgit.ts, line 251, cannot find repository with old id" + err);
+      console.log("fetching all remgit.ts, func popStash(), cannot find repository with old id" + err);
     })
     .then(function (annotated) {
       console.log("merging " + annotated + "with local forcefully");
       Git.Merge.merge(repository, annotated, null, {
         checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
       });
+      theirStash = annotated; //TODO: see if this is necessary
       theirCommit = annotated;
     })
     .then(function () {
@@ -497,7 +493,7 @@ function getAllCommits(callback) {
         },
 
         function (err) {
-          console.log("git.ts, line 203, cannot load all commits" + err);
+          console.log("git.ts, func getAllCommits(), cannot load all commits" + err);
           callback(allCommits);
         });
     });
@@ -547,7 +543,7 @@ function pullFromRemote() {
       console.log("Looking up commit with id " + oid + " in all repositories");
       return Git.AnnotatedCommit.lookup(repository, oid);
     }, function (err) {
-      console.log("fetching all remgit.ts, line 251, cannot find repository with old id" + err);
+      console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
     })
     .then(function (annotated) {
       console.log("merging " + annotated + "with local forcefully");
@@ -684,7 +680,7 @@ function createBranch() {
               repo.defaultSignature(),
               "Created new-branch on HEAD");
           }, function (err) {
-            console.log("git.ts, line 337, error occurred while trying to create a new branch " + err);
+            console.log("git.ts, func createBranch(), error occurred while trying to create a new branch " + err);
           });
       }).done(function () {
         $('#branch-modal').modal('hide');
@@ -1413,7 +1409,7 @@ function deleteFile(filePath: string) {
     fs.unlink(newFilePath, (err) => {
       if (err) {
         alert("An error occurred updating the file" + err.message);
-        console.log("git.ts, line 759, an error occurred updating the file " + err);
+        console.log("git.ts, func deleteFile(), an error occurred updating the file " + err);
         return;
       }
       console.log("File successfully deleted");
