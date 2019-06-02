@@ -18,7 +18,7 @@ var CommitButNoPush = 0;
 let stagedFiles: any;
 let vis = require("vis");
 let commitHistory = [];
-let stashHistory = [];
+let stashHistory = [""];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
@@ -217,6 +217,7 @@ function addAndCommit() {
       if (err.message == "No files selected to commit.") {
         displayModal(err.message);
       } else {
+        //TODO: This is not always the case and can cause confusion
         updateModalText("You have not logged in. Please login to commit a change");
       }
     });
@@ -229,6 +230,12 @@ function addAndCommit() {
     - Will be named WIP on <branch>: <commit-head>... <stash-message>
 */
 function addAndStash() {
+
+  stashMessage = document.getElementById('commit-message-input').value;
+  if (stashMessage == null || stashMessage == "") {
+    window.alert("Cannot stash without a message. Please enter a message before stashing.");
+    return;
+  }
   let repository;
 
   Git.Repository.open(repoFullPath)
@@ -256,7 +263,7 @@ function addAndStash() {
         return index.addAll(filesToStage);
       } else {
         //If no files checked, then throw error to stop empty commits
-        throw new Error("No files selected to commit.");
+        throw new Error("No files selected to stash.");
       }
     })
 
@@ -311,6 +318,8 @@ function addAndStash() {
       console.log("Current branch: " + branch);
       var stashName = ("WIP on " + branch + ": " + oid.tostrS());
       console.log("Stash successful: "+ stashName);
+      stashName = stashName + " " + stashMessage;
+      stashHistory.unshift(stashName);
       stagedFiles = null;
       hideDiffPanel();
       clearStagedFilesList();
@@ -318,12 +327,7 @@ function addAndStash() {
       for (let i = 0; i < filesToAdd.length; i++) {
         addCommand("git add " + filesToAdd[i]);
       }
-      if (stashMessage != null || stashMessage != ""){
-        stashName = stashName + " " + stashMessage;
-        addCommand('git stash -m "' + stashMessage + '"');
-      } else {
-        addCommand('git stash');
-      }
+      addCommand('git stash -m "' + stashMessage + '"');
       refreshAll(repository);
     }, function (err) {
       console.log("git.ts, line 325, could not stash, " + err);
@@ -331,6 +335,7 @@ function addAndStash() {
       if (err.message == "No files selected to stash.") {
         displayModal(err.message);
       } else {
+        //TODO: This is not always the case and can cause confusion
         updateModalText("You have not logged in. Please login to commit a change");
       }
     });
@@ -926,42 +931,43 @@ function revertCommit() {
   .then(function(Commits){
     sortedListOfCommits(Commits);
      console.log("Commits; "+ commitHistory[0]);
-    })
+  })
 
-    Git.Repository.open(repoFullPath)
-    .then(function(repo){
-      repos = repo;
-      return repos;
-      console.log("This is repos "+ repos);
-    })
-    .then(function(Commits){
-      let index = returnSelectedNodeValue()-1;
-      let commitToRevert = commitHistory[index].sha().substr(0,7);
-      addCommand("git revert "+ commitToRevert);
+  Git.Repository.open(repoFullPath)
+  .then(function(repo){
+    repos = repo;
+    return repos;
+    console.log("This is repos "+ repos);
+  })
+  .then(function(Commits){
+    let index = returnSelectedNodeValue()-1;
+    let commitToRevert = commitHistory[index].sha().substr(0,7);
+    addCommand("git revert "+ commitToRevert)});
 
-    let revertOptions = new Git.RevertOptions();
-    revertOptions.mainline = 0;
-    if(commitHistory[index].parents().length > 1) {
-      revertOptions.mainline = 1;
+  let revertOptions = new Git.RevertOptions();
+  revertOptions.mainline = 0;
+  if(commitHistory[index].parents().length > 1) {
+    revertOptions.mainline = 1;
+  }
+
+  revertOptions.mergeInMenu = 1;
+  return Git.Revert.revert(repos, commitHistory[index],revertOptions)
+  .then(function(number) {
+    console.log("Reverting to " + number);
+    if (number === -1) {
+      updateModalText("Revert failed, please check if you have pushed the commit.");
+    } else {
+      updateModalText("Revert successfully.");
     }
-
-    revertOptions.mergeInMenu = 1;
-    return Git.Revert.revert(repos, commitHistory[index],revertOptions)
-    .then(function(number) {
-      console.log("Reverting to " + number);
-      if (number === -1) {
-        updateModalText("Revert failed, please check if you have pushed the commit.");
-      } else {
-        updateModalText("Revert successfully.");
-      }
-      refreshAll(repos);
-    })
-    .catch(function (err) {
-      console.log(err);
-      updateModalText("Error reverting commit, please commit changes as they will be overwritten, then try again");
-    })
-  }}
+    refreshAll(repos);
+  })
+  .catch(function (err) {
+    console.log(err);
+    updateModalText("Error reverting commit, please commit changes as they will be overwritten, then try again");
+  });
 }
+
+
 
 // Makes a modal for confirmation pop up instead of actually exiting application for confirmation.
 function ExitBeforePush() {
