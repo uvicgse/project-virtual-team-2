@@ -51,7 +51,7 @@ export function getTags(){
               let tItem  = new tagItem(r.name(), commit.message())
               //console.log(tItem)
               tagObjList.push(tItem)
-              
+
             })
           })
 
@@ -74,7 +74,7 @@ export function getTags(){
 
   })
   return tagObjList
-}   
+}
 
 
 function passReferenceCommits(){
@@ -331,6 +331,17 @@ function deleteTag(tagName) {
     .catch((err) => console.log(err));
 }
 
+
+// Find a tag given its commit hash (SHA1)
+// Added by Henri De Boever 2019/06/02
+function viewTagByCommitHash(commitHash){
+  console.log(commitHash)
+  // Use the git connection to look up a tag by the givern commitHash
+  addCommand('git describe --exact-match ' + commitHash);
+
+  //Find a way to pipe this to the front end
+
+}
 
 
 
