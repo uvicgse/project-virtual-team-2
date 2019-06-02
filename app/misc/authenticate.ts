@@ -75,6 +75,7 @@ function searchRepoName() {
   // Gets users name and password
   encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
   //to be changed
+  //refresh cred!!!
   cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
 
   var ghme = client.me();
