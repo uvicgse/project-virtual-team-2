@@ -304,7 +304,11 @@ function addAndStash() {
       changes = 0;
       let branch = document.getElementById("branch-name").innerText;
       console.log("Current branch: " + branch);
-      var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0,8));
+      var comMessage = Commit.lookup(repository, oid)
+      .then(function(commit){
+        return commit.message();
+      });
+      var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0,8) + " " + comMessage);
       console.log("Stashing: "+ stashName);
       stashMessage = document.getElementById("commit-message-input").value;
       stagedFiles = null;
@@ -315,13 +319,14 @@ function addAndStash() {
         addCommand("git add " + filesToAdd[i]);
       }
       if(stashMessage != null){
-        stashName = stashName + " " + stashMessage;
-        addCommand('git stash -m "' + stashMessage + '"');
+        stashName = "On " + branch + ": " + stashMessage;
+        addCommand('git stash push -m "' + stashMessage + '"');
       } else {
         addCommand('git stash');
       }
      updateModalText("Stash successful!");
      stashHistory.unshift(stashName);
+     //TODO: update stash list
      refreshAll(repository);
     }, function (err) {
       console.log("git.ts, func addAndStash(), could not stash, " + err);
