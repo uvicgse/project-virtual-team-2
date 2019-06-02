@@ -33,6 +33,10 @@ function CommitNoPush() {
         }
 }
 
+function createCred() {
+  return Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
+}
+
 function signInHead(callback) {
   encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
   continuedWithoutSignIn = false;
@@ -116,7 +120,7 @@ function getUserInfo(callback) {
     encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
   }
 
-  cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
+  cred = createCred();
 
   client = github.client({
     username: getUsernameTemp(),
