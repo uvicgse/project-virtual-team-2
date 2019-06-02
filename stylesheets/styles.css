@@ -77,6 +77,11 @@ ul{
     .nav-collapse>li { float: none; }
 }
 
+@media (min-width: 767px) {
+  #git-controls-dropdown { display: none; }
+}
+
+
 .navbar-white {
   background-color: #E3E3E3;
   border-bottom: 2px solid #181818;

@@ -92,45 +92,6 @@
           <button type="submit" class="btn btn-success" (click)="switchToMainPanel()">Sign in</button>
         </form>
       </div>
-
-      <ul id="git-controls-dropdown" class="nav navbar-nav collapse">
-        <li (click)="promptUserToAddRepository()"><a>&nbsp;&nbsp;add repository</a></li>
-        <li class="dropdown">
-          <a id="repo-name" data-toggle="modal" data-target="#repo-modal" href="#">
-            &nbsp;&nbsp;repository
-            <span class="caret"></span>
-          </a>
-        </li>
-        <li class="dropdown">
-          <a id="branch-name" data-toggle="dropdown" href="#">
-            &nbsp;&nbsp;branch
-            <span class="caret"></span>
-          </a>
-          <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
-            <li role="presentation" id="create-branch">
-              <div class="input-group menuitem">
-                <input type="text" id="branchName" class="form-control" placeholder="Search or create branch">
-                <span class="input-group-btn">
-                  <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
-                </span>
-              </div>
-            </li>
-          </ul>
-        </li>
-        <li class="dropdown">
-          <a id="merge-name" onclick="getOtherBranches()" data-toggle="dropdown" href="#">
-            &nbsp;&nbsp;update from
-            <span class="caret"></span>
-          </a>
-          <ul class="dropdown-menu" id="merge-dropdown" role="menu">
-          </ul>
-        </li>
-        <li class="upload" onclick="pushToRemote()"><a href="#">&nbsp;&nbsp;pull</a></li>
-        <li class="download" onclick="pullFromRemote()"><a href="#">&nbsp;&nbsp;push</a></li>
-        <li class="clone" onclick="cloneFromRemote()"><a href="#">&nbsp;&nbsp;clone</a></li>
-        <li class="clean" onclick="cleanRepo()"><a href="#">&nbsp;&nbsp;clean</a></li>
-        <li class="sync" onclick="requestLinkModal()"><a href="#">&nbsp;&nbsp;sync</a></li>
-      </ul>
     </div>
     <div id="cloneProgressDiv" class="progress" style="visibility: collapse">
       <div id="cloneProgressBar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20"
@@ -158,6 +119,44 @@
       <span class="icon-bar"></span>
     </button>
   </div>
+  <ul id="git-controls-dropdown" class="nav navbar-nav collapse">
+      <li (click)="promptUserToAddRepository()"><a>&nbsp;&nbsp;add repository</a></li>
+      <li class="dropdown">
+        <a id="repo-name" data-toggle="modal" data-target="#repo-modal" href="#">
+          &nbsp;&nbsp;repository
+          <span class="caret"></span>
+        </a>
+      </li>
+      <li class="dropdown">
+        <a id="branch-name" data-toggle="dropdown" href="#">
+          &nbsp;&nbsp;branch
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
+          <li role="presentation" id="create-branch">
+            <div class="input-group menuitem">
+              <input type="text" id="branchName" class="form-control" placeholder="Search or create branch">
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
+              </span>
+            </div>
+          </li>
+        </ul>
+      </li>
+      <li class="dropdown">
+        <a id="merge-name" onclick="getOtherBranches()" data-toggle="dropdown" href="#">
+          &nbsp;&nbsp;update from
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu" id="merge-dropdown" role="menu">
+        </ul>
+      </li>
+      <li class="upload" onclick="pushToRemote()"><a href="#">&nbsp;&nbsp;pull</a></li>
+      <li class="download" onclick="pullFromRemote()"><a href="#">&nbsp;&nbsp;push</a></li>
+      <li class="clone" onclick="cloneFromRemote()"><a href="#">&nbsp;&nbsp;clone</a></li>
+      <li class="clean" onclick="cleanRepo()"><a href="#">&nbsp;&nbsp;clean</a></li>
+      <li class="sync" onclick="requestLinkModal()"><a href="#">&nbsp;&nbsp;sync</a></li>
+    </ul>
 </nav>
 
 <div id="otpModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
