@@ -18,7 +18,7 @@ var CommitButNoPush = 0;
 let stagedFiles: any;
 let vis = require("vis");
 let commitHistory = [];
-let stashHistory = [""];
+let stashHistory = [""]; //TODO: initialize from .git/logs/refs/stash in reverse order
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
@@ -217,8 +217,7 @@ function addAndCommit() {
       if (err.message == "No files selected to commit.") {
         displayModal(err.message);
       } else {
-        //TODO: This is not always the case and can cause confusion
-        updateModalText("You have not logged in. Please login to commit a change");
+        updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
       }
     });
 }
@@ -228,10 +227,18 @@ function addAndCommit() {
     - Function entered from Stash button
     - Can have a stash message if text is input in commit-message-input
     - Will be named WIP on <branch>: <commit-head>... <stash-message>
+
+    //TODO: Testing after commits and pushes
+    //TODO: Add a switch for options  (i.e. --keep-index, --untracked)
 */
 function addAndStash() {
-  let repository;
+  stashMessage = document.getElementById("commit-message-input").value;
+  if(stashMessage == null || stashMessage == ""){
+    window.alert("Cannot stash without a stash message. Please add a stash message before stashing");
+  return;
+  }
 
+  let repository;
   Git.Repository.open(repoFullPath)
     .then(function (repoResult) {
       repository = repoResult;
@@ -283,47 +290,52 @@ function addAndStash() {
     })
 
     .then(function (parent) {
+      console.log("Verifying account");
+      let sign;
+
+      sign = repository.defaultSignature();
+
+      console.log("Signature to be put on commit: " + sign.toString());
 
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
         console.log("head commit on remote: " + tid);
         console.log("head commit on local repository: " + parent.id.toString());
-        //TODO: change to Stash.save
-        //return repository.createCommit("HEAD", sign, sign, stashMessage, oid, [parent.id().toString(), tid.trim()]);
-        return parent.id.toString();
+        return Git.Stash.save(repository, sign, stashMessage, 0);
       } else {
         console.log('no other commits');
-        //TODO: change to Stash.save
-        //return repository.createCommit("HEAD", sign, sign, stashMessage, oid, [parent]);
-        return oid;
+        return Git.Stash.save(repository, sign, stashMessage, 0);
       }
     })
-    .then(function (oid) {
+    .then(function (stashOID) {
       theirStash = null;
       theirCommit = null;
       changes = 0;
+
       let branch = document.getElementById("branch-name").innerText;
       console.log("Current branch: " + branch);
-      var comMessage = Commit.lookup(repository, oid)
+
+      //The next 6 lines are somewhat unnecessary but useful for logging
+      var comMessage = Git.Commit.lookup(repository, oid)
       .then(function(commit){
         return commit.message();
       });
+
       var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0,8) + " " + comMessage);
       console.log("Stashing: "+ stashName);
-      stashMessage = document.getElementById("commit-message-input").value;
       stagedFiles = null;
+
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
+
       for (let i = 0; i < filesToAdd.length; i++) {
         addCommand("git add " + filesToAdd[i]);
       }
-      if(stashMessage != null){
-        stashName = "On " + branch + ": " + stashMessage;
-        addCommand('git stash push -m "' + stashMessage + '"');
-      } else {
-        addCommand('git stash');
-      }
+      stashName = "On " + branch + ": " + stashMessage;
+      console.log("Saved as: " + stashName);
+      addCommand('git stash push -m "' + stashMessage + '"');
+
      updateModalText("Stash successful!");
      stashHistory.unshift(stashName);
      //TODO: update stash list
@@ -334,8 +346,7 @@ function addAndStash() {
       if (err.message == "No files selected to stash.") {
         displayModal(err.message);
       } else {
-        //TODO: This is not always the case and can cause confusion
-        updateModalText("You have not logged in. Please login to commit a change");
+        updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
       }
     });
 }
@@ -346,7 +357,7 @@ function addAndStash() {
 
     //TODO: Display list of stashes and have them reference this function when clicked
 */
-function popStash(index, stashName) {
+function popStash(index) {
 
   let repository;
   let branch = document.getElementById("branch-name").innerText;
@@ -359,20 +370,10 @@ function popStash(index, stashName) {
       repository = repo;
       console.log("Popping stash at index " + index);
       addCommand("git stash pop --index " + index);
+      var stashName = stashHistory.splice(index, 1);
       displayModal("Popping stash: "+ stashName);
 
-      /* Not sure if this is necessary for popping
-      return repository.fetchAll({
-        callbacks: {
-          credentials: function () {
-            return cred;
-          },
-          certificateCheck: function () {
-            return 1;
-          }
-        }
-      });
-      */
+
     })
     // Now that we're finished fetching, go ahead and merge our local branch
     // with the new one
@@ -391,7 +392,6 @@ function popStash(index, stashName) {
       Git.Merge.merge(repository, annotated, null, {
         checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
       });
-      theirStash = annotated; //TODO: see if this is necessary
       theirCommit = annotated;
     })
     .then(function () {
