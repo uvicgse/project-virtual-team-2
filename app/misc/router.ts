@@ -60,14 +60,14 @@ function checkSignedIn() {
 
 function checkIfInTheApp(){
   return inTheApp;
-} 
+}
 
 function switchToAddRepositoryPanelWhenNotSignedIn() {
   previousWindow = "repoPanel";
   continuedWithoutSignIn = true;
   showUsername = false;
   switchToAddRepositoryPanel();
-  
+
 }
 
 function switchToAddRepositoryPanel() {
@@ -82,7 +82,7 @@ function switchToAddRepositoryPanel() {
   hidePullRequestPanel();
   hideGraphPanel();
   displayAddRepositoryPanel();
-  
+
   if(showUsername){
     document.getElementById("Button_Sign_out").style.display = "block";
     document.getElementById("Button_Sign_in").style.display = "none";
@@ -150,6 +150,15 @@ function displayFilePanel() {
   if (commitButton != null){
     commitButton.style.visibility = "visible";
   }
+  let stashButton = document.getElementById("stash-button");
+  if (stashButton != null){
+    stashButton.style.visibility = "visible";
+  }
+
+  let popButton = document.getElementById("pop-button");
+  if (popButton != null){
+    popButton.style.visibility = "visible";
+  }
 
   let fileEditButton = document.getElementById("fileEdit-button");
   if (fileEditButton != null){
@@ -162,14 +171,14 @@ function displayPullRequestPanel() {
   let prPanel = document.getElementById("pull-request-panel")
   if (prPanel != null) {
     prPanel.style.zIndex = "10";
-  }  
+  }
 }
 
 function hidePullRequestPanel() {
   let prPanel = document.getElementById("pull-request-panel")
   if (prPanel != null) {
     prPanel.style.zIndex = "-10";
-  }  
+  }
 }
 
 function displayGraphPanel() {
@@ -203,13 +212,24 @@ function hideFilePanel() {
   if (commitButton != null){
     commitButton.style.visibility = "hidden";
   }
+  let stashButton = document.getElementById("stash-button");
+  if (stashButton != null){
+    stashButton.style.visibility = "hidden";
+  }
+
+  let popButton = document.getElementById("pop-button");
+  if (popButton != null){
+    popButton.style.visibility = "hidden";
+  }
 
   let fileEditButton = document.getElementById("fileEdit-button");
   if (fileEditButton != null){
     fileEditButton.style.visibility = "hidden";
   }
+
   document.getElementById("Issues-button").style="visibility: hidden";
 }
+
 
 function hideGraphPanel() {
   let graphPanel = document.getElementById("graph-panel");
@@ -244,12 +264,12 @@ function hideDiffPanel() {
   if (diffPanel != null) {
     diffPanel.style.width = "0";
   }
-  
+
   let graphPanel = document.getElementById("graph-panel");
   if (graphPanel != null) {
     graphPanel.style.width = "100%";
   }
-  
+
   disableDiffPanelEditOnHide();
   hideDiffPanelButtons();
 }
@@ -289,12 +309,12 @@ function displayDiffPanelButtons() {
   if (saveButton != null) {
     saveButton.style.visibility = "visible";
   }
-  
+
   let cancelButton = document.getElementById("cancel-button");
   if (cancelButton != null) {
     cancelButton.style.visibility = "visible";
   }
-  document.getElementById("open-editor-button").style.visibility = "visible"; 
+  document.getElementById("open-editor-button").style.visibility = "visible";
 }
 
 function hideDiffPanelButtons() {
@@ -302,12 +322,12 @@ function hideDiffPanelButtons() {
   if (saveButton != null) {
     saveButton.style.visibility = "hidden";
   }
-  
+
   let cancelButton = document.getElementById("cancel-button");
   if (cancelButton != null) {
     cancelButton.style.visibility = "hidden";
   }
-  document.getElementById("open-editor-button").style.visibility = "hidden"; 
+  document.getElementById("open-editor-button").style.visibility = "hidden";
   disableSaveCancelButton();
   disableDiffPanelEditOnHide();
 }
