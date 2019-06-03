@@ -78,9 +78,8 @@ function searchRepoName() {
 
   // Gets users name and password
   encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
-  //to be changed
-  //refresh cred!!!
-  cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
+  //obtain a new copy of cred every time.
+  cred = createCred();
 
   var ghme = client.me();
   ghme.repos(function (err, data, head) {
@@ -119,7 +118,7 @@ function getUserInfo(callback) {
   else {
     encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
   }
-
+  //obtain a new copy of cred.
   cred = createCred();
 
   client = github.client({
