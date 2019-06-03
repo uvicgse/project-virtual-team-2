@@ -223,15 +223,14 @@ function addAndCommit() {
 }
 
 /* Issue 35: Add stashing functionality
-   Copied from addAndCommit
+   Mostly copied from addAndCommit
     - Function entered from Stash button
-    - Can have a stash message if text is input in commit-message-input
-    - Will be named WIP on <branch>: <commit-head>... <stash-message>
+    - Must have a stash message where text is input in commit-message-input
 
     //TODO: Testing after commits and pushes
     //TODO: Add a switch for options  (i.e. --keep-index, --untracked)
 */
-function addAndStash() {
+function addAndStash(options) {
   stashMessage = document.getElementById("commit-message-input").value;
   if(stashMessage == null || stashMessage == ""){
     window.alert("Cannot stash without a stash message. Please add a stash message before stashing");
@@ -295,8 +294,15 @@ function addAndStash() {
 
       sign = repository.defaultSignature();
 
-      console.log("Signature to be put on commit: " + sign.toString());
+      console.log("Signature to be put on stash: " + sign.toString());
 
+      /* TODO: have a switch here for the options
+         Stash.FLAGS.DEFAULT             0
+         Stash.FLAGS.KEEP_INDEX          1
+         Stash.FLAGS.INCLUDE_UNTRACKED   2
+         Stash.FLAGS.INCLUDE_IGNORED     4
+      */
+      // First branch of this If might be unecessary or replaceable by .git/refs/stash to check something else
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
         console.log("head commit on remote: " + tid);
@@ -320,9 +326,9 @@ function addAndStash() {
       .then(function(commit){
         return commit.message();
       });
-
       var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0,8) + " " + comMessage);
       console.log("Stashing: "+ stashName);
+
       stagedFiles = null;
 
       hideDiffPanel();
@@ -351,8 +357,11 @@ function addAndStash() {
     });
 }
 
-/* copied from pullFromRemote()
-    - Function entered from onclick of the stash in Stashing options window
+
+
+/* Issue 35: Add applying functionality
+   Mostly copied from pullFromRemote()
+    - Function entered from onclick of the given stash in Stashing options window
     - pops stash from given index
 
     //TODO: Display list of stashes and have them reference this function when clicked

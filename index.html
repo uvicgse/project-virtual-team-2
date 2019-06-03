@@ -87,6 +87,10 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("stash button has been clicked");
       addAndStash();
     });
+    document.getElementById('pop-button').addEventListener("click", function() {
+      console.log("pop button has been clicked");
+      popStash();
+    });
 
     document.getElementById('save-button').addEventListener("click", function() {
       saveFile();
@@ -184,7 +188,7 @@ $.contextMenu({
         branch = branch.substring(1, branch.length);
       }
       options.items['merge to HEAD'].callback = function(itemKey, opt) {
-        console.log("meging to HEAD");
+        console.log("merging to HEAD");
         mergeInMenu(branch);
       };
     } else {
