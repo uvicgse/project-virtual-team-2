@@ -570,7 +570,7 @@ function deleteRemoteBranch() {
               {
                 callbacks: { // pass in user credentials as a parameter
                   credentials: function () {
-                    return cred;
+                    return createCred();
                   }
                 }
               }).then(function () {
