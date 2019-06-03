@@ -1,5 +1,6 @@
 import * as nodegit from "git";
-import NodeGit, { Status } from "nodegit";
+import NodeGit, {Graph, Status } from "nodegit";
+
 
 let opn = require('opn');
 let $ = require("jquery");
@@ -619,6 +620,24 @@ function clearCommitMessage() {
 }
 
 
+// function to determine the status of the remote repository compared to local repository
+// functions takes the name of the remote repository or defaults to origin/HEAD
+function getAheadBehindCommits(remote?: string) {
+  remote = remote ? remote: "origin/HEAD";
+  return Git.Repository.open(repoFullPath)
+      .then(function(repo) {
+        // returns commit that head is pointing too (most recent local commit)
+        return repo.getHeadCommit().then(function(commit){
+            return repo.getReferenceCommit(remote).then(function(remoteCommit){
+              // return an object { ahead : <number of commits ahead>, behind: <number of commits behind>
+              return Graph.aheadBehind(repo, commit.id(), remoteCommit.id()).then(function(aheadBehind){
+                return aheadBehind;
+              });
+            });
+          });
+      });
+}
+
 function getAllCommits(callback) {
   clearModifiedFilesList();
   let repos;
@@ -748,9 +767,14 @@ function pullFromRemote() {
 }
 
 function pushToRemote() {
-    if (CommitButNoPush === 0) {
-        window.alert("Cannot push without a commit.");
-        return;
+  // checking status of remote repository and only push if you are ahead of remote
+  getAheadBehindCommits().then(function(aheadBehind){
+    if (aheadBehind.ahead === 0){
+      window.alert("Your branch is already up to date");
+      return;
+    } else if (aheadBehind.behind !== 0) {
+      window.alert("your branch is behind remote by " + aheadBehind.behind);
+      return;
     }
   let branch = document.getElementById("branch-name").innerText;
   Git.Repository.open(repoFullPath)
@@ -784,7 +808,7 @@ function pushToRemote() {
               refreshAll(repo);
             });
         });
-    });
+  });
 }
 
 function commitModal() {
