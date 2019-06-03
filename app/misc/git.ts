@@ -417,7 +417,8 @@ function popStash(index) {
     })
     .then(function (mergeCode) {
       if(mergeCode == -13){
-        window.alert("Conflicts exists! Please stage modified files or\nresolve conflicts before you pop again!");
+        window.alert("Conflicts exists! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you pop again!");
+        updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
       } else {
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
