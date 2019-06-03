@@ -11,14 +11,17 @@ var options = {
     scopes: ["user:email", "notifications"]
 };
 
-// Create the URL for GitHub Oauth
-var authWindow = new BrowserWindow({ width: 800, height: 600, show: false, 'node-integration': false })
-var githubUrl = 'https://github.cm/login/oauth/authorize?';
-var authUrl = githubUrl + 'client_id=' + options.client_id + '&scope=' + options.scopes;
+function openOauthWindow(){
+    // Create the URL for GitHub Oauth
+    var authWindow = new BrowserWindow({ width: 800, height: 600, show: false, 'node-integration': false })
+    var githubUrl = 'https://github.cm/login/oauth/authorize?';
+    var authUrl = githubUrl + 'client_id=' + options.client_id + '&scope=' + options.scopes;
 
-// Load the Oauth URL
-authWindow.loadURL(authUrl);
-authWindow.show();
+    // Load the Oauth URL
+    authWindow.loadURL(authUrl);
+    authWindow.show();
+}
+
 
 function handleCallback (url) {
     var raw_code = /code=([^&]*)/.exec(url) || null;
