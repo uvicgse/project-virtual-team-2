@@ -491,26 +491,28 @@ body .footer .commit-panel .commit-message-input {
 }
 
 body .footer .commit-panel .commit-button-wrapper {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
+
   border: 0;
 }
 
 body .footer .commit-panel .commit-button-wrapper .commit-button {
   display: block;
-  margin-left: 10px;
-  margin-right: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  height: 30px;
+  margin-left: 8px;
+  margin-right: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  height: 40px;
   border-radius: 10px;
   border: 0;
   padding: 0 15px;
   background-color: #39c0ba;
   color: #fff;
-  white-space: nowrap;
+  white-space: pre-line;
+  position: static;
 }
 
 body .footer .commit-panel .commit-button:hover {
