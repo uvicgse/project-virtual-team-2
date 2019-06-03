@@ -373,11 +373,21 @@ function popStash(index) {
       var stashName = stashHistory.splice(index, 1);
       displayModal("Popping stash: "+ stashName);
 
+      Git.Stash.pop(repository, index, 0)
+      .then(function(ret) {
+        if (ret == 0) {
+          return;
+        } else if (ret == Git.Error.CODE.ENOTFOUND){
+          throw new Error("No stash found at given index.");
+        } else if (ret == Git.Error.CODE.EMERGECONFLICT){
+          throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
+        }
+      }); //TODO: Test if this tries to merge automatically
+
 
     })
-    // Now that we're finished fetching, go ahead and merge our local branch
-    // with the new one
-    //TODO: might want to merge refs/stash for applying
+    // Merge branches. Stash.pop might do this already.
+    //TODO: might want to do a merge refs/stash for applying
     .then(function () {
       return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
     })
@@ -412,7 +422,12 @@ function popStash(index) {
         updateModalText("Successfully popped stash on branch " + branch + ", and your repo is up to date now!");
         refreshAll(repository);
       }
+    }, function(err) {
+        console.log("git.ts, func popStash(), could not pop stash, " + err);
+        displayModal(err.message);
+        //TODO: If errors found, use err.message shown to display more useful message if necessary
     });
+
 }
 
 function clearStagedFilesList() {
