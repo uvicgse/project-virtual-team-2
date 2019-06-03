@@ -494,6 +494,8 @@ body .footer .commit-panel .commit-button-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  border: 0;
 }
 
 body .footer .commit-panel .commit-button-wrapper .commit-button {
@@ -508,6 +510,7 @@ body .footer .commit-panel .commit-button-wrapper .commit-button {
   padding: 0 15px;
   background-color: #39c0ba;
   color: #fff;
+  white-space: nowrap;
 }
 
 body .footer .commit-panel .commit-button:hover {
