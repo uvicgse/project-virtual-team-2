@@ -22,8 +22,8 @@
     <br>
     <div>
       <button type="submit" style="width:280px;" class="btn btn-success" (click)="switchToMainPanel()">Sign In</button>
-      <br>
     </div>
+      <br>
     
     <button style="width:280px;" class="btn btn-link" (click)="openGitHubPasswordResetPage()">Forgot your password?</button>
     
@@ -33,6 +33,11 @@
 
     <br>
     <button type="submit" style="width:280px;" class="btn btn-primary" onclick="switchToAddRepositoryPanelWhenNotSignedIn()">Continue without sign in</button>
+      <br>
+      <div>
+          <a class="btn btn-default" style="width:280px;" href="https://github.com/login/oauth/authorize?client_id=096b43fe7908abe70257&redirect_uri=http://localhost:8080">Sign In with OAuth</a>
+      </div>
+
   </form>
   
   <div class="grey-out" id="grey-out">
