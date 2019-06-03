@@ -119,6 +119,7 @@ function getUserInfo(callback) {
     encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
   }
   //obtain a new copy of cred.
+  //need update
   cred = createCred();
 
   client = github.client({
