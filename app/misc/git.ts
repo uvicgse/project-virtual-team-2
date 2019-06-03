@@ -360,9 +360,9 @@ function addAndStash(options) {
 
 
 /* Issue 35: Add applying functionality
-   Mostly copied from pullFromRemote()
+   Skeleton copied from pullFromRemote()
     - Function entered from onclick of the given stash in Stashing options window
-    - pops stash from given index
+    - pops stash from given index and merges into working directory. Fails if conflicts found.
 
     //TODO: Display list of stashes and have them reference this function when clicked
 */
@@ -382,9 +382,10 @@ function popStash(index) {
       var stashName = stashHistory.splice(index, 1); //TODO: Init stashHistory
       updateModalText("Popping stash: "+ stashName);
 
-      const ret = Git.Stash.pop(repository, index, 0);
+      let ret = Git.Stash.pop(repository, index, 0);
+      console.log("Pop returned: " + ret);
 
-      console.log("Pop returned: "+ret);
+      //ret returns an unknown object but API Doc says it should return ERROR.CODE
       if (ret == 0) {
         return;
       } else if (ret == Git.Error.CODE.ENOTFOUND){
@@ -392,12 +393,7 @@ function popStash(index) {
       } else if (ret == Git.Error.CODE.EMERGECONFLICT){
         throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
       }
-     //TODO: Test if this tries to merge automatically
 
-
-
-    // Merge branches. Stash.pop might do this already.
-    //TODO: might want to do a merge refs/stash for applying
     })
     .then(function () {
       return Git.Reference.nameToId(repository, "refs/stash");
@@ -406,35 +402,26 @@ function popStash(index) {
       console.log("Looking up stash with id " + oid + " in all repositories");
       return Git.AnnotatedCommit.lookup(repository, oid);
     }, function (err) {
-      console.log("fetching all remgit.ts, func popStash(), cannot find repository with old id\n" + err);
+      console.log("git.ts, func popStash(), cannot find id\n" + err);
     })
     .then(function (annotated) {
       if(annotated != null){
-        console.log("merging " + annotated + "with local forcefully");
-        Git.Merge.merge(repository, annotated, null, {
+        console.log("merging " + annotated.id() + " with local safely");
+       var ret2 = Git.Merge.merge(repository, annotated, {flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
           checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
         });
+       console.log("Merge returned: " + ret2);
       }
       theirCommit = annotated;
+      return ret2;
     })
-    .then(function () {
-      let conflicsExist = false;
-      let tid = "";
-      if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
-        tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
-        conflicsExist = tid.indexOf("Conflicts") !== -1;
-      }
-
-      if (conflicsExist) {
-        let conflictedFiles = tid.split("Conflicts:")[1];
-        refreshAll(repository);
-
-        window.alert("Conflicts exists! Please check the following files:" + conflictedFiles +
-         "\n Solve conflicts before you pop again!");
+    .then(function (mergeCode) {
+      if(mergeCode == -13){
+        window.alert("Conflicts exists! Please stage modified files or\nresolve conflicts before you pop again!");
       } else {
-        updateModalText("Successfully popped stash on branch " + branch + ", and your repo is up to date now!");
-        refreshAll(repository);
+        updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
+      refreshAll(repository);
       }, function(err) {
         console.log("git.ts, func popStash(), could not pop stash, " + err);
         displayModal(err.message);
