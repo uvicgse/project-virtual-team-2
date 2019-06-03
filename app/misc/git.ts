@@ -379,38 +379,42 @@ function popStash(index) {
       repository = repo;
       console.log("Popping stash at index " + index);
       addCommand("git stash pop --index " + index);
-      var stashName = stashHistory.splice(index, 1);
-      displayModal("Popping stash: "+ stashName);
+      var stashName = stashHistory.splice(index, 1); //TODO: Init stashHistory
+      updateModalText("Popping stash: "+ stashName);
 
-      Git.Stash.pop(repository, index, 0)
-      .then(function(ret) {
-        if (ret == 0) {
-          return;
-        } else if (ret == Git.Error.CODE.ENOTFOUND){
-          throw new Error("No stash found at given index.");
-        } else if (ret == Git.Error.CODE.EMERGECONFLICT){
-          throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
-        }
-      }); //TODO: Test if this tries to merge automatically
+      const ret = Git.Stash.pop(repository, index, 0);
+
+      console.log("Pop returned: "+ret);
+      if (ret == 0) {
+        return;
+      } else if (ret == Git.Error.CODE.ENOTFOUND){
+        throw new Error("No stash found at given index.");
+      } else if (ret == Git.Error.CODE.EMERGECONFLICT){
+        throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
+      }
+     //TODO: Test if this tries to merge automatically
 
 
-    })
+
     // Merge branches. Stash.pop might do this already.
     //TODO: might want to do a merge refs/stash for applying
-    .then(function () {
-      return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
     })
-    .then(function (oid) {
-      console.log("Looking up commit with id " + oid + " in all repositories");
+    .then(function () {
+      return Git.Reference.nameToId(repository, "refs/stash");
+    })
+     .then(function (oid) {
+      console.log("Looking up stash with id " + oid + " in all repositories");
       return Git.AnnotatedCommit.lookup(repository, oid);
     }, function (err) {
-      console.log("fetching all remgit.ts, func popStash(), cannot find repository with old id" + err);
+      console.log("fetching all remgit.ts, func popStash(), cannot find repository with old id\n" + err);
     })
     .then(function (annotated) {
-      console.log("merging " + annotated + "with local forcefully");
-      Git.Merge.merge(repository, annotated, null, {
-        checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
-      });
+      if(annotated != null){
+        console.log("merging " + annotated + "with local forcefully");
+        Git.Merge.merge(repository, annotated, null, {
+          checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
+        });
+      }
       theirCommit = annotated;
     })
     .then(function () {
@@ -431,11 +435,11 @@ function popStash(index) {
         updateModalText("Successfully popped stash on branch " + branch + ", and your repo is up to date now!");
         refreshAll(repository);
       }
-    }, function(err) {
+      }, function(err) {
         console.log("git.ts, func popStash(), could not pop stash, " + err);
         displayModal(err.message);
         //TODO: If errors found, use err.message shown to display more useful message if necessary
-    });
+      });
 
 }
 
