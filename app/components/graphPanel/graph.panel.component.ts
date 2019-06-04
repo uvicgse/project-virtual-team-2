@@ -1,5 +1,6 @@
 import { Component, HostListener} from "@angular/core";
-import * as nodegit from "git";
+import { tagItem } from "../../misc/git";
+import { resolve } from "url";
 
 declare let getTags:any;
 
@@ -9,30 +10,13 @@ declare let getTags:any;
 })
 
 export class GraphPanelComponent {
-  tagObjList: [any];
+  tagList: any;
   showCommitList: boolean;
   getTags: any;
-
-
   //
   // This Event listener should be more specific
   //
   @HostListener('click', ['$event']) 
-<<<<<<< Updated upstream
-  onClick() {
-    this.showCommitList = true; 
-    this.tagObjList = getTags();
-    
-    console.log(this.tagObjList) 
-    /*
-    this.tagObjList.forEach(function(t){
-      //console.log(t[0])
-      console.log(t[0].tagName)
-      console.log(t[0].commitMsg)
-    })
-    */
-  }
-=======
   async onClick() {
      await this.asyncCall()
      console.log(this.tagList)
@@ -42,7 +26,6 @@ export class GraphPanelComponent {
   async asyncCall() {
     console.log('GRAPH')
     this.tagList = await getTags()}
->>>>>>> Stashed changes
 
   mergeBranches(): void {
     let p1 = document.getElementById('fromMerge').innerHTML;
@@ -59,6 +42,8 @@ export class GraphPanelComponent {
     deleteTag(tagName);
   }
 
+
+  
 }
 
 

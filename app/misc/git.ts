@@ -22,50 +22,24 @@ let commitList: [any];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
-<<<<<<< Updated upstream
-let tagObjList: tagItem[] = [];
-
-
-// View a tag upon the hover or a click of a mouse over a node in VisualGit
-// Function written by Henri De Boever 2019/06/01
-// The function takes a commitID as a parameter, and returns the tag associated with that commit
-// This function is called when the user hovers their cursor over a commit node
-=======
 
 
 
 //
 // Tag Item Object for issue40
 //
->>>>>>> Stashed changes
 export class tagItem {
   public tagName: string;
   public commitMsg: string;
-  constructor(tagName:string, commitMsg:string){
+  public tagMsg: string;
+  
+  constructor(tagName:string, commitMsg:string, tagMsg:string){
     this.tagName = tagName;
     this.commitMsg = commitMsg;
+    this.tagMsg = tagMsg;
   }
 }
 
-<<<<<<< Updated upstream
-export function getTags(){
-  tagObjList = []
-  Git.Repository.open(repoFullPath).then(function(repo){
-    repo.getReferences(Git.Reference.TYPE.OID).then(function(refs){
-      refs.forEach(function(r){
-        // tag is defined
-        if(r.isTag && r.name().indexOf('refs/tags/') >=0){
-          //console.log(r.name())
-          r.peel(Git.Object.TYPE.COMMIT).then(function(c){
-            repo.getCommit(c).then(function(commit){
-              //console.log(commit.message())
-              let tItem  = new tagItem(r.name(), commit.message())
-              //console.log(tItem)
-              tagObjList.push(tItem)
-
-            })
-          })
-=======
 //
 // Main fucntion - issue 40
 //
@@ -86,29 +60,9 @@ export async function getTags(){
     console.log('fire[DONE]')
     resolve(tags)
   })
->>>>>>> Stashed changes
 
-        // tag is not defined
-        } else if (r.isTag && r.name().indexOf('refs/tags/') < 0) {
-          r.peel(Git.Object.TYPE.COMMIT).then(function(c){
-            repo.getCommit(c).then(function(commit){
-              //console.log(commit.message())
-              let tItem  = new tagItem(" ", commit.message())
-              //console.log(tItem)
-              tagObjList.push(tItem)
-              //console.log(tagObjList)
-            })
-          })
+}   
 
-<<<<<<< Updated upstream
-        }
-      })
-
-    })
-
-  })
-  return tagObjList
-=======
 //
 // Async calls for for each loop - issue 40
 //
@@ -129,7 +83,6 @@ async function getRefObject(repo, ref){
   let tag = Git.Reference.lookup(repo, ref.name());
   //let tag = ref.peel(Git.Object.TYPE.TAG)
   return tag;
->>>>>>> Stashed changes
 }
 
 async function refObjectWait(repo, ref){
@@ -416,17 +369,6 @@ function deleteTag(tagName) {
     .catch((err) => console.log(err));
 }
 
-
-// Find a tag given its commit hash (SHA1)
-// Added by Henri De Boever 2019/06/02
-function viewTagByCommitHash(commitHash){
-  console.log(commitHash)
-  // Use the git connection to look up a tag by the givern commitHash
-  addCommand('git describe --exact-match ' + commitHash);
-
-  //Find a way to pipe this to the front end
-
-}
 
 
 
