@@ -1,4 +1,4 @@
-// https for communicating with Github 
+// https for communicating with Github
 var https = require("https");
 
 // GitHub Credentials
@@ -7,14 +7,23 @@ var options = {
     client_id: '096b43fe7908abe70257',
     // Possibly shouldn't be used because unsure if electron can hide this data
     client_secret: 'client_secret',
-    // 
+    //
     scopes: ["user:email", "notifications"]
 };
 
-// Create the URL for GitHub Oauth
-var authWindow = new BrowserWindow({ width: 800, height: 600, show: false, 'node-integration': false })
-var githubUrl = 'https://github.cm/login/oauth/authorize?';
-var authUrl = githubUrl + 'client_id=' + options.client_id + '&scope=' + options.scopes;
+function openOauthWindow(){
+    console.log("Oauth: OpenOauthWindow");
+    /*
+    // Create the URL for GitHub Oauth
+    var authWindow = new BrowserWindow({ width: 800, height: 600, show: false, 'node-integration': false })
+    var githubUrl = 'https://github.cm/login/oauth/authorize?';
+    var authUrl = githubUrl + 'client_id=' + options.client_id + '&scope=' + options.scopes;
+
+    // Load the Oauth URL
+    authWindow.loadURL(authUrl);
+    authWindow.show();
+     */
+}
 
 // Load the Oauth URL
 authWindow.loadURL(authUrl);
@@ -32,11 +41,11 @@ function handleCallback (url) {
 
     // If there is a code, get token from gitHub
     if (code) {
-        requestGithubToken(options, code);        
+        requestGithubToken(options, code);
     }
     // Otherwise deal with error
     else if (error) {
-        alert('Something went wrong and we couldn\'t' + 
+        alert('Something went wrong and we couldn\'t' +
             'log you in using Github. Please try again. ');
     }
 }
@@ -46,9 +55,9 @@ function requestGithubToken (options, code) {
     console.log("code received: " + code);
 
     var postData = 'client_id=' + options.client_id +
-     '&client_secret=' + options.client_secret + 
+     '&client_secret=' + options.client_secret +
      '&code=' + code;
-    
+
     var post = {
         host: "github.com",
         path: "/login/oauth/access_token",
@@ -78,7 +87,7 @@ function requestGithubToken (options, code) {
             console.log("GITHUB OAUTH REQUEST ERROR: " + err.message);
         });
     });
-    
+
     req.write(postData);
     req.end();
 }
