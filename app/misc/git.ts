@@ -11,19 +11,35 @@ let green = "#84db00";
 let repo, index, oid, remote, commitMessage, stashMessage;
 let filesToAdd = [];
 let theirCommit = null;
-let theirStash = null; // maybe necessary for proper merging
 let modifiedFiles;
 let warnbool;
 var CommitButNoPush = 0;
 let stagedFiles: any;
 let vis = require("vis");
 let commitHistory = [];
-let stashHistory = [""]; //TODO: initialize from .git/logs/refs/stash in reverse order
+let stashHistory = [""];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
+/*
+  - Gathers the current stashes kept in refs/stash and places their names in an array for git stash list
+  - Function entered onclick from the Stash button on the NavBar
+*/
+function refreshStashHistory(){
+  console.log("initializing stash history...");
+  if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
+    let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
+    txt.pop();
+    console.log("/.git/logs/refs/stash/\n" + txt);
+    txt.forEach(function(line) {
+      line = line.split(" ").slice(6, line.length).join(" ");
+      console.log("Adding " + line + " to Stash history");
+      stashHistory.unshift(line);
+    });
+  }
 
+}
 
 function passReferenceCommits(){
   Git.Repository.open(repoFullPath)
@@ -228,7 +244,6 @@ function addAndCommit() {
     - Must have a stash message where text is input in commit-message-input
 
     //TODO: Testing after commits and pushes
-    //TODO: Add a switch for options  (i.e. --keep-index, --untracked)
 */
 function addAndStash(options) {
   stashMessage = document.getElementById("commit-message-input").value;
@@ -309,7 +324,6 @@ function addAndStash(options) {
       }
     })
     .then(function (stashOID) {
-      theirStash = null;
       theirCommit = null;
       changes = 0;
 
@@ -335,6 +349,7 @@ function addAndStash(options) {
       }
       stashName = "On " + branch + ": " + stashMessage;
       console.log("Saved as: " + stashName);
+
       /* options
          Stash.FLAGS.DEFAULT             0
          Stash.FLAGS.KEEP_INDEX          1
@@ -355,7 +370,6 @@ function addAndStash(options) {
 
      updateModalText("Stash successful!");
      stashHistory.unshift(stashName);
-     //TODO: update stash list
      refreshAll(repository);
     }, function (err) {
       console.log("git.ts, func addAndStash(), could not stash, " + err);
@@ -391,7 +405,7 @@ function popStash(index) {
       repository = repo;
       console.log("Popping stash at index " + index);
       addCommand("git stash pop stash@{" + index +"}");
-      var stashName = stashHistory.splice(index, 1); //TODO: Init stashHistory
+      var stashName = stashHistory.splice(index, 1);
       displayModal("Popping stash: "+ stashName);
 
       let ret = Git.Stash.pop(repository, index, 0);
@@ -447,7 +461,6 @@ function popStash(index) {
         */
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
-      //TODO: update stash list
       refreshAll(repository);
       }, function(err) {
         console.log("git.ts, func popStash(), could not pop stash, " + err);
@@ -477,7 +490,7 @@ function applyStash(index) {
       repository = repo;
       console.log("applying stash at index " + index);
       addCommand("git stash apply stash@{" + index +"}");
-      var stashName = stashHistory.splice(index, 1); //TODO: Init stashHistory
+      var stashName = stashHistory.splice(index, 1);
       displayModal("Applying stash: "+ stashName);
 
       let ret = Git.Stash.apply(repository, index, 0);
@@ -559,7 +572,7 @@ function dropStash(index) {
       repository = repo;
       console.log("Dropping stash at index " + index);
       addCommand("git stash drop stash@{" + index +"}");
-      var stashName = stashHistory.splice(index, 1); //TODO: Init stashHistory
+      var stashName = stashHistory.splice(index, 1);
       displayModal("Dropping stash: "+ stashName);
 
       let ret = Git.Stash.drop(repository, index, 0);
@@ -589,7 +602,6 @@ function dropStash(index) {
         })
         */
         updateModalText("Success! Stash at index " + index + "dropped from list.");
-        //TODO: update stash list
         refreshAll(repository);
       }, function(err) {
         console.log("git.ts, func dropStash(), could not drop stash, " + err);
