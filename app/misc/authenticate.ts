@@ -33,10 +33,6 @@ function CommitNoPush() {
         }
 }
 
-function createCred() {
-  return Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
-}
-
 function signInHead(callback) {
   encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
   continuedWithoutSignIn = false;
@@ -79,7 +75,7 @@ function searchRepoName() {
   // Gets users name and password
   encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
   //obtain a new copy of cred every time.
-  cred = createCred();
+  cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
 
   var ghme = client.me();
   ghme.repos(function (err, data, head) {
@@ -120,7 +116,7 @@ function getUserInfo(callback) {
   }
   //obtain a new copy of cred.
   //need update
-  cred = createCred();
+  cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
 
   client = github.client({
     username: getUsernameTemp(),
