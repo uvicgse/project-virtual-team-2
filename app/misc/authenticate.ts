@@ -32,6 +32,12 @@ function CommitNoPush() {
                 $("#modalW2").modal();
         }
 }
+//constructor method to create a new copy of cred every time
+function createCredentials(username, password) {
+  this.username = username;
+  this.password = password;
+  this.credentials = Git.Cred.userpassPlaintextNew(username,password);
+}
 
 function signInHead(callback) {
   encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
@@ -64,7 +70,7 @@ function ModalSignIn(callback) {
 
 function loginWithSaved(callback) {
     document.getElementById("username").value = getUsername();
-    document.getElementById("password").value = getPassword(); //get decrypted username n password  
+    document.getElementById("password").value = getPassword(); //get decrypted username n password
 }
 
 function searchRepoName() {
@@ -74,8 +80,9 @@ function searchRepoName() {
 
   // Gets users name and password
   encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
-
-  cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
+  //obtain a new copy of cred every time by calling constructor method.
+  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+  cred = user.credentials;
 
   var ghme = client.me();
   ghme.repos(function (err, data, head) {
@@ -85,7 +92,7 @@ function searchRepoName() {
 
       let rep = Object.values(data)[i];
       console.log("url of repo: " + rep['html_url']);
-      
+
       // Searches from the text input and adds to the list if repo name is found
       if (parseInt(rep['forks_count']) == 0) {
         if (rep['full_name'].search(document.getElementById("searchRep").value) != -1) {
@@ -107,15 +114,16 @@ function searchRepoName() {
 
 function getUserInfo(callback) {
 
-  
-  if (signedAfter === true){  // if the trys to login after clicking "continues without sign in" 
+
+  if (signedAfter === true){  // if the trys to login after clicking "continues without sign in"
     encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
   }
   else {
     encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
   }
-
-  cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
+  //calling constructor method
+  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+  cred = user.credentials;
 
   client = github.client({
     username: getUsernameTemp(),
@@ -160,7 +168,7 @@ function getUserInfo(callback) {
     if (!err) {
       processLogin(ghme, callback);
     }
-    
+
   });
 
 
@@ -236,7 +244,7 @@ function processLogin(ghme, callback) {
       return;
     } else {
        displayUsername();
-      document.getElementById("avatar").innerHTML = "Sign out"; 
+      document.getElementById("avatar").innerHTML = "Sign out";
       console.log("number of repos: " + data.length);
       for (let i = 0; i < data.length; i++) {
         let rep = Object.values(data)[i];
@@ -320,7 +328,7 @@ function signInOrOut() {
   else if(doc.innerHTML === ""){
       doc.innerHTML = "Sign In";
   }
-    
+
   if (doc.innerHTML === "Sign out") {
     $("#avatar").removeAttr("data-toggle");
 
@@ -337,7 +345,7 @@ function redirectToHomePage() {
   window.location.href = "index.html";
   signed = 0;
   changes = 0;
-  CommitButNoPush = 0; 
+  CommitButNoPush = 0;
   //LogInAfterConfirm();
 }
 
@@ -368,7 +376,7 @@ function addIssue(rep,id, onclick) {
   li.appendChild(issueBody);
   if(rep["assignees"].length != 0 ) {
     for(let i = 0;i<rep["assignees"].length; i++) {
-      assignees.innerHTML += rep["assignees"][i]["login"] 
+      assignees.innerHTML += rep["assignees"][i]["login"]
       if((i+1)>=rep["assignees"].length) {
         assignees.innerHTML += "."
       }
@@ -376,7 +384,7 @@ function addIssue(rep,id, onclick) {
         assignees.innerHTML += ","
       }
     }
-    li.appendChild(assignees); 
+    li.appendChild(assignees);
   }
   if(rep["comments"].length != 0 ) {
   }
@@ -430,7 +438,7 @@ function createCommentForIssue() {
   ghissue.createComment({
     body: theArray[0]["value"]
   }, function (err, data, head) {
-    let ele = {id:issueId}; 
+    let ele = {id:issueId};
     commentOnIssue(ele)
   });
 }

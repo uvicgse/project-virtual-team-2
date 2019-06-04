@@ -345,6 +345,8 @@ function pullFromRemote() {
       return repository.fetchAll({
         callbacks: {
           credentials: function () {
+            let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+            cred = user.credentials;
             return cred;
           },
           certificateCheck: function () {
@@ -411,7 +413,10 @@ function pushToRemote() {
                 ["refs/heads/" + branch + ":refs/heads/" + branch],
                 {
                   callbacks: {
+                    // obtain a new copy of cred every time when user push.
                     credentials: function () {
+                      let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                      cred = user.credentials;
                       return cred;
                     }
                   }
@@ -568,6 +573,8 @@ function deleteRemoteBranch() {
               {
                 callbacks: { // pass in user credentials as a parameter
                   credentials: function () {
+                    let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                    cred = user.credentials;
                     return cred;
                   }
                 }
