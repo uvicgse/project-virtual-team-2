@@ -1,5 +1,6 @@
 import * as nodegit from "git";
 import NodeGit, { Status } from "nodegit";
+import { resolve } from "path";
 
 let opn = require('opn');
 let $ = require("jquery");
@@ -21,6 +22,7 @@ let commitList: [any];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
+<<<<<<< Updated upstream
 let tagObjList: tagItem[] = [];
 
 
@@ -28,6 +30,14 @@ let tagObjList: tagItem[] = [];
 // Function written by Henri De Boever 2019/06/01
 // The function takes a commitID as a parameter, and returns the tag associated with that commit
 // This function is called when the user hovers their cursor over a commit node
+=======
+
+
+
+//
+// Tag Item Object for issue40
+//
+>>>>>>> Stashed changes
 export class tagItem {
   public tagName: string;
   public commitMsg: string;
@@ -37,6 +47,7 @@ export class tagItem {
   }
 }
 
+<<<<<<< Updated upstream
 export function getTags(){
   tagObjList = []
   Git.Repository.open(repoFullPath).then(function(repo){
@@ -54,6 +65,28 @@ export function getTags(){
 
             })
           })
+=======
+//
+// Main fucntion - issue 40
+//
+export async function getTags(){
+
+  //Open Repo
+  let repo2;
+  await Git.Repository.open(repoFullPath).then(function(repo){
+    repo2 = repo
+  })
+  let refs2;
+  await repo2.getReferences(Git.Reference.TYPE.OID).then(function(refs){
+    refs2 = refs
+  })
+  let tags = await processArray(repo2, refs2 );
+    
+  return await new Promise(resolve=> {
+    console.log('fire[DONE]')
+    resolve(tags)
+  })
+>>>>>>> Stashed changes
 
         // tag is not defined
         } else if (r.isTag && r.name().indexOf('refs/tags/') < 0) {
@@ -67,6 +100,7 @@ export function getTags(){
             })
           })
 
+<<<<<<< Updated upstream
         }
       })
 
@@ -74,8 +108,59 @@ export function getTags(){
 
   })
   return tagObjList
+=======
+//
+// Async calls for for each loop - issue 40
+//
+async function getCommitMsg(repo, c){
+  let commit = await repo.getCommit(c)
+    return  commit.message()
 }
 
+async function getCommitInfo(repo, ref){
+  let c = await ref.peel(Git.Object.TYPE.COMMIT)
+  return c
+
+}
+
+async function getRefObject(repo, ref){
+
+  //TODO: This isn't turning into tag object
+  let tag = Git.Reference.lookup(repo, ref.name());
+  //let tag = ref.peel(Git.Object.TYPE.TAG)
+  return tag;
+>>>>>>> Stashed changes
+}
+
+async function refObjectWait(repo, ref){
+  let tItem;
+  let tBool = ref.isTag()
+  let commit = await getCommitInfo(repo, ref)
+  let commitMsg = await getCommitMsg(repo, commit)
+  if(tBool == 1){
+    let tag = await getRefObject(repo, ref);
+    
+    let cMsg = await getCommitInfo(repo, tag);
+    tItem = new tagItem(tag.name(), commitMsg, "tagMsg")
+    return tItem;
+  } else {
+    let cMsg = await getCommitInfo(repo, ref);
+    tItem = new tagItem(ref.name(), commitMsg, "tagMsg")
+    return tItem;
+  }
+}
+
+
+
+async function processArray(repo, refs){
+  let retArray: any[] = [];
+  for(const ref of refs){
+    let finalTag = await refObjectWait(repo, ref)
+    retArray.push(finalTag);
+  }
+  return retArray;
+
+}
 
 function passReferenceCommits(){
   Git.Repository.open(repoFullPath)

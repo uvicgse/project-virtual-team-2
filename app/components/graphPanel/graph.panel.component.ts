@@ -18,6 +18,7 @@ export class GraphPanelComponent {
   // This Event listener should be more specific
   //
   @HostListener('click', ['$event']) 
+<<<<<<< Updated upstream
   onClick() {
     this.showCommitList = true; 
     this.tagObjList = getTags();
@@ -31,6 +32,17 @@ export class GraphPanelComponent {
     })
     */
   }
+=======
+  async onClick() {
+     await this.asyncCall()
+     console.log(this.tagList)
+     this.showCommitList = true;
+  }
+
+  async asyncCall() {
+    console.log('GRAPH')
+    this.tagList = await getTags()}
+>>>>>>> Stashed changes
 
   mergeBranches(): void {
     let p1 = document.getElementById('fromMerge').innerHTML;
