@@ -22,10 +22,18 @@ export class GraphPanelComponent {
   async onClick() {
      await this.asyncCall()
      console.log(this.tagList)
-     this.tagList.sort((a, b) => (a.color > b.color) ? 1 : -1)
+
+     this.tagList.sort(function(a, b){
+      var A = a.commitMsg,
+          B = b.commitMsg;
+      //
+      if(A>B) return -1;
+      if(A<B) return 1;
+      return 0;
+    })
      this.showCommitList = true;
   }
-
+  
   async asyncCall() {
     console.log('GRAPH')
     this.tagList = await getTags()}
