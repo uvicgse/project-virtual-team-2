@@ -365,6 +365,7 @@ function addAndStash(options) {
     - pops stash from given index and merges into working directory. Fails if conflicts found.
 
     //TODO: Display list of stashes and have them reference this function when clicked
+    //TODO: Consider a revision in merging the pop/apply/drop functions. Easy to test with seperate functions for now.
 */
 function popStash(index) {
 
@@ -378,9 +379,9 @@ function popStash(index) {
       if (index == null) index = 0;
       repository = repo;
       console.log("Popping stash at index " + index);
-      addCommand("git stash pop --index " + index);
+      addCommand("git stash pop stash@{" + index +"}");
       var stashName = stashHistory.splice(index, 1); //TODO: Init stashHistory
-      updateModalText("Popping stash: "+ stashName);
+      displayModal("Popping stash: "+ stashName);
 
       let ret = Git.Stash.pop(repository, index, 0);
       console.log("Pop returned: " + ret);
@@ -401,13 +402,12 @@ function popStash(index) {
      .then(function (oid) {
       console.log("Looking up stash with id " + oid + " in all repositories");
       return Git.AnnotatedCommit.lookup(repository, oid);
-    }, function (err) {
-      console.log("git.ts, func popStash(), cannot find id\n" + err);
     })
     .then(function (annotated) {
       if(annotated != null){
         console.log("merging " + annotated.id() + " with local safely");
-       var ret2 = Git.Merge.merge(repository, annotated, {flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
+       var ret2 = Git.Merge.merge(repository, annotated, {fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
+         flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
           checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
         });
        console.log("Merge returned: " + ret2);
@@ -420,13 +420,170 @@ function popStash(index) {
         window.alert("Conflicts exists! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you pop again!");
         updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
       } else {
+        //TODO: refreshIndex with the stash node gone if not done automatically
+        /*
+        repository.refreshIndex()
+        .then(function(indResult) {
+          then(function () {
+          console.log("found an index to write result to");
+          return index.write();
+        })
+          .then(function () {
+            console.log("creating a tree object using current index");
+            return index.writeTree();
+          })
+        })
+        */
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
+      //TODO: update stash list
       refreshAll(repository);
       }, function(err) {
         console.log("git.ts, func popStash(), could not pop stash, " + err);
         displayModal(err.message);
-        //TODO: If errors found, use err.message shown to display more useful message if necessary
+        //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
+      });
+
+}
+
+/* Issue 35+: Add applying functionality
+   copied from popStash()
+    - Function entered from onclick of the given stash in Stashing options window
+    - applies stash from given index and merges into working directory.
+
+    //TODO: Display list of stashes and have them reference this function when clicked
+*/
+function applyStash(index) {
+
+  let repository;
+  let branch = document.getElementById("branch-name").innerText;
+  if (modifiedFiles.length > 0) {
+    updateModalText("Please commit before applying stash!");
+  }
+  Git.Repository.open(repoFullPath)
+    .then(function (repo) {
+      if (index == null) index = 0;
+      repository = repo;
+      console.log("applying stash at index " + index);
+      addCommand("git stash apply stash@{" + index +"}");
+      var stashName = stashHistory.splice(index, 1); //TODO: Init stashHistory
+      displayModal("Applying stash: "+ stashName);
+
+      let ret = Git.Stash.apply(repository, index, 0);
+      console.log("Apply returned: " + ret);
+
+      //ret returns an unknown object but API Doc says it should return ERROR.CODE
+      if (ret == 0) {
+        return;
+      } else if (ret == Git.Error.CODE.ENOTFOUND){
+        throw new Error("No stash found at given index.");
+      } else if (ret == Git.Error.CODE.EMERGECONFLICT){
+        throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
+      }
+
+    })
+    .then(function () {
+      return Git.Reference.nameToId(repository, "refs/stash");
+    })
+     .then(function (oid) {
+      console.log("Looking up stash with id " + oid + " in all repositories");
+      return Git.AnnotatedCommit.lookup(repository, oid);
+    })
+    .then(function (annotated) {
+      if(annotated != null){
+        console.log("merging " + annotated.id() + " with local safely");
+       var ret2 = Git.Merge.merge(repository, annotated, {fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
+         flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
+          checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
+        });
+       console.log("Merge returned: " + ret2);
+      }
+      theirCommit = annotated;
+      return ret2;
+    })
+    .then(function (mergeCode) {
+      if(mergeCode == -13){
+        window.alert("Conflicts exists! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you apply again!");
+        updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
+      } else {
+        //TODO: refreshIndex with the stash node gone if not done automatically
+        /*
+        repository.refreshIndex()
+        .then(function(indResult) {
+          then(function () {
+          console.log("found an index to write result to");
+          return index.write();
+        })
+          .then(function () {
+            console.log("creating a tree object using current index");
+            return index.writeTree();
+          })
+        })
+        */
+        updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
+      }
+      refreshAll(repository);
+      }, function(err) {
+        console.log("git.ts, func applyStash(), could not apply stash, " + err);
+        displayModal(err.message);
+        //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
+      });
+
+}
+/* Issue 35+: Add dropping stash functionality
+   copied from popStash()
+    - Function entered from onclick of the given stash in Stashing options window
+    - drops stash from given index.
+
+    //TODO: Display list of stashes and have them reference this function when clicked
+*/
+function dropStash(index) {
+
+  let repository;
+  let branch = document.getElementById("branch-name").innerText;
+
+  Git.Repository.open(repoFullPath)
+    .then(function (repo) {
+      if (index == null) index = 0;
+      repository = repo;
+      console.log("Dropping stash at index " + index);
+      addCommand("git stash drop stash@{" + index +"}");
+      var stashName = stashHistory.splice(index, 1); //TODO: Init stashHistory
+      displayModal("Dropping stash: "+ stashName);
+
+      let ret = Git.Stash.drop(repository, index, 0);
+      console.log("Drop returned: " + ret);
+
+      //ret returns an unknown object but API Doc says it should return ERROR.CODE
+      if (ret == 0) {
+        return;
+      } else if (ret == Git.Error.CODE.ENOTFOUND){
+        throw new Error("No stash found at given index.");
+      }
+
+    })
+    .then(function () {
+        //TODO: refreshIndex with the stash node gone if not done automatically
+        /*
+        repository.refreshIndex()
+        .then(function(indResult) {
+          then(function () {
+          console.log("found an index to write result to");
+          return index.write();
+        })
+          .then(function () {
+            console.log("creating a tree object using current index");
+            return index.writeTree();
+          })
+        })
+        */
+        updateModalText("Success! Stash at index " + index + "dropped from list.");
+        //TODO: update stash list
+        refreshAll(repository);
+      }, function(err) {
+        console.log("git.ts, func dropStash(), could not drop stash, " + err);
+        displayModal(err.message);
+        //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
       });
 
 }
