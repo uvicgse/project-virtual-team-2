@@ -491,7 +491,7 @@ body .footer .commit-panel .commit-message-input {
 }
 
 body .footer .commit-panel .commit-button-wrapper {
-  /* positioned relative to its normal position */
+  /* positioned relative to its normal position(bottom left corner) */
   position: relative;
   display: flex;
   justify-content: center;
@@ -505,10 +505,8 @@ body .footer .commit-panel .commit-button-wrapper .commit-button {
   white-space: pre-line;
   position: static;
   display: block;
-  margin-left: 8px;
-  margin-right: 8px;
-  margin-top: 8px;
-  margin-bottom: 8px;
+  margin: 8px;
+  
   height: 40px;
   border-radius: 10px;
   border: 0;
