@@ -236,7 +236,7 @@ function addAndStash(options) {
     window.alert("Cannot stash without a stash message. Please add a stash message before stashing");
   return;
   }
-
+  if(options == null) options = 0;
   let repository;
   Git.Repository.open(repoFullPath)
     .then(function (repoResult) {
@@ -296,21 +296,16 @@ function addAndStash(options) {
 
       console.log("Signature to be put on stash: " + sign.toString());
 
-      /* TODO: have a switch here for the options
-         Stash.FLAGS.DEFAULT             0
-         Stash.FLAGS.KEEP_INDEX          1
-         Stash.FLAGS.INCLUDE_UNTRACKED   2
-         Stash.FLAGS.INCLUDE_IGNORED     4
-      */
+
       // First branch of this If might be unecessary or replaceable by .git/refs/stash to check something else
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
         console.log("head commit on remote: " + tid);
         console.log("head commit on local repository: " + parent.id.toString());
-        return Git.Stash.save(repository, sign, stashMessage, 0);
+        return Git.Stash.save(repository, sign, stashMessage, options);
       } else {
         console.log('no other commits');
-        return Git.Stash.save(repository, sign, stashMessage, 0);
+        return Git.Stash.save(repository, sign, stashMessage, options);
       }
     })
     .then(function (stashOID) {
@@ -340,7 +335,23 @@ function addAndStash(options) {
       }
       stashName = "On " + branch + ": " + stashMessage;
       console.log("Saved as: " + stashName);
-      addCommand('git stash push -m "' + stashMessage + '"');
+      /* options
+         Stash.FLAGS.DEFAULT             0
+         Stash.FLAGS.KEEP_INDEX          1
+         Stash.FLAGS.INCLUDE_UNTRACKED   2
+         Stash.FLAGS.INCLUDE_IGNORED     4
+      */
+      switch(options){
+        case "0":
+          addCommand('git stash push -m "' + stashMessage + '"');
+          break;
+        case "1":
+          addCommand('git stash push -k -m "' + stashMessage + '"');
+          break;
+        case "2":
+          addCommand('git stash push -u -m "' + stashMessage + '"');
+          break;
+      }
 
      updateModalText("Stash successful!");
      stashHistory.unshift(stashName);
