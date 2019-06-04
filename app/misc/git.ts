@@ -405,7 +405,7 @@ function popStash(index) {
       repository = repo;
       console.log("Popping stash at index " + index);
       addCommand("git stash pop stash@{" + index +"}");
-      var stashName = stashHistory.splice(index, 1);
+      var stashName = stashHistory[index];
       displayModal("Popping stash: "+ stashName);
 
       let ret = Git.Stash.pop(repository, index, 0);
@@ -459,6 +459,7 @@ function popStash(index) {
           })
         })
         */
+        stashHistory.splice(index, 1);
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
       refreshAll(repository);
@@ -490,7 +491,7 @@ function applyStash(index) {
       repository = repo;
       console.log("applying stash at index " + index);
       addCommand("git stash apply stash@{" + index +"}");
-      var stashName = stashHistory.splice(index, 1);
+      var stashName = stashHistory[index];
       displayModal("Applying stash: "+ stashName);
 
       let ret = Git.Stash.apply(repository, index, 0);
