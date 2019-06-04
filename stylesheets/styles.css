@@ -461,7 +461,7 @@ body .navbar .fa-clone {
 
 body .footer {
   width: 100%;
-  height: 15vh;
+  height: 18vh;
   background-color: #282828;
   border-top: 2px solid #181818;
   position: fixed;
@@ -490,12 +490,27 @@ body .footer .commit-panel .commit-message-input {
   padding: 5px;
 }
 
-#tag-name-input, #tag-message-input {
+#tag-name-input{
   padding: 2px;
-  margin: 5px 5px 0px 15px;
+  margin: 5px 5px 5px 15px;
   background-color: #000;
-  width: 42%;
+  width: 40%;
 }
+
+#tag-message-input {
+  padding: 2px;
+  margin: 5px 0;
+  background-color: #000;
+  width: 45%;
+}
+
+#tag-name-input, select textarea  {
+  color:rgb(158, 158, 158);
+}
+#tag-message-input, select textarea  {
+  color:rgb(158, 158, 158);
+}
+
 
 body .footer .commit-panel .commit-button-wrapper {
   display: flex;
@@ -921,7 +936,7 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
   border-radius: 5px;
 }
 
-#tagDiv .badge:first-child {
+#submitTagBadge {
   margin-right: 3px;
   background-color:green;
   box-shadow: 1px 1px 1px green;
@@ -930,7 +945,7 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 #tagDiv .glyphicon-ok{
   color:lightgreen;
 }
-#tagDiv .badge:last-child {
+#removeTagBadge {
   background-color: red;
   box-shadow: 1px 1px 1px red;
   cursor: pointer;

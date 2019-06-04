@@ -92,13 +92,13 @@ async function refObjectWait(repo, ref){
   let commitMsg = await getCommitMsg(repo, commit)
   if(tBool == 1){
     let tag = await getRefObject(repo, ref);
-    
+    console.log(tag)
     let cMsg = await getCommitInfo(repo, tag);
     tItem = new tagItem(tag.name(), commitMsg, "tagMsg")
     return tItem;
   } else {
     let cMsg = await getCommitInfo(repo, ref);
-    tItem = new tagItem(ref.name(), commitMsg, "tagMsg")
+    tItem = new tagItem(" ", commitMsg, "tagMsg")
     return tItem;
   }
 }

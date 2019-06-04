@@ -2,6 +2,8 @@ import { Component, HostListener} from "@angular/core";
 import { tagItem } from "../../misc/git";
 import { resolve } from "url";
 
+
+
 declare let getTags:any;
 
 @Component({
@@ -20,6 +22,7 @@ export class GraphPanelComponent {
   async onClick() {
      await this.asyncCall()
      console.log(this.tagList)
+     this.tagList.sort((a, b) => (a.color > b.color) ? 1 : -1)
      this.showCommitList = true;
   }
 

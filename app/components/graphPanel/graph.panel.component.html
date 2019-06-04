@@ -72,10 +72,29 @@
                     <tr *ngFor="let tag of tagList">
                       <td><h4>{{tag.commitMsg}}</h4></td>
                       <td id="tagDiv">
-                        <span class="badge"><span class="glyphicon glyphicon-ok"></span></span>
-                        <input placeholder="{{tag.tagName}}" class="tag-div-name-input" id="tag-div-name-input"/>
-                        <input placeholder="{{tag.tagMsg}}" class="tag-div-message-input" id="tag-div-message-input"/>
-                        <span class="badge"><span class="glyphicon glyphicon-remove" (click)="deleteTag('test')"></span></span></td>
+                        <table>
+                          <tr>
+                            <td>
+                                <span class="badge" id="submitTagBadge"><span class="glyphicon glyphicon-ok"></span></span>
+                            </td>
+                            <td>
+                                <div>
+                                    <input placeholder="{{tag.tagName}}" class="tag-div-name-input" id="tag-div-name-input"/>
+                                    <input placeholder="{{tag.tagMsg}}" class="tag-div-message-input" id="tag-div-message-input"/>
+                                  </div>
+
+                            </td>
+                            <td>
+                                <span class="badge" id="removeTagBadge"><span class="glyphicon glyphicon-remove" (click)="deleteTag('test')"></span></span>
+                            </td>
+                              
+                          </tr>
+
+                        </table>
+                        
+                        <td>
+                        
+                        
                     </tr>
                   </tbody>
                 </table>
