@@ -930,7 +930,9 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
   width:100%;
 }
 #tagDiv {
-  padding: 0 10px;
+  display: inline-block;
+  margin-bottom: 2px;
+  margin-top: 2px; 
   background-color: black;
   box-shadow: 3px 3px 3px darkgrey;
   border-radius: 5px;
