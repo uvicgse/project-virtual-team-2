@@ -18,6 +18,7 @@ export class AuthenticateComponent implements OnInit {
   }
 
   switchToMainPanel(): void {
+    console.log("switchToMainPanel: Authenticate.component.ts");
     // Check if either the password/username or both fields are empty and show an appropriate message if they are
     if (document.getElementById('password').value == "" && document.getElementById('username').value == "") {
       emptyPassword();
@@ -36,6 +37,11 @@ export class AuthenticateComponent implements OnInit {
       document.getElementById('grey-out').style.display = 'block';
       getUserInfo(switchToAddRepositoryPanel);
     }
+  }
+
+  testing(): void {
+    console.log("testing: Authenticate.component.ts");
+    openOauthWindow();
   }
 
   createNewAccount(): void {
