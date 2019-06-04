@@ -12,6 +12,8 @@ var options = {
 };
 
 function openOauthWindow(){
+    console.log("Oauth: OpenOauthWindow");
+    /*
     // Create the URL for GitHub Oauth
     var authWindow = new BrowserWindow({ width: 800, height: 600, show: false, 'node-integration': false })
     var githubUrl = 'https://github.cm/login/oauth/authorize?';
@@ -20,6 +22,7 @@ function openOauthWindow(){
     // Load the Oauth URL
     authWindow.loadURL(authUrl);
     authWindow.show();
+     */
 }
 
 
