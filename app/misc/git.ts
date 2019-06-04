@@ -1687,3 +1687,9 @@ function fetchFromOrigin() {
     displayModal("No Path Found.")
   }
 }
+
+function Popup_function() {
+  var popup = document.getElementById("myPopup");
+  popup.classList.toggle("show");
+  alert("STASH CLICKED");
+}

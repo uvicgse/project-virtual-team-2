@@ -79,7 +79,18 @@
         <li class="toolbar-Icons" onclick="refreshStashHistory()">
           <a href="#"><img src="./assets/Stash.svg" height="40" width="48" class="add-repository-button"
               title="Stash"></a>
-          <span class="toolbar-Text">Stash</span>
+         <div class="popup" onclick="Popup_function()">Stash
+		<span class="popuptext" id="myPopup">
+		<button type = button>git stash show </button> <br />
+		<button class="popup" type = button>git stash drop </button> <br />
+		<button class="popup" type = button>git stash apply</button> <br />
+		<button class="popup" type = button>git stash pop </button> <br />
+		<button class="popup" type = button>git stash branch </button> <br />
+		<button class="popup" type = button>git stash </button> <br />	
+			
+		</span>
+		
+		</div>
         </li>
       </ul>
 
