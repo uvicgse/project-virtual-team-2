@@ -54,6 +54,7 @@ export async function getTags(){
   await repo2.getReferences(Git.Reference.TYPE.OID).then(function(refs){
     refs2 = refs
   })
+  console.log(refs2);
   let tags = await processArray(repo2, refs2 );
     
   return await new Promise(resolve=> {
@@ -77,12 +78,15 @@ async function getCommitInfo(repo, ref){
 
 }
 
+// Get tag object based on tag name
 async function getRefObject(repo, ref){
-
-  //TODO: This isn't turning into tag object
-  let tag = Git.Reference.lookup(repo, ref.name());
-  //let tag = ref.peel(Git.Object.TYPE.TAG)
-  return tag;
+  console.log('hooray');
+  console.log(ref.name());
+  let oid = await Git.Reference.nameToId(repo, ref.name())
+  let ret = await Git.Tag.lookup(repo, oid);
+  console.log(oid);
+  console.log(ret.name());
+  return ret;
 }
 
 async function refObjectWait(repo, ref){
@@ -93,11 +97,13 @@ async function refObjectWait(repo, ref){
   if(tBool == 1){
     let tag = await getRefObject(repo, ref);
     console.log(tag)
-    let cMsg = await getCommitInfo(repo, tag);
+    //let cMsg = await getCommitInfo(repo, tag);
     tItem = new tagItem(tag.name(), commitMsg, "tagMsg")
+    
+    console.log(tItem);
     return tItem;
   } else {
-    let cMsg = await getCommitInfo(repo, ref);
+    //let cMsg = await getCommitInfo(repo, ref);
     tItem = new tagItem(" ", commitMsg, "tagMsg")
     return tItem;
   }
@@ -224,12 +230,12 @@ function addAndCommit() {
     return;
   }
   // A new tag must include a tag name and tag message or tag cannot be created
-  if (tagMessage == "" && tagName != "") {
+  // if (tagMessage == "" && tagName != "") {
 
-    window.alert("Cannot create tag without a tag message. Please add a tag message before committing");
-    return;
+  //   window.alert("Cannot create tag without a tag message. Please add a tag message before committing");
+  //   return;
 
-  }
+  // }
 
   let repository;
 
@@ -310,7 +316,7 @@ function addAndCommit() {
       console.log("Commit successful: " + oid.tostrS());
       stagedFiles = null;
       // If no tag is specified by user, then continue without creating tag
-      if (tagMessage == "" || tagName == "") {
+      if (tagName == "") {
         return
       } else {
         return repository.createTag(oid, tagName, tagMessage);
@@ -337,6 +343,8 @@ function addAndCommit() {
       // Check that tag was created
       if (tag) {
         addCommand('git tag -a '+ tagName + ' -m ' + '"' + tagMessage + '"');
+      } else{
+        console.log('tag failed');
       }
       refreshAll(repository);
     })
