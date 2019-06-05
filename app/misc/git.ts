@@ -98,13 +98,13 @@ async function refObjectWait(repo, ref){
     let tag = await getRefObject(repo, ref);
     console.log(tag)
     //let cMsg = await getCommitInfo(repo, tag);
-    tItem = new tagItem(tag.name(), commitMsg, "tagMsg")
+    tItem = new tagItem(tag.name(), commitMsg, tag.message())
     
     console.log(tItem);
     return tItem;
   } else {
     //let cMsg = await getCommitInfo(repo, ref);
-    tItem = new tagItem(" ", commitMsg, "tagMsg")
+    tItem = new tagItem("Enter Tag Name", commitMsg, "Enter Tag Message")
     return tItem;
   }
 }
@@ -117,7 +117,28 @@ async function processArray(repo, refs){
     let finalTag = await refObjectWait(repo, ref)
     retArray.push(finalTag);
   }
-  return retArray;
+  retArray.sort(function(a, b){
+    var A = a.commitMsg,
+        B = b.commitMsg;
+    //
+    if(A>B) return -1;
+    if(A<B) return 1;
+    return 0;
+  })
+  // used when a commit and a tag exist to just show the tag which commit can be referenced by
+  let retArrayNoDup: any[] = [];
+  for(let i = 0; i < retArray.length -1 ; i++){
+    if (retArray[i + 1].commitMsg == retArray[i].commitMsg && retArray[i + 1].tagName == "Enter Tag Name") {
+      retArrayNoDup.push(retArray[i]);
+    } else if (retArray[i + 1].commitMsg == retArray[i].commitMsg && retArray[i].tagName == "Enter Tag Name"){
+      retArrayNoDup.push(retArray[i+1]);
+      i++
+    } else{
+      retArrayNoDup.push(retArray[i]);
+    }
+  }
+
+  return retArrayNoDup;
 
 }
 
