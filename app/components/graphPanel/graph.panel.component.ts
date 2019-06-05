@@ -22,7 +22,7 @@ export class GraphPanelComponent {
   async onClick() {
      await this.asyncCall()
      console.log(this.tagList)
-
+     console.log(document.getElementById('commitHash').innerHTML);
      this.tagList.sort(function(a, b){
       var A = a.commitMsg,
           B = b.commitMsg;

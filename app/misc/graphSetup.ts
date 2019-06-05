@@ -235,12 +235,14 @@ function drawGraph() {
         network.on('click', function (properties) {
             if (properties.nodes.length > 0) {
                 let clicknode = properties.nodes[0];
-
+                console.log('CLICKNODE');
+                
                 if (flag === 'node') {
                     clicknode = nodes.get(clicknode);
 					displaySelectedCommitDiffPanel(properties.nodes[0]);
                 } else if (flag === 'abstract') {
                     clicknode = abNodes.get(clicknode);
+                    console.log(clicknode);
                 } else if (flag === 'basic') {
                     clicknode = bsNodes.get(clicknode);
                 } else {
@@ -250,7 +252,7 @@ function drawGraph() {
                 if (clicknode != undefined) {
                     let name = clicknode.author.name().toString();
                     let email = clicknode.author.email().toString();
-
+                    document.getElementById("commitHash")!.innerHTML = clicknode.beginningSha;
                     document.getElementById("authorModalDetails")!.innerHTML = "Author Name: " + clicknode.author.toString() + "<br>" + "Email: " + email;
                     document.getElementById("authorModalProfileButton")!.onclick = function () {
                         window.open("https://github.com/" + name, "Author Profile");

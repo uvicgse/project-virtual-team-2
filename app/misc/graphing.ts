@@ -351,7 +351,8 @@ function makeBasicNode(c, column: number) {
 
         let shaList = [];
         shaList.push(c.toString());
-
+        console.log('Basic Node');
+        console.log(shaList);
         basicList.push({
             sha: shaList,
             id: id,
@@ -429,7 +430,8 @@ function makeAbsNode(c, column: number) {
             fixed: false,
             x: (column - 1) * spacingX,
             y: (id - 1) * spacingY,
-            author: c.author()
+            author: c.author(),
+            beginningSha: c.toString()
         });
 
         if (c.toString() in bname) {
@@ -461,7 +463,8 @@ function makeAbsNode(c, column: number) {
 
         let shaList = [];
         shaList.push(c.toString());
-
+        console.log('Abstract Node');
+        console.log(shaList);
         abstractList.push({
             sha: shaList,
             id: id,
@@ -483,6 +486,8 @@ function makeNode(c, column: number) {
     let email = stringer.split("%")[1];
     let title = "Author: " + name + "<br>" + "Message: " + c.message();
     let flag = false;
+    console.log('Each individual node');
+    console.log(c.sha());
     nodes.add({
         id: id,
         shape: "circularImage",
@@ -492,7 +497,8 @@ function makeNode(c, column: number) {
         fixed: false,
         x: (column - 1) * spacingX,
         y: (id - 1) * spacingY,
-        author: c.author()
+        author: c.author(),
+        beginningSha: c.toString()
     });
 
     if (c.toString() in bname) {
