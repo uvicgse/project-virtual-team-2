@@ -31,7 +31,7 @@ export class CommitItem {
   public tagMsg: string;
   public commitSha: string;
   public hasTag: boolean;
-  
+
   constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string, hasTag:boolean){
     this.tagName = tagName;
     this.oldTagName = tagName;
@@ -49,7 +49,7 @@ export class CommitItem {
 export async function getTags(beginningHash, numCommit){
   let commitList
   let tags;
-  
+
   let sharedRepo, sharedRefs;
   // get repo and refs in order
   await Git.Repository.open(repoFullPath).then(function(repo){
@@ -58,19 +58,19 @@ export async function getTags(beginningHash, numCommit){
   await sharedRepo.getReferences(Git.Reference.TYPE.OID).then(function(refs){
     sharedRefs = refs;
   })
-  
+
   commitList = await getCommitShaFromNode(sharedRepo, beginningHash, numCommit);
   commitList = await getCommitFromShaList(commitList, sharedRepo);
   tags = await aggregateCommits(commitList, sharedRepo, sharedRefs);
   //tags = await processArray(sharedRepo, sharedRefs, beginningHash, numCommit);
-    
+
   return await new Promise(resolve=> {
     resolve(tags);
   })
 
-}   
+}
 
-// Return an array of commit objects from array of commit shas 
+// Return an array of commit objects from array of commit shas
 async function getCommitFromShaList(commitList, repo) {
   return await Promise.all(commitList.map(async (sha) => {
     const commit = await repo.getCommit(sha);
@@ -96,8 +96,8 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
       return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
     }
   }));
-  
-  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem. 
+
+  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
   // If unable to match a tag with a commit, return CommitItem without tag name and message
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
@@ -143,7 +143,7 @@ async function getCommitShaFromNode(repo, beginningHash, numCommit) {
                 let stop = commitList.length - commitList.indexOf(beginningHash) -1;
                 commitList.splice(commitList.indexOf(beginningHash)+1, stop);
               }
-              
+
 
               // Prune later commits that do not belong to node. If no numCommit exist, prune list of commits down to 1
               commitList.reverse();
@@ -153,7 +153,7 @@ async function getCommitShaFromNode(repo, beginningHash, numCommit) {
                   commitList.splice(numCommit, deleteNum);
                 }
               }
-          
+
               resolve(commitList);
             });
 
@@ -161,14 +161,14 @@ async function getCommitShaFromNode(repo, beginningHash, numCommit) {
           }).catch ((err) => {
             console.log(err);
           });
-        } 
+        }
       }
-      
+
     })
     .catch((err) => {
       console.log(err);
     });
-  }); 
+  });
 }
 
 // Get tag and commit object
@@ -188,7 +188,7 @@ function getRefObject(repo, ref){
       })
       .then(function(returnCommit) {
         resolve({
-          tag: returnTag, 
+          tag: returnTag,
           commit: returnCommit
         });
       })
@@ -426,12 +426,13 @@ function addAndCommit() {
       if (tagName != "") {
         return repository.createTag(oid.tostrS(), tagName, tagMessage);
       } else {
-        return 
+        return
       }
     })
     // will update user interface after new commit and tag has been handled
     .then(function (tag: any) {
       console.log(oid.tostrS());
+
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
@@ -466,12 +467,12 @@ function addAndCommit() {
     - Must have a stash message where text is input in commit-message-input
 */
 function addAndStash(options) {
-  stashMessage = document.getElementById("commit-message-input").value;
-  if(stashMessage == null || stashMessage == ""){
-    window.alert("Cannot stash without a stash message. Please add a stash message before stashing");
-  return;
-  }
+
   if(options == null) options = 0;
+
+  var command = 'git stash';
+  var stashName = "";
+
   let repository;
   Git.Repository.open(repoFullPath)
     .then(function (repoResult) {
@@ -531,6 +532,27 @@ function addAndStash(options) {
 
       console.log("Signature to be put on stash: " + sign.toString());
 
+      let branch = document.getElementById("branch-name").innerText;
+      console.log("Current branch: " + branch);
+
+      stashMessage = document.getElementById("commit-message-input").value;
+
+      /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head */
+      if(stashMessage == null || stashMessage == ""){
+        //window.alert("Cannot stash without a stash message. Please add a stash message before stashing"); return;
+        var comMessage = Git.Commit.lookup(repository, parent)
+        .then(function(commit){
+          return commit.message();
+        });
+
+        stashMessage = (oid.tostrS().substring(0,8) + " " + comMessage);
+        stashName = "WIP ";
+      } else {
+        command += ' push -m "' + stashMessage + '"';
+      }
+      stashName += "On " + branch + ": " + stashMessage;
+
+      console.log("Stashing: " + stashName );
 
       // First branch of this If might be unecessary or replaceable by .git/refs/stash to check something else
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
@@ -625,7 +647,7 @@ async function addOrModifyTag(commit) {
   .then(()=>{
     console.log("returned from delete tag");
     console.log("ADDING Tag: " + commit.tagName + " to commit: " + commit.commitSha);
-    return repository.createTag(commit.commitSha, commit.tagName, commit.tagMsg)  
+    return repository.createTag(commit.commitSha, commit.tagName, commit.tagMsg)
   })
   .then(function (tag: any) {
       // Check that tag was created and whether tag message exists or not
@@ -658,7 +680,7 @@ async function deleteTag(tagName) {
           .then(() => {
             console.log(`${name} deleted`);
             addCommand('git tag -d '+ name);
-            
+
           })
           .then((res) =>{
             resolve(res);
@@ -666,7 +688,7 @@ async function deleteTag(tagName) {
           .catch((err) => console.log(err));
       })
       .catch((err) => console.log(err));
-      
+
   });
 }
 
