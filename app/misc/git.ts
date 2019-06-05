@@ -25,8 +25,11 @@ let commitID = 0;
 /*
   - Gathers the current stashes kept in refs/stash and places their names in an array for git stash list
   - Function entered onclick from the Stash button on the NavBar
+  - Updates the stash modal with the current stash history list
+  - Contructs a DOM elements that gives users stash options for each stash
 */
 function refreshStashHistory(){
+  stashHistory = [""];
   console.log("initializing stash history...");
   if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
     let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
@@ -37,6 +40,20 @@ function refreshStashHistory(){
       console.log("Adding " + line + " to Stash history");
       stashHistory.unshift(line);
     });
+    stashHistory.pop();
+    let stashListHTML = '';
+    stashHistory.forEach((stash, i) => {
+      stashListHTML += 
+        '<div id="stash-item">' + 
+        'Stash{' + i + '}: ' + stash +
+        '<div id="stash-actions">' +
+        '<button class="btn btn-primary" onclick="popStash(' + i + ')" data-dismiss="modal">Pop</button>' +
+        '<button class="btn btn-primary" onclick="applyStash(' + i + ')" data-dismiss="modal">Apply</button>' + 
+        '<button class="btn btn-primary" onclick="dropStash(' + i + ')" data-dismiss="modal">Drop</button><div/>' +
+        '</div>'
+        ;
+    });
+    document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
 }
@@ -602,7 +619,7 @@ function dropStash(index) {
           })
         })
         */
-        updateModalText("Success! Stash at index " + index + "dropped from list.");
+        updateModalText("Success! Stash at index " + index + " dropped from list.");
         refreshAll(repository);
       }, function(err) {
         console.log("git.ts, func dropStash(), could not drop stash, " + err);

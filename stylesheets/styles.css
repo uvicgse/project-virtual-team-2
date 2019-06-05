@@ -1104,3 +1104,16 @@ body .pull-request-panel {
 #nav-git-commands-dropdown {
   display: none;
 }
+
+#stash-actions {
+  margin-left: 10px;
+}
+
+#stash-actions button{
+  margin-right: 6px;
+}
+
+#stash-item {
+  display: flex;
+  align-items: center;
+}

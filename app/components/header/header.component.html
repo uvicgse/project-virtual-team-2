@@ -2,7 +2,7 @@
   <div id="nav-bar-container">
     <ul id="navbar-repo" class="nav navbar-nav">
       <li>
-        <a href="#"><img src="./assets/AddRepositoryFolder.svg" onclick="switchToAddRepositoryPanel()"
+          <a href="#"><img src="./assets/AddRepositoryFolder.svg" onclick="switchToAddRepositoryPanel()"
             class="add-repository-button" title="Add Repository"></a>
       </li>
       <li class="hidden-xs"><img src="./assets/RightArrow.svg" class="right-arrow"></li>
@@ -77,8 +77,8 @@
 
         <!--Stash-->
         <li class="toolbar-Icons" onclick="refreshStashHistory()">
-          <a href="#"><img src="./assets/Stash.svg" height="40" width="48" class="add-repository-button"
-              title="Stash"></a>
+          <a href="#"><img src="./assets/Stash.svg" height="40" width="48" class="add-repository-button" title="Stash"
+              data-toggle="modal" data-target="#stash-modal"></a>
           <span class="toolbar-Text">Stash</span>
         </li>
       </ul>
@@ -311,6 +311,34 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="pullFromRemote()">OK</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Modal for stashing changes, and additional stashing options-->
+<div id="stash-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Stash</h4>
+      </div>
+      <div class="modal-body">
+        <div>
+          <button type="button" class="btn btn-primary" onclick="addAndStash(0)" data-dismiss="modal">Stash</button>
+          <button type="button" class="btn btn-primary" onclick="addAndStash(1)" data-dismiss="modal">Stash and keep index</button>
+          <button type="button" class="btn btn-primary" onclick="addAndStash(2)" data-dismiss="modal">Stash untracked files</button>
+        </div>
+        <div>
+          <h3><u>Stash List</u></h3>
+          <div id="stash-list"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
