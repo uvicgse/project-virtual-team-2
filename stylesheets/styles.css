@@ -496,18 +496,23 @@ body .footer .commit-panel .commit-message-input {
 }
 
 body .footer .commit-panel .commit-button-wrapper {
+  /* positioned relative to its normal position(bottom left corner) */
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
+
+  border: 0;
 }
 
 body .footer .commit-panel .commit-button-wrapper .commit-button {
+  /*sequences of white space are collapsed and lines are broken at newline characters*/
+  white-space: pre-line;
+  position: static;
   display: block;
-  margin-left: 10px;
-  margin-right: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  height: 30px;
+  margin: 8px;
+  
+  height: 40px;
   border-radius: 10px;
   border: 0;
   padding: 0 15px;
