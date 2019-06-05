@@ -57,8 +57,6 @@ function refreshStashHistory(){
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
-}
-
 function passReferenceCommits(){
   Git.Repository.open(repoFullPath)
   .then(function(commits){
