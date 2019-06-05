@@ -29,26 +29,27 @@ let commitID = 0;
   - Contructs a DOM elements that gives users stash options for each stash
 */
 function refreshStashHistory(){
-  stashHistory = [""];
-  console.log("initializing stash history...");
-  if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
-    let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
-    txt.pop();
-    console.log("/.git/logs/refs/stash/\n" + txt);
-    txt.forEach(function(line) {
-      line = line.split(" ").slice(6, line.length).join(" ");
-      console.log("Adding " + line + " to Stash history");
-      stashHistory.unshift(line);
-    });
-    stashHistory.pop();
+    stashHistory = [""];
+    console.log("initializing stash history...");
+    if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
+      let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
+      txt.pop();
+      console.log("/.git/logs/refs/stash/\n" + txt);
+      txt.forEach(function(line) {
+        line = line.split(" ").slice(6, line.length).join(" ");
+        console.log("Adding " + line + " to Stash history");
+        stashHistory.unshift(line);
+      });
+      stashHistory.pop();
+    }
     let stashListHTML = '';
     stashHistory.forEach((stash, i) => {
-      stashListHTML += 
-        '<div id="stash-item">' + 
+      stashListHTML +=
+        '<div id="stash-item">' +
         'Stash{' + i + '}: ' + stash +
         '<div id="stash-actions">' +
         '<button class="btn btn-primary" onclick="popStash(' + i + ')" data-dismiss="modal">Pop</button>' +
-        '<button class="btn btn-primary" onclick="applyStash(' + i + ')" data-dismiss="modal">Apply</button>' + 
+        '<button class="btn btn-primary" onclick="applyStash(' + i + ')" data-dismiss="modal">Apply</button>' +
         '<button class="btn btn-primary" onclick="dropStash(' + i + ')" data-dismiss="modal">Drop</button><div/>' +
         '</div>'
         ;
@@ -259,8 +260,6 @@ function addAndCommit() {
    Mostly copied from addAndCommit
     - Function entered from Stash button
     - Must have a stash message where text is input in commit-message-input
-
-    //TODO: Testing after commits and pushes
 */
 function addAndStash(options) {
   stashMessage = document.getElementById("commit-message-input").value;
@@ -293,7 +292,7 @@ function addAndStash(options) {
       if (filesToStage.length > 0) {
         console.log("staging files");
         return index.addAll(filesToStage);
-      } else {
+      } else if(options != 2){
         //If no files checked, then throw error to stop empty commits
         throw new Error("No files selected to stash.");
       }
@@ -406,7 +405,6 @@ function addAndStash(options) {
     - Function entered from onclick of the given stash in Stashing options window
     - pops stash from given index and merges into working directory. Fails if conflicts found.
 
-    //TODO: Display list of stashes and have them reference this function when clicked
     //TODO: Consider a revision in merging the pop/apply/drop functions. Easy to test with seperate functions for now.
 */
 function popStash(index) {
@@ -463,19 +461,7 @@ function popStash(index) {
         updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
       } else {
         //TODO: refreshIndex with the stash node gone if not done automatically
-        /*
-        repository.refreshIndex()
-        .then(function(indResult) {
-          then(function () {
-          console.log("found an index to write result to");
-          return index.write();
-        })
-          .then(function () {
-            console.log("creating a tree object using current index");
-            return index.writeTree();
-          })
-        })
-        */
+
         stashHistory.splice(index, 1);
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
@@ -492,8 +478,6 @@ function popStash(index) {
    copied from popStash()
     - Function entered from onclick of the given stash in Stashing options window
     - applies stash from given index and merges into working directory.
-
-    //TODO: Display list of stashes and have them reference this function when clicked
 */
 function applyStash(index) {
 
@@ -517,9 +501,9 @@ function applyStash(index) {
       //ret returns an unknown object but API Doc says it should return ERROR.CODE
       if (ret == 0) {
         return;
-      } else if (ret == Git.Error.CODE.ENOTFOUND){
+      } else if (ret == -3 /*id not found*/){
         throw new Error("No stash found at given index.");
-      } else if (ret == Git.Error.CODE.EMERGECONFLICT){
+      } else if (ret == -13 /*Merge Conflict*/){
         throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
       }
 
@@ -549,19 +533,7 @@ function applyStash(index) {
         updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
       } else {
         //TODO: refreshIndex with the stash node gone if not done automatically
-        /*
-        repository.refreshIndex()
-        .then(function(indResult) {
-          then(function () {
-          console.log("found an index to write result to");
-          return index.write();
-        })
-          .then(function () {
-            console.log("creating a tree object using current index");
-            return index.writeTree();
-          })
-        })
-        */
+
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
       refreshAll(repository);
@@ -577,7 +549,7 @@ function applyStash(index) {
     - Function entered from onclick of the given stash in Stashing options window
     - drops stash from given index.
 
-    //TODO: Display list of stashes and have them reference this function when clicked
+    //TODO: DROP IS NOT FUNCTIONAL ATM
 */
 function dropStash(index) {
 
@@ -597,28 +569,13 @@ function dropStash(index) {
       console.log("Drop returned: " + ret);
 
       //ret returns an unknown object but API Doc says it should return ERROR.CODE
-      if (ret == 0) {
+      if (ret === 0) {
         return;
-      } else if (ret == Git.Error.CODE.ENOTFOUND){
+      } else if (ret === -3 /*Git.Error.CODE.ENOTFOUND*/){
         throw new Error("No stash found at given index.");
       }
+      //TODO: refreshIndex with the stash node gone if not done automatically
 
-    })
-    .then(function () {
-        //TODO: refreshIndex with the stash node gone if not done automatically
-        /*
-        repository.refreshIndex()
-        .then(function(indResult) {
-          then(function () {
-          console.log("found an index to write result to");
-          return index.write();
-        })
-          .then(function () {
-            console.log("creating a tree object using current index");
-            return index.writeTree();
-          })
-        })
-        */
         updateModalText("Success! Stash at index " + index + " dropped from list.");
         refreshAll(repository);
       }, function(err) {
