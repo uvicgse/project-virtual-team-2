@@ -250,6 +250,7 @@ function drawGraph() {
                 }
 
                 if (clicknode != undefined) {
+                    $("#graphNodeClickModal").addClass('loadTags')
                     let name = clicknode.author.name().toString();
                     let email = clicknode.author.email().toString();
                     document.getElementById("commitHash")!.innerHTML = clicknode.beginningSha;
@@ -260,6 +261,7 @@ function drawGraph() {
 
                     imageForUser(name, email, function (pic) {
                         document.getElementById("authorModalImage")!.src = pic;
+                        
                         $("#graphNodeClickModal").modal('show');
                     })
                 }
