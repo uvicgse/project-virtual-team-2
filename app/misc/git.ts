@@ -315,15 +315,12 @@ function addAndCommit() {
       CommitButNoPush = 1;
       console.log("Commit successful: " + oid.tostrS());
       stagedFiles = null;
-      // If no tag is specified by user, then continue without creating tag
-      if (tagName == "") {
-        return
-      } else {
-        return repository.createTag(oid, tagName, tagMessage);
-      }
+      console.log(oid.tostrS());
+      return repository.createTag(oid.tostrS(), tagName, tagMessage);
     })
     // will update user interface after new commit and tag has been handled
     .then(function (tag: any) {
+      console.log(oid.tostrS());
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
@@ -340,9 +337,11 @@ function addAndCommit() {
       }
       addCommand('git commit -m "' + commitMessage + '"');
 
-      // Check that tag was created
-      if (tag) {
+      // Check that tag was created and whether tag message exists or not
+      if (tag && tagMessage != '') {
         addCommand('git tag -a '+ tagName + ' -m ' + '"' + tagMessage + '"');
+      } else if (tag && tagMessage == '') {
+        addCommand('git tag -a '+ tagName);
       } else{
         console.log('tag failed');
       }
