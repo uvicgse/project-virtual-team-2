@@ -40,8 +40,8 @@ function refreshStashHistory(){
         console.log("Adding " + line + " to Stash history");
         stashHistory.unshift(line);
       });
-      stashHistory.pop();
     }
+    stashHistory.pop();
     let stashListHTML = '';
     stashHistory.forEach((stash, i) => {
       stashListHTML +=
