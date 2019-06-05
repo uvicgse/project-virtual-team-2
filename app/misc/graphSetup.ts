@@ -250,6 +250,7 @@ function drawGraph() {
                 }
 
                 if (clicknode != undefined) {
+                    // add class to modal for display
                     $("#graphNodeClickModal").addClass('loadTags')
                     let name = clicknode.author.name().toString();
                     let email = clicknode.author.email().toString();
@@ -265,7 +266,6 @@ function drawGraph() {
 
                     imageForUser(name, email, function (pic) {
                         document.getElementById("authorModalImage")!.src = pic;
-                        
                         $("#graphNodeClickModal").modal('show');
                     })
                 }

@@ -17,11 +17,12 @@ export class GraphPanelComponent {
   getTags: any;
   @ViewChild('graphNodeClickModal') modal: ElementRef;
   //
-  // This Event listener should be more specific
-  // TODO: you should probably explain the sort function
+  // Listen for user click on graph and display if nodelclicked
   @HostListener('click', ['$event']) 
   async onClick() {
+    // Check if modal has show class
     let modal = document.getElementById("graphNodeClickModal").classList.contains('loadTags');
+    // Display if show class
     if(modal){
       let beginnningHash = document.getElementById('commitHash').innerHTML;
       let endingHash = document.getElementById('commitHashEnd').innerHTML;
@@ -37,9 +38,11 @@ export class GraphPanelComponent {
       })
       this.showCommitList = true;
     }
-  document.getElementById("graphNodeClickModal").classList.remove('loadTags');
+    // remove if show class
+    document.getElementById("graphNodeClickModal").classList.remove('loadTags');
   }
   
+  // get tag and commit info
   async asyncCall(beginnningHash, endingHash) {
     console.log('GRAPH');
     this.tagList = await getTags(beginnningHash, endingHash);

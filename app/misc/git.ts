@@ -62,21 +62,21 @@ export class tagItem {
 export async function getTags(beginningHash, endingHash){
   let commitList
   let tags;
-  //Open Repo
-  let repo2;
+  
+  let sharedRepo, sharedRefs;
+  // get repo and refs in order
   await Git.Repository.open(repoFullPath).then(function(repo){
-    repo2 = repo;
+    sharedRepo = repo;
   })
-  let refs2;
-  await repo2.getReferences(Git.Reference.TYPE.OID).then(function(refs){
-    refs2 = refs;
+  await sharedRepo.getReferences(Git.Reference.TYPE.OID).then(function(refs){
+    sharedRefs = refs;
   })
   
-  // commitList = await getCommitShaFromNode(repo2, beginningHash, endingHash);
+  // commitList = await getCommitShaFromNode(sharedRepo, beginningHash, endingHash);
   // console.log(commitList);
-  // commitList = await getCommitFromShaList(commitList, repo2);
-  // tags = await aggregateCommits(commitList, repo2, refs2);
-  tags = await processArray(repo2, refs2, beginningHash, endingHash);
+  // commitList = await getCommitFromShaList(commitList, sharedRepo);
+  // tags = await aggregateCommits(commitList, sharedRepo, sharedRefs);
+  tags = await processArray(sharedRepo, sharedRefs, beginningHash, endingHash);
     
   return await new Promise(resolve=> {
     console.log('fire[DONE]');
@@ -94,14 +94,14 @@ async function getCommitFromShaList(commitList, repo) {
 }
 
 // Create an array of tagItems
-const aggregateCommits = async (commitList, repo, refs2) => {
+const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
   let tItems;
   let found = false;
   let tags;
   // Create array of tags
-  tItems = await Promise.all(refs2.map(async (ref) => {
+  tItems = await Promise.all(sharedRefs.map(async (ref) => {
     if (ref.isTag()) {
       console.log(ref);
       tag = await getRefObject(repo, ref);
@@ -225,8 +225,7 @@ async function getCommitInfo(repo, ref){
   return c;
 
 }
-
-
+// get commit from tag reference
 async function getCommit(repo, ref) {
   let c = await ref.peel(Git.Object.TYPE.COMMIT);
   let commit = await repo.getCommit(c);
@@ -243,11 +242,13 @@ async function getRefObject(repo, ref){
   return ret;
 }
 
+
 async function refObjectWait(repo, ref, beginningHash, endingHash){
   let tItem;
   let tBool = ref.isTag();
   let commit = await getCommitInfo(repo, ref);
   let commitMsg = await getCommitMsg(repo, commit);
+  // tag
   if(tBool == 1){
     let tag = await getRefObject(repo, ref);
     console.log(tag);
@@ -256,6 +257,7 @@ async function refObjectWait(repo, ref, beginningHash, endingHash){
     
     console.log(tItem);
     return tItem;
+  //non-tag
   } else {
     //let cMsg = await getCommitInfo(repo, ref);
     tItem = new tagItem("Enter Tag Name", commitMsg, "Enter Tag Message");
@@ -263,14 +265,14 @@ async function refObjectWait(repo, ref, beginningHash, endingHash){
   }
 }
 
-
-
+//used to process async calls in for loop
 async function processArray(repo, refs, beginningHash, endingHash){
   let retArray: any[] = [];
   for(const ref of refs){
     let finalTag = await refObjectWait(repo, ref, beginningHash, endingHash);
     retArray.push(finalTag);
   }
+  // process array for display
   retArray.sort(function(a, b){
     var A = a.commitMsg,
         B = b.commitMsg;
