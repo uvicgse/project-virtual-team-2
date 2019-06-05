@@ -1,5 +1,5 @@
 import * as nodegit from "git";
-import NodeGit, {Graph, Status } from "nodegit";
+import NodeGit, {Graph, Status} from "nodegit";
 
 
 let opn = require('opn');
@@ -620,23 +620,6 @@ function clearCommitMessage() {
 }
 
 
-// function to determine the status of the remote repository compared to local repository
-// functions takes the name of the remote repository or defaults to origin/HEAD
-function getAheadBehindCommits(remote?: string) {
-  remote = remote ? remote: "origin/HEAD";
-  return Git.Repository.open(repoFullPath)
-      .then(function(repo) {
-        // returns commit that head is pointing too (most recent local commit)
-        return repo.getHeadCommit().then(function(commit){
-            return repo.getReferenceCommit(remote).then(function(remoteCommit){
-              // return an object { ahead : <number of commits ahead>, behind: <number of commits behind>
-              return Graph.aheadBehind(repo, commit.id(), remoteCommit.id()).then(function(aheadBehind){
-                return aheadBehind;
-              });
-            });
-          });
-      });
-}
 
 function getAllCommits(callback) {
   clearModifiedFilesList();
@@ -763,6 +746,39 @@ function pullFromRemote() {
         updateModalText("Successfully pulled from remote branch " + branch + ", and your repo is up to date now!");
         refreshAll(repository);
       }
+    });
+}
+
+// function to determine the status of the remote repository compared to local repository
+// functions takes the name of the branch
+function getAheadBehindCommits(branchName) {
+    let origin = "origin";
+    origin = path.join(origin, branchName);
+    return Git.Repository.open(repoFullPath).then(function (repo) {
+        // returns commit that head is pointing too (most recent local commit)
+        return repo.getHeadCommit().then(function (commit) {
+            return repo.getReferenceCommit(origin).then(function (remoteCommit) {
+                // return an object { ahead : <number of commits ahead>, behind: <number of commits behind>
+                return Graph.aheadBehind(repo, commit.id(), remoteCommit.id()).then(function (aheadBehind) {
+                    return aheadBehind;
+                });
+            }, function (e) {
+                console.log(e.message)
+            });
+        });
+    });
+}
+
+//checks if the remote version of your current branch exist
+function checkIfExistOrigin(branchName) {
+    let origin = "origin";
+    origin = path.join(origin, branchName);
+    return Git.Repository.open(repoFullPath).then(function (repo) {
+        return repo.getReferenceCommit(origin).then(function (originCommit) {
+            return true;
+        }, function (e) {
+            return false
+        });
     });
 }
 
