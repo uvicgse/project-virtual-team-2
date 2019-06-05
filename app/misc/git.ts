@@ -109,6 +109,28 @@ async function refObjectWait(repo, ref){
   }
 }
 
+//
+// Modify tags - issue 40
+//
+async function modifyTag(oldTagName, newTagName, newTagMsg) {
+  let repository;
+  console.log(repoFullPath);
+  Git.Repository.open(repoFullPath)
+    .then(function (repoResult) {
+      repository = repoResult;
+      console.log("WE HERE");
+      repository.getTagByName(oldTagName).then(function(tag) {
+          let targetCommit = await tag.peel(Git.Object.TYPE.COMMIT);
+          let commit = await repository.getCommit(targetCommit);
+
+          deleteTag(oldTagName);
+
+          repository.createTag(commit.sha, newTagName, newTagMsg)
+
+        })
+        .catch((err) => console.log(err));
+      });
+}
 
 
 async function processArray(repo, refs){
@@ -134,7 +156,7 @@ async function processArray(repo, refs){
       retArrayNoDup.push(retArray[i+1]);
       i++
     } else{
-      retArrayNoDup.push(retArray[i]);
+      retArrayNoDup.push(retArray[i]); 
     }
   }
 

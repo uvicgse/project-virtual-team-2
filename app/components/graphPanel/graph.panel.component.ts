@@ -33,10 +33,13 @@ export class GraphPanelComponent {
     })
      this.showCommitList = true;
   }
+
+
   
   async asyncCall() {
     console.log('GRAPH')
-    this.tagList = await getTags()}
+    this.tagList = await getTags();
+  }
 
   mergeBranches(): void {
     let p1 = document.getElementById('fromMerge').innerHTML;
@@ -47,6 +50,10 @@ export class GraphPanelComponent {
     let p1 = document.getElementById('fromRebase').innerHTML;
     let p2 = document.getElementById('toRebase').innerHTML;
     rebaseCommits(p1, p2);
+  }
+
+  modifyTag(oldTagName, newTagName, newTagMsg): void {
+    modifyTag(oldTagName, newTagName, newTagMsg);
   }
 
   deleteTag(tagName): void {
