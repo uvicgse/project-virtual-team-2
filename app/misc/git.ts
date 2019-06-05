@@ -34,7 +34,6 @@ function refreshStashHistory(){
     if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
       let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
       txt.pop();
-      console.log("/.git/logs/refs/stash/\n" + txt);
       txt.forEach(function(line) {
         line = line.split(" ").slice(6, line.length).join(" ");
         console.log("Adding " + line + " to Stash history");
@@ -264,7 +263,7 @@ function addAndStash(options) {
 
   if(options == null) options = 0;
 
-  var command = 'git stash';
+  var command = "git stash ";
   var stashName = "";
 
   let repository;
@@ -334,15 +333,16 @@ function addAndStash(options) {
       /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head */
       if(stashMessage == null || stashMessage == ""){
         //window.alert("Cannot stash without a stash message. Please add a stash message before stashing"); return;
-        var comMessage = Git.Commit.lookup(repository, parent)
-        .then(function(commit){
-          return commit.message();
+        var comMessage;
+        Git.Commit.lookup(repository, oid)
+        .then(function(commit){ //TODO: commit currently returning undefined
+          console.log(commit);
+          comMessage = commit.message();
         });
-
-        stashMessage = (oid.tostrS().substring(0,8) + " " + comMessage);
+        stashMessage = oid.tostrS().substring(0,8); //+ " " + comMessage;
         stashName = "WIP ";
       } else {
-        command += ' push -m "' + stashMessage + '"';
+        command += "push -m \"" + stashMessage + "\" ";
       }
       stashName += "On " + branch + ": " + stashMessage;
 
@@ -379,15 +379,16 @@ function addAndStash(options) {
          Stash.FLAGS.INCLUDE_UNTRACKED   2
          Stash.FLAGS.INCLUDE_IGNORED     4
       */
+
       switch(options){
-        case "0":
+        case 0:
           addCommand(command);
           break;
-        case "1":
+        case 1:
           addCommand(command + ' --keep-index');
           break;
-        case "2":
-          addCommand(command ' --untracked');
+        case 2:
+          addCommand(command + ' --untracked');
           break;
       }
 
