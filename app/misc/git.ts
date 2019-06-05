@@ -9,6 +9,7 @@ let fs = require("fs");
 let async = require("async");
 let readFile = require("fs-sync");
 let green = "#84db00";
+let path = require('path');
 let repo, index, oid, remote, commitMessage;
 let filesToAdd = [];
 let theirCommit = null;
@@ -22,6 +23,7 @@ let commitList: [any];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
+
 
 
 
@@ -39,48 +41,200 @@ export class tagItem {
     this.tagMsg = tagMsg;
   }
 }
+// export class tagItem {
+//   public tagName: string;
+//   public commitMsg: string;
+//   public tagMsg: string;
+//   public commitSha: string
+  
+//   constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string){
+//     this.tagName = tagName;
+//     this.commitMsg = commitMsg;
+//     this.tagMsg = tagMsg;
+//     this.commitSha = commitSha;
+//   }
+// }
+
 
 //
 // Main fucntion - issue 40
 //
-export async function getTags(){
-
+export async function getTags(beginningHash, endingHash){
+  let commitList
+  let tags;
   //Open Repo
   let repo2;
   await Git.Repository.open(repoFullPath).then(function(repo){
-    repo2 = repo
+    repo2 = repo;
   })
   let refs2;
   await repo2.getReferences(Git.Reference.TYPE.OID).then(function(refs){
-    refs2 = refs
+    refs2 = refs;
   })
-  console.log(refs2);
-  let tags = await processArray(repo2, refs2 );
+  
+  // commitList = await getCommitShaFromNode(repo2, beginningHash, endingHash);
+  // console.log(commitList);
+  // commitList = await getCommitFromShaList(commitList, repo2);
+  // tags = await aggregateCommits(commitList, repo2, refs2);
+  tags = await processArray(repo2, refs2, beginningHash, endingHash);
     
   return await new Promise(resolve=> {
-    console.log('fire[DONE]')
-    resolve(tags)
+    console.log('fire[DONE]');
+    resolve(tags);
   })
 
 }   
+
+// Return an array of commit objects from array of commit shas 
+async function getCommitFromShaList(commitList, repo) {
+  return await Promise.all(commitList.map(async (sha) => {
+    const commit = await repo.getCommit(sha);
+    return commit;
+  }));
+}
+
+// Create an array of tagItems
+const aggregateCommits = async (commitList, repo, refs2) => {
+  let tag;
+  let commit;
+  let tItems;
+  let found = false;
+  let tags;
+  // Create array of tags
+  tItems = await Promise.all(refs2.map(async (ref) => {
+    if (ref.isTag()) {
+      console.log(ref);
+      tag = await getRefObject(repo, ref);
+      commit = await getCommit(repo, ref);
+      tItems.push(new tagItem(tag.name(), commit.message(), tag.message(), commit.sha()));
+    }
+  }));
+
+  console.log('before');
+  console.log(commitList.length);
+  console.log(tItems);
+
+  // Check to see if commits match with any tags, if so, include tag name and message in tagItem
+  tags = await Promise.all(commitList.map(async (commit) => {
+    for (let j=0; j < tItems.length; j++) {
+      if (tItems[j]) {
+        if (tItems[j].commitSha === commit.sha()) {
+          return tItems[j];
+        }
+      }
+    }
+    return new tagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
+  }));
+
+  console.log('after');
+  console.log(commitList.length);
+  return tags;
+}
+
+// get each commit's shas for graph node
+async function getCommitShaFromNode(repo, beginningHash, endingHash) {
+  let commitList = [];
+  let commitListRet = [];
+  return new Promise(function(resolve){
+    repo.getReferences(Git.Reference.TYPE.LISTALL)
+    .then(function (refs) {
+    // Check to see that reference is not to tag or remote
+      for (let i =0; i<refs.length; i++) {
+        if (!refs[i].isTag() && !refs[i].isRemote()) {
+          repo.getReferenceCommit(refs[i])
+          // Find all commits from branch
+          .then(function (commit) {
+            let history = commit.history(Git.Revwalk.SORT.Time);
+            history.on("end", function (commits) {
+
+              // Store commit hash for every commit in branch
+              for (let i = 0; i < commits.length; i++) {
+                if (commitList.indexOf(commits[i].toString()) < 0) {
+                  commitList.push(commits[i].toString());
+                }
+              }
+              // Prune early commits that do not belong to node
+              if (commitList.indexOf(beginningHash) >= 0) {
+                let stop = commitList.length - commitList.indexOf(beginningHash) -1;
+                console.log(stop);
+                commitList.splice(commitList.indexOf(beginningHash)+1, stop);
+                // for (let j = commitList.indexOf(beginningHash); j < commitList.length; j++) {
+                //   commitList.pop();
+                // }
+              }
+              
+              console.log('ending', endingHash);
+              console.log(commitList);
+
+              // Prune later commits that do not belong to node. If no endingHash exist, prune list of commits down to 1
+              commitList.reverse();
+              if (endingHash === '') {
+                if (commitList.length > 1) {
+                  console.log(beginningHash);
+                  let stop1 = commitList.length - commitList.indexOf(beginningHash) - 1;
+                  commitList.splice(commitList.indexOf(beginningHash)+1, stop1);
+                  console.log(commitList, stop1);
+                  let stop2 = commitList.indexOf(beginningHash);
+                  commitList.splice(0, stop2);
+                  console.log(commitList);
+                } 
+              } else if (commitList.indexOf(endingHash) >= 0) {
+                let stop = commitList.length - commitList.indexOf(endingHash) -1;
+                commitList.splice(commitList.indexOf(endingHash)+1, stop);
+                // for (let j = commitList.indexOf(endingHash); j < commitList.length; j++) {
+                //   commitList.pop();
+                // }
+              } 
+              console.log('Second Please');
+              console.log(commitList);
+              // for (let k = 0; k < commitList.length; k++) {
+              //   repo.getCommit(commitList[k])
+              //     .then(function(commit1){
+              //       commitListRet.push(commit1);
+              //     })
+              // }
+              resolve(commitList);
+            });
+
+            history.start();
+          }).catch ((err) => {
+            console.log(err);
+          });
+        } else {
+          console.log('current branch does not exist on remote');
+        }
+      }
+      
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  }); 
+}
 
 //
 // Async calls for for each loop - issue 40
 //
 async function getCommitMsg(repo, c){
-  let commit = await repo.getCommit(c)
-    return  commit.message()
+  let commit = await repo.getCommit(c);
+  return  commit.message();
 }
 
 async function getCommitInfo(repo, ref){
-  let c = await ref.peel(Git.Object.TYPE.COMMIT)
-  return c
+  let c = await ref.peel(Git.Object.TYPE.COMMIT);
+  return c;
 
+}
+
+
+async function getCommit(repo, ref) {
+  let c = await ref.peel(Git.Object.TYPE.COMMIT);
+  let commit = await repo.getCommit(c);
+  return commit;
 }
 
 // Get tag object based on tag name
 async function getRefObject(repo, ref){
-  console.log('hooray');
   console.log(ref.name());
   let oid = await Git.Reference.nameToId(repo, ref.name())
   let ret = await Git.Tag.lookup(repo, oid);
@@ -89,32 +243,32 @@ async function getRefObject(repo, ref){
   return ret;
 }
 
-async function refObjectWait(repo, ref){
+async function refObjectWait(repo, ref, beginningHash, endingHash){
   let tItem;
-  let tBool = ref.isTag()
-  let commit = await getCommitInfo(repo, ref)
-  let commitMsg = await getCommitMsg(repo, commit)
+  let tBool = ref.isTag();
+  let commit = await getCommitInfo(repo, ref);
+  let commitMsg = await getCommitMsg(repo, commit);
   if(tBool == 1){
     let tag = await getRefObject(repo, ref);
-    console.log(tag)
+    console.log(tag);
     //let cMsg = await getCommitInfo(repo, tag);
-    tItem = new tagItem(tag.name(), commitMsg, tag.message())
+    tItem = new tagItem(tag.name(), commitMsg, tag.message());
     
     console.log(tItem);
     return tItem;
   } else {
     //let cMsg = await getCommitInfo(repo, ref);
-    tItem = new tagItem("Enter Tag Name", commitMsg, "Enter Tag Message")
+    tItem = new tagItem("Enter Tag Name", commitMsg, "Enter Tag Message");
     return tItem;
   }
 }
 
 
 
-async function processArray(repo, refs){
+async function processArray(repo, refs, beginningHash, endingHash){
   let retArray: any[] = [];
   for(const ref of refs){
-    let finalTag = await refObjectWait(repo, ref)
+    let finalTag = await refObjectWait(repo, ref, beginningHash, endingHash);
     retArray.push(finalTag);
   }
   retArray.sort(function(a, b){
@@ -132,7 +286,7 @@ async function processArray(repo, refs){
       retArrayNoDup.push(retArray[i]);
     } else if (retArray[i + 1].commitMsg == retArray[i].commitMsg && retArray[i].tagName == "Enter Tag Name"){
       retArrayNoDup.push(retArray[i+1]);
-      i++
+      i++;
     } else{
       retArrayNoDup.push(retArray[i]);
     }
@@ -384,17 +538,22 @@ function addAndCommit() {
 function deleteTag(tagName) {
   let repository;
   console.log(repoFullPath);
+  let name = tagName.split(path.sep);
+  name = name[name.length-1];
+  console.log(name);
   Git.Repository.open(repoFullPath)
     .then(function (repoResult) {
       repository = repoResult;
-      repository.deleteTagByName(tagName)
+      repository.deleteTagByName(name)
         .then(function() {
-          console.log(`${tagName} deleted`);
-          addCommand('git tag -d '+ tagName);
+          console.log(`${name} deleted`);
+          addCommand('git tag -d '+ name);
+          refreshAll(repository);
         })
         .catch((err) => console.log(err));
     })
     .catch((err) => console.log(err));
+  
 }
 
 

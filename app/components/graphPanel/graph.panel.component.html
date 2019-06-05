@@ -63,12 +63,11 @@
           </div>
           <div class="row">
                 <div id="commitHash" style="display: none;"></div>
-            
+                <div id="commitHashEnd" style="display: none;"></div>
                 <h4>Commit History</h4>
                 <table>
                   <tbody id="commitTagList" *ngIf="showCommitList">
                     <!-- TODO: this will be an *ngFor that populates the commits and and tag names-->
-                    <!-- TODO: change the t1 in deleteTag('t1') to tag name variable-->
                     <tr *ngFor="let tag of tagList">
                       <td><h4>{{tag.commitMsg}}</h4></td>
                       <td id="tagDiv">
@@ -85,7 +84,7 @@
 
                             </td>
                             <td>
-                                <span class="badge" id="removeTagBadge"><span class="glyphicon glyphicon-remove" (click)="deleteTag('test')"></span></span>
+                                <span class="badge" id="removeTagBadge"><span class="glyphicon glyphicon-remove" (click)="deleteTag(tag.tagName)"></span></span>
                             </td>
                               
                           </tr>

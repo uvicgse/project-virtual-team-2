@@ -253,7 +253,11 @@ function drawGraph() {
                     $("#graphNodeClickModal").addClass('loadTags')
                     let name = clicknode.author.name().toString();
                     let email = clicknode.author.email().toString();
+                    // Cache first and last (if exists) commit hash from node to check for tags later
                     document.getElementById("commitHash")!.innerHTML = clicknode.beginningSha;
+                    if (clicknode.endingSha) {
+                        document.getElementById("commitHashEnd")!.innerHTML = clicknode.endingSha;
+                    }
                     document.getElementById("authorModalDetails")!.innerHTML = "Author Name: " + clicknode.author.toString() + "<br>" + "Email: " + email;
                     document.getElementById("authorModalProfileButton")!.onclick = function () {
                         window.open("https://github.com/" + name, "Author Profile");

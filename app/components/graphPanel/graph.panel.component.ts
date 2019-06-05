@@ -1,4 +1,4 @@
-import { Component, HostListener} from "@angular/core";
+import { Component, HostListener, ViewChild, ElementRef} from "@angular/core";
 import { tagItem } from "../../misc/git";
 import { resolve } from "url";
 
@@ -15,32 +15,35 @@ export class GraphPanelComponent {
   tagList: any;
   showCommitList: boolean;
   getTags: any;
+  @ViewChild('graphNodeClickModal') modal: ElementRef;
   //
   // This Event listener should be more specific
-  //
+  // TODO: you should probably explain the sort function
   @HostListener('click', ['$event']) 
   async onClick() {
-    let testModal = document.getElementById("graphNodeClickModal").classList.contains('loadTags')
-    if(testModal){
-     await this.asyncCall()
-     console.log(this.tagList)
-     console.log(document.getElementById('commitHash').innerHTML);
-     this.tagList.sort(function(a, b){
-      var A = a.commitMsg,
-          B = b.commitMsg;
-      //
-      if(A>B) return -1;
-      if(A<B) return 1;
-      return 0;
-    })
-     this.showCommitList = true;
-  }
+    let modal = document.getElementById("graphNodeClickModal").classList.contains('loadTags');
+    if(modal){
+      let beginnningHash = document.getElementById('commitHash').innerHTML;
+      let endingHash = document.getElementById('commitHashEnd').innerHTML;
+      await this.asyncCall(beginnningHash, endingHash);
+      console.log(this.tagList);
+      this.tagList.sort(function(a, b){
+        var A = a.commitMsg,
+            B = b.commitMsg;
+        //
+        if(A>B) return -1;
+        if(A<B) return 1;
+        return 0;
+      })
+      this.showCommitList = true;
+    }
   document.getElementById("graphNodeClickModal").classList.remove('loadTags');
   }
   
-  async asyncCall() {
-    console.log('GRAPH')
-    this.tagList = await getTags()}
+  async asyncCall(beginnningHash, endingHash) {
+    console.log('GRAPH');
+    this.tagList = await getTags(beginnningHash, endingHash);
+  }
 
   mergeBranches(): void {
     let p1 = document.getElementById('fromMerge').innerHTML;
@@ -55,6 +58,7 @@ export class GraphPanelComponent {
 
   deleteTag(tagName): void {
     deleteTag(tagName);
+    this.modal.nativeElement.contentWindow.location.reload(true);
   }
 
 
