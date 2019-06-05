@@ -235,6 +235,7 @@ function addAndCommit() {
       CommitButNoPush = 1;
       console.log("Commit successful: " + oid.tostrS());
       stagedFiles = null;
+
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
@@ -260,12 +261,12 @@ function addAndCommit() {
     - Must have a stash message where text is input in commit-message-input
 */
 function addAndStash(options) {
-  stashMessage = document.getElementById("commit-message-input").value;
-  if(stashMessage == null || stashMessage == ""){
-    window.alert("Cannot stash without a stash message. Please add a stash message before stashing");
-  return;
-  }
+
   if(options == null) options = 0;
+
+  var command = 'git stash';
+  var stashName = "";
+
   let repository;
   Git.Repository.open(repoFullPath)
     .then(function (repoResult) {
@@ -325,6 +326,27 @@ function addAndStash(options) {
 
       console.log("Signature to be put on stash: " + sign.toString());
 
+      let branch = document.getElementById("branch-name").innerText;
+      console.log("Current branch: " + branch);
+
+      stashMessage = document.getElementById("commit-message-input").value;
+
+      /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head */
+      if(stashMessage == null || stashMessage == ""){
+        //window.alert("Cannot stash without a stash message. Please add a stash message before stashing"); return;
+        var comMessage = Git.Commit.lookup(repository, parent)
+        .then(function(commit){
+          return commit.message();
+        });
+
+        stashMessage = (oid.tostrS().substring(0,8) + " " + comMessage);
+        stashName = "WIP ";
+      } else {
+        command += ' push -m "' + stashMessage + '"';
+      }
+      stashName += "On " + branch + ": " + stashMessage;
+
+      console.log("Stashing: " + stashName );
 
       // First branch of this If might be unecessary or replaceable by .git/refs/stash to check something else
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
@@ -341,29 +363,16 @@ function addAndStash(options) {
       theirCommit = null;
       changes = 0;
 
-      let branch = document.getElementById("branch-name").innerText;
-      console.log("Current branch: " + branch);
-
-      //The next 6 lines are somewhat unnecessary but useful for logging
-      var comMessage = Git.Commit.lookup(repository, oid)
-      .then(function(commit){
-        return commit.message();
-      });
-      var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0,8) + " " + comMessage);
-      console.log("Stashing: "+ stashName);
-
       stagedFiles = null;
 
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
+      //if (options == 2) clearModifiedFilesList(); //reset unstaged files panel
 
       for (let i = 0; i < filesToAdd.length; i++) {
         addCommand("git add " + filesToAdd[i]);
       }
-      stashName = "On " + branch + ": " + stashMessage;
-      console.log("Saved as: " + stashName);
-
       /* options
          Stash.FLAGS.DEFAULT             0
          Stash.FLAGS.KEEP_INDEX          1
@@ -372,13 +381,13 @@ function addAndStash(options) {
       */
       switch(options){
         case "0":
-          addCommand('git stash push -m "' + stashMessage + '"');
+          addCommand(command);
           break;
         case "1":
-          addCommand('git stash push -k -m "' + stashMessage + '"');
+          addCommand(command + ' --keep-index');
           break;
         case "2":
-          addCommand('git stash push -u -m "' + stashMessage + '"');
+          addCommand(command ' --untracked');
           break;
       }
 
