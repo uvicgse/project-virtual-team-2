@@ -824,6 +824,8 @@ function pushToRemote() {
                                         }
                                     }
                                 );
+                            }, function(e){
+                                console.log(Error(e));
                             }).then(function () {
                                 CommitButNoPush = 0;
                                 window.onbeforeunload = Confirmed;
@@ -831,6 +833,8 @@ function pushToRemote() {
                                 updateModalText("Push successful");
                                 refreshAll(repo);
                             });
+                        }, function(e){
+                            console.log(Error(e));
                         });
                     });
                 }
