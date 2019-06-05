@@ -783,48 +783,60 @@ function checkIfExistOrigin(branchName) {
 }
 
 function pushToRemote() {
-  // checking status of remote repository and only push if you are ahead of remote
-  getAheadBehindCommits().then(function(aheadBehind){
-    if (aheadBehind.ahead === 0){
-      window.alert("Your branch is already up to date");
-      return;
-    } else if (aheadBehind.behind !== 0) {
-      window.alert("your branch is behind remote by " + aheadBehind.behind);
-      return;
-    }
-  let branch = document.getElementById("branch-name").innerText;
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      console.log("Pushing changes to remote")
-      displayModal("Pushing changes to remote...");
-      addCommand("git push -u origin " + branch);
-      repo.getRemotes()
-        .then(function (remotes) {
-          repo.getRemote(remotes[0])
-            .then(function (remote) {
-              return remote.push(
-                ["refs/heads/" + branch + ":refs/heads/" + branch],
-                {
-                  callbacks: {
-                    // obtain a new copy of cred every time when user push.
-                    credentials: function () {
-                      let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                      cred = user.credentials;
-                      return cred;
-                    }
-                  }
+    // checking status of remote repository and only push if you are ahead of remote
+    // Todo use nodegit to get the name of branch
+    let branch = document.getElementById("branch-name").innerText;
+    //checks if the remote version of your current branch exist
+    checkIfExistOrigin(branch).then(function(remoteBranchExist){
+        if (!remoteBranchExist) {
+            window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
+                "To push the current branch and set the remote as upstream, use\n" +
+                "\n" +
+                "    git push --set-upstream origin test-branch");
+            return;
+        } else {
+            // tells the user if their branch is up to date or behind the remote branch
+            getAheadBehindCommits(branch).then(function (aheadBehind) {
+                if (aheadBehind.ahead === 0) {
+                    window.alert("Your branch is already up to date");
+                    return;
+                } else if (aheadBehind.behind !== 0) {
+                    window.alert("your branch is behind remote by " + aheadBehind.behind);
+                    return;
+                } else {
+                    // Do the Push
+                    Git.Repository.open(repoFullPath).then(function (repo) {
+                        console.log("Pushing changes to remote");
+                        displayModal("Pushing changes to remote...");
+                        addCommand("git push -u origin " + branch);
+                        repo.getRemotes().then(function (remotes) {
+                            repo.getRemote(remotes[0]).then(function (remote) {
+                                return remote.push(
+                                    ["refs/heads/" + branch + ":refs/heads/" + branch],
+                                    {
+                                        callbacks: {
+                                            // obtain a new copy of cred every time when user push.
+                                            credentials: function () {
+                                                let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                                                cred = user.credentials;
+                                                return cred;
+                                            }
+                                        }
+                                    }
+                                );
+                            }).then(function () {
+                                CommitButNoPush = 0;
+                                window.onbeforeunload = Confirmed;
+                                console.log("Push successful");
+                                updateModalText("Push successful");
+                                refreshAll(repo);
+                            });
+                        });
+                    });
                 }
-              );
-            })
-            .then(function () {
-              CommitButNoPush = 0;
-              window.onbeforeunload = Confirmed;
-              console.log("Push successful");
-              updateModalText("Push successful");
-              refreshAll(repo);
             });
-        });
-  });
+        }
+    });
 }
 
 function commitModal() {
