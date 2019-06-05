@@ -20,6 +20,8 @@ export class GraphPanelComponent {
   //
   @HostListener('click', ['$event']) 
   async onClick() {
+    let testModal = document.getElementById("graphNodeClickModal").classList.contains('loadTags')
+    if(testModal){
      await this.asyncCall()
      console.log(this.tagList)
      console.log(document.getElementById('commitHash').innerHTML);
@@ -33,8 +35,8 @@ export class GraphPanelComponent {
     })
      this.showCommitList = true;
   }
-
-
+  document.getElementById("graphNodeClickModal").classList.remove('loadTags');
+  }
   
   async asyncCall() {
     console.log('GRAPH')

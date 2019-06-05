@@ -907,7 +907,7 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 }
 
 #graphNodeClickModal .row {
-  padding: 5px 10px;
+  padding: 0px 4px;
 }
 
 #graphNodeClickModal .row:nth-child(2){
@@ -935,6 +935,8 @@ Added the margin top and margin bottom to add space between each of the blackbox
 
 in the model that pops-up when you click on a node */
 #tagDiv {
+  padding-left:0px;
+  padding-right:30px
   display: inline-block;
   margin: 13px 0px 2px 0px;
   background-color: black;
@@ -942,25 +944,6 @@ in the model that pops-up when you click on a node */
   border-radius: 5px;
 }
 
-#submitTagBadge {
-  margin-right: 3px;
-  background-color:green;
-  box-shadow: 1px 1px 1px green;
-  cursor: pointer;
-}
-#tagDiv .glyphicon-ok{
-  color:lightgreen;
-}
-#removeTagBadge {
-  background-color: red;
-  box-shadow: 1px 1px 1px red;
-  cursor: pointer;
-  margin: 5px 0 5px 5px;
-  float: right;
-}
-#tagDiv .glyphicon-remove{
-  color: rgb(247, 97, 97);
-}
 #tagDiv input{
   border-radius: 3px;
   padding: 2px;
