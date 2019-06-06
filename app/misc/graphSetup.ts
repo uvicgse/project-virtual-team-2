@@ -186,20 +186,24 @@ function drawGraph() {
             };
 
             if (network.getScale() > 1.5 && callback.direction === '+' && flag === 'abstract') {
+                console.log('erwerwrwerrw');
                 network.setData(data);
                 flag = 'node';
                 network.fit(moveOptions);
                 //network.redraw();
             } else if (network.getScale() < 0.4 && callback.direction === '-' && flag === 'node') {
+                console.log('111erwdfdfdferwrwerrw');
                 network.setData(abData);
                 flag = 'abstract';
                 network.fit(moveOptions);
                 //network.redraw();
             } else if (network.getScale() > 1.5 && callback.direction === '+' && flag === 'basic') {
+                console.log('34234eeewrwdfdfdferwrwerrw');
                 network.setData(abData);
                 flag = 'abstract';
                 network.fit(moveOptions);
             } else if (network.getScale() < 0.4 && callback.direction === '-' && flag === 'abstract') {
+                console.log('980erwdfdfdferwrwerrw');
                 network.setData(bsData);
                 flag = 'basic';
                 network.fit(moveOptions);
@@ -254,11 +258,13 @@ function drawGraph() {
                     $("#graphNodeClickModal").addClass('loadTags')
                     let name = clicknode.author.name().toString();
                     let email = clicknode.author.email().toString();
-                    // Cache first and last (if exists) commit hash from node to check for tags later
+                    // Cache first commit hash from each graph node to check for tags later
                     document.getElementById("commitHash")!.innerHTML = clicknode.beginningSha;
-                    if (clicknode.endingSha) {
-                        document.getElementById("commitHashEnd")!.innerHTML = clicknode.endingSha;
+                    // Cache number of commits represented by each graph node
+                    if (clicknode.count) {
+                        document.getElementById("numCommit")!.innerHTML = clicknode.count;
                     }
+                    console.log('in graph setup', clicknode.count);
                     document.getElementById("authorModalDetails")!.innerHTML = "Author Name: " + clicknode.author.toString() + "<br>" + "Email: " + email;
                     document.getElementById("authorModalProfileButton")!.onclick = function () {
                         window.open("https://github.com/" + name, "Author Profile");

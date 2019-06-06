@@ -25,24 +25,18 @@ export class GraphPanelComponent {
     // Display if show class
     if(modal){
       let beginnningHash = document.getElementById('commitHash').innerHTML;
-      let endingHash = document.getElementById('commitHashEnd').innerHTML;
-      await this.asyncCall(beginnningHash, endingHash);
+      let numCommit = document.getElementById('numCommit').innerHTML;
+      console.log('inComponent');
+      console.log(numCommit);
+      await this.asyncCall(beginnningHash, numCommit);
       console.log(this.tagList);
-      this.tagList.sort(function(a, b){
-        var A = a.commitMsg,
-            B = b.commitMsg;
-        //
-        if(A>B) return -1;
-        if(A<B) return 1;
-        return 0;
-      })
       this.showCommitList = true;
     }
     // remove if show class
     document.getElementById("graphNodeClickModal").classList.remove('loadTags');
   }
   
-  // get tag and commit info
+  // get all tags and commits information
   async asyncCall(beginnningHash, endingHash) {
     console.log('GRAPH');
     this.tagList = await getTags(beginnningHash, endingHash);
@@ -59,9 +53,13 @@ export class GraphPanelComponent {
     rebaseCommits(p1, p2);
   }
 
+  // Delete tag when delete tag button is clicked. Method will reload list of commits after tag has been deleted
   deleteTag(tagName): void {
     deleteTag(tagName);
-    this.modal.nativeElement.contentWindow.location.reload(true);
+    let beginnningHash = document.getElementById('commitHash').innerHTML;
+    let numCommit = document.getElementById('numCommit').innerHTML;
+    this.asyncCall(beginnningHash, numCommit);
+    //this.modal.nativeElement.contentWindow.location.reload(true);
   }
 
 
