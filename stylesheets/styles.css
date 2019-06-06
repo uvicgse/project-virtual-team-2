@@ -906,6 +906,10 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
   color: darkorange;
 }
 
+#graphNodeClickModal .modal-content{
+  width: 118%;
+}
+
 #graphNodeClickModal .row {
   padding: 0px 4px;
 }
