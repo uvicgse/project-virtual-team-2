@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head lang="en">
+  <title>VisualGit</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Latest compiled and minified JavaScript -->
+  <link rel="stylesheet" href="stylesheets/styles.css">
+  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+  <script src="app/misc/checkbox.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script>if (window.module) module = window.module;</script>
+  <script src="systemjs.config.js"></script>
+  <script>
+    System.import('app').catch(function(error) {
+      console.error(error);
+    });
+  </script>
+</head>
+  <body>
+    <nav class="navbar navbar-default" role="navigation">
+      <div class="container-fluid row">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <img src="./assets/AddRepositoryFolder.svg" class="add-repository-button" title="Add Repository">
+        </div>
+        <div class="collapse navbar-collapse" id="navbar">
+          <ul class="nav navbar-nav col-md-5 hidden-xs">
+            <li><img src="./assets/RightArrow.svg" class="right-arrow"></li>
+            <li class="repo-name dropdown-toggle">
+                <a href="#" id="repo-name" data-toggle="modal" data-target="#repo-modal">repository</a>
+            </li>
+            <li><img src="./assets/RightArrow.svg" class="right-arrow"></li>
+            <li class="branch-name dropdown">
+              <a class="dropdown-toggle" id="branch-name" data-toggle="dropdown">
+                branch<span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
+                <li role="presentation" id="create-branch">
+                  <div class="input-group menuitem">
+                    <input type="text" id="branchName" class="form-control" placeholder="Search or create branch">
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button">OK</button>
+                    </span>
+                  </div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav col-md-4 hidden-xs">
+            <li class="upload"><i class="fa fa-cloud-upload fa-2x col-md-2" aria-hidden="true" style="color:white" title="Push"></i></li>
+            <li class="download"><i class="fa fa-cloud-download fa-2x col-md-2" aria-hidden="true" style="color:white" title="Pull"></i></li>
+          </ul>
+
+          <ul class="navbar-nav navbar-right hidden-xs">
+            <li>
+              <a class="btn btn-default btn-outline btn-circle"  id="avatar" data-toggle="collapse" href="#nav-collapse1" aria-expanded="false" aria-controls="nav-collapse1">Sign in</a>
+            </li>
+          </ul>
+          <div class="collapse nav navbar-nav nav-collapse" id="nav-collapse1">
+            <form class="navbar-form navbar-right form-inline" role="form">
+              <div class="form-group">
+                <label class="sr-only" for="Email">User name</label>
+                <input type="text" class="form-control" id="Email1" placeholder="Email" autofocus required />
+              </div>
+              <div class="form-group">
+                <label class="sr-only" for="Password">Password</label>
+                <input type="password" class="form-control" id="Password1" placeholder="Password" required />
+              </div>
+              <button type="submit" class="btn btn-success">Sign in</button>
+            </form>
+          </div>
+
+          <ul class="nav navbar-nav visible-xs">
+            <li><a>&nbsp;&nbsp;add repository</a></li>
+            <li class="dropdown">
+              <a id="repo-name" data-toggle="modal" data-target="#repo-modal" href="#">
+                &nbsp;&nbsp;repository
+                <span class="caret"></span>
+              </a>
+            </li>
+            <li class="dropdown">
+              <a id="branch-name" data-toggle="dropdown" href="#">
+                &nbsp;&nbsp;branch
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
+                <li role="presentation" id="create-branch">
+                  <div class="input-group menuitem">
+                    <input type="text" id="branchName" class="form-control" placeholder="Search or create branch">
+                    <span class="input-group-btn">
+                      <button class="btn btn-default" type="button">OK</button>
+                    </span>
+                  </div>
+                </li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a id="merge-name" data-toggle="dropdown" href="#">
+                &nbsp;&nbsp;update from
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" id="merge-dropdown" role="menu" >
+              </ul>
+            </li>
+            <li class="upload"><a href="#">&nbsp;&nbsp;pull</a></li>
+            <li class="download"><a href="#">&nbsp;&nbsp;push</a></li>
+          </ul>
+
+        </div>
+      </div>
+    </nav>
+  </body>
+</html>

@@ -1,0 +1,1041 @@
+p, h1, h2, h3, h4, h5 {
+  color: #ccc;
+  font-family: 'Montserrat', sans-serif;
+  /*font-size: 16px;*/
+  /*font-size: 2vw;*/
+}
+
+.issue-text {
+  color: #000;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.issue-text {
+  color: #000;
+  font-family: 'Montserrat', sans-serif;
+}
+
+ul{
+  list-style-type: none;
+}
+
+
+.btn:focus {
+  outline: 0;
+}
+
+.add-repository-button {
+  position: relative;
+  z-index: 2;
+}
+
+.btn.btn-circle {
+  border-radius: 50px;
+}
+.btn.btn-outline {
+  background-color: lightgrey;
+}
+
+/*http://bootsnipp.com/snippets/ZkpRl*/
+.navbar-nav.navbar-right .btn {
+  position: relative; z-index: 2;
+  padding: 4px 20px;
+  margin: 0 auto;
+}
+
+.navbar .navbar-collapse {
+  position: relative;
+}
+.navbar .navbar-collapse .navbar-right > li:last-child {
+  padding-left: 22px;
+}
+.navbar .nav-collapse {
+  position: absolute;
+  z-index: 1;
+  top: 0; left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding-right: 120px;
+  padding-left: 80px;
+  width: 100%;
+}
+
+#Email1 {
+  width: 100px;
+}
+
+#Password1 {
+  width: 100px;
+}
+
+@media screen and (max-width: 767px) {
+    .navbar .navbar-collapse .navbar-right > li:last-child { padding-left: 15px; padding-right: 15px; }
+
+    .navbar .nav-collapse { margin: 7.5px auto; padding: 0; }
+    .navbar .nav-collapse .navbar-form { margin: 0; }
+    .nav-collapse>li { float: none; }
+}
+
+.navbar-white {
+  background-color: #E3E3E3;
+  border-bottom: 2px solid #181818;
+}
+
+.navbar-pink {
+  background-color: #FFA3A3;
+  border-bottom: 2px solid #FFA3A3;
+}
+
+.navbar-blue {
+  background-color: #58A6FD;
+  border-bottom: 2px solid #58A6FD;
+}
+
+.navbar-navy {
+  background-color: #001C83;
+  border-bottom: 2px solid #001C83;
+}
+
+.navbar-green {
+  background-color: #00990D;
+  border-bottom: 2px solid #00990D;
+}
+
+#branchOptions {
+  position: absolute;
+  display:none;
+}
+
+body {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+body .header {
+  width: 100%;
+  height: 10vh;
+  background-color: #282828;
+  border-bottom: 2px solid #181818;
+  /* Modal Content/Box */
+}
+
+body .navbar {
+  margin-bottom: 0px;
+  font-size: 20px;
+  z-index: 1;
+}
+
+body .navbar .dropdown-menu {
+  z-index: 300;
+  background-color: #282828;
+  width: 250px;
+  color: #ffffff;
+}
+
+body .navbar .dropdown-menu a {
+  color: #000;
+}
+
+#repo-list-modal{
+  max-height: 90vh;
+  overflow: scroll;
+}
+
+#visual-git-logo{
+  width: 150px; 
+  height: 150px; 
+}
+
+/*body .navbar .repo-name {
+  margin-left: 30px;
+}*/
+
+/*body .navbar .branch-name {
+  margin-left: 15px;
+}*/
+
+/*body .navbar .merge {
+  margin-left: 20px;
+}*/
+
+body .navbar .fa-cloud-upload {
+  margin-top: 8px;
+}
+
+body .navbar .fa-cloud-download {
+  margin-top: 8px;
+}
+/*
+body .navbar .dropdown-toggle {
+  margin-top: 10px;
+}*/
+
+body .file-panel {
+  width: 20%;
+  height: 70vh;
+  background-color: #282828;
+  float: left;
+  z-index: 0;
+  overflow-y: auto;
+}
+
+body .file-panel .modified-files-header .staged-files-header .select-all-message {
+  width: 77.5%;
+  display: inline-block;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+body .file-panel .files-changed .modified-files-message {
+  padding: 20px;
+}
+
+body .file-panel .files-staged .modified-files-message {
+    padding: 20px;
+}
+
+body .file-panel .files-changed .file {
+  width: 99%;
+  height: 10%;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #fff;
+}
+
+body .file-panel .files-changed .files-staged .file p {
+  color: #fff;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 10px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 80%;
+}
+
+body .file-panel .files-changed .files-staged .file input {
+  vertical-align: middle;
+}
+
+body .file-panel .files-changed .files-staged .file:hover {
+  opacity: 0.8;
+}
+
+body .file-panel .staging-buttons {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 30px;
+  border-radius: 10px;
+  border: 0;
+  padding: 0 15px;
+  background-color: #39c0ba;
+  color: #fff;
+}
+
+body .file-panel .staging-buttons:hover {
+  opacity: 0.8;
+}
+
+body .file-panel .commit-panel .commit-button:hover {
+  opacity: 0.8;
+}
+
+body .body-panel {
+  width: calc(80% - 60px);
+  float: right;
+  z-index: 0;
+  transition: .5s;
+}
+
+
+body .body-panel .diff-panel {
+  width: 0;
+  height: 100%;
+  float: left;
+}
+
+body .body-panel .diff-panel .diff-panel-body {
+  width: 100%;
+  height: 67vh;
+  float: left;
+  background-color: #282828;
+  color: #fff;
+  overflow-y: auto;
+}
+
+body .body-panel .diff-panel .diff-panel-body div {
+  display: table-row-group;
+  padding: 1px 5px 1px 5px;
+  white-space: pre;
+  font-family: monospace;
+}
+
+body .body-panel .diff-panel .diff-panel-body spacer {
+  display: block;
+}
+
+body .body-panel .diff-panel .diff-panel-minimise:hover {
+  background-color: #404040;
+}
+
+body .body-panel .graph-panel {
+  width: 100%;
+  float: right;
+}
+
+body .body-panel .graph-panel .network {
+  width: 100%;
+  height: 80vh;
+  margin: 0;
+  padding: 0;
+  background-color: #181818;
+}
+
+body .authenticate {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: #181818;
+  z-index: 30;
+  box-sizing: border-box;
+  color: #fff;
+}
+
+body .authenticate .input-group {
+  margin-left: auto;
+  margin-right:auto;
+  text-align: center;
+}
+
+body .add-repository-panel {
+  position: absolute;
+  height: 80vh;
+  width: 100%;
+  background-color: #181818;
+  z-index: -10;
+  box-sizing: border-box;
+}
+
+body .add-repository-panel .add-repository-body {
+  padding-left: 110px;
+}
+
+body .add-repository-panel .back-button {
+  float: left;
+  position: absolute;
+  padding: 15px;
+  opacity: 0.7;
+}
+
+body .add-repository-panel .back-button:hover {
+  opacity: 1;
+}
+
+body .add-repository-panel h1 {
+  color: white;
+}
+
+body .add-repository-panel .open-local-repo {
+  margin-top: 25px;
+}
+
+body .add-repository-panel p {
+  display: inline-block;
+  margin-right: 20px;
+}
+
+body .add-repository-panel input {
+  display: inline-block;
+  margin: 15px 30px;
+  border-radius: 10px;
+  border: 0;
+  height: 10px;
+  size: 50px;
+  padding: 10px;
+}
+
+body .add-repository-panel .button-clone, body .add-repository-panel .button-open {
+  /*display: inline-block;*/
+  height: 30px;
+  border-radius: 7px;
+  border: 0;
+  padding: 0 15px;
+  margin: 12px 40px;
+  /* margin-left: 10px; */
+  background-color: #39c0ba;
+  color: #fff;
+  float: right;
+  font-weight:bold;
+  width:150px;
+  text-shadow: 1px 1px 1px black;
+  box-shadow: 1px 1px 1px #39c0ba;
+}
+
+body .add-repository-panel .path-textbox {
+  width: 50%;
+  min-width: 10%;
+  height:20%;
+  font-size:15px;
+  border-radius: 7px;
+  padding:5px;
+  box-shadow: 1px 1px 1px white;
+}
+
+#recent-repository span {
+  font-size:10px;
+  float:left;
+  box-shadow: 1px 1px 1px black;
+  margin:2px 6px 2px 2px
+}
+
+#recent-repository button {
+  width:50%; 
+  margin: 4px 30px;
+  padding:2px;
+  float:left;
+  border-radius: 7px;
+  box-shadow: 2px 2px 2px white;
+  text-align: left;
+  white-space: normal;
+  font-size: 14px;
+  white-space: normal;
+}
+
+#recent-repository ul {
+  padding: 0;
+}
+
+
+body .add-repository-panel .button-clone:hover, body .add-repository-panel .button-open:hover {
+  opacity: 0.8;
+}
+
+body .add-repository-panel .title {
+  width: 100%;
+  text-shadow: .5px .5px .5px white;
+}
+
+body .add-repository-panel .title .clone-title {
+  margin-top: 20px;
+}
+
+body .add-repository-panel .block {
+  width: 100%;
+  overflow: hidden;
+}
+
+body .add-repository-panel .block p {
+  display: inline-block;
+  margin: 15px 0px;
+  font-size: 15px
+}
+
+body .add-repository-panel .left {
+  float: left;
+  width: 22%;
+  height: 100%;
+}
+
+body .add-repository-panel .right {
+  float: left;
+  width: 50%;
+  height: 100%;
+}
+
+
+
+body .add-repository-panel .right .button {
+  height: 100%;
+}
+
+body .navbar .fa-clone {
+  padding-left: 25px;
+  margin-top: 8px;
+}
+
+body .footer {
+  width: 100%;
+  height: 15vh;
+  background-color: #282828;
+  border-top: 2px solid #181818;
+  position: fixed;
+  bottom: 0;
+  overflow-y: auto;
+}
+
+body .footer p {
+  margin: 0;
+}
+
+body .footer .commit-panel {
+  width: 20%;
+}
+
+body .footer .commit-panel .commit-message-input {
+  resize: none;
+  width: 95%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  height: 50px;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+body .footer .commit-panel .commit-button-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+body .footer .commit-panel .commit-button-wrapper .commit-button {
+  display: block;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 30px;
+  border-radius: 10px;
+  border: 0;
+  padding: 0 15px;
+  background-color: #39c0ba;
+  color: #fff;
+}
+
+body .footer .commit-panel .commit-button:hover {
+  opacity: 0.8;
+}
+
+body .footer .terminal .git-command {
+  margin: 10px;
+}
+
+body .footer .terminal{
+  overflow-y: auto;
+  width: 80%;
+}
+
+body .footer{
+  display: flex;
+  flex-flow: row wrap; 
+}
+
+.file-created {
+  background-color: #4c994c;
+}
+
+.file-modified {
+  background-color: #e07b16;
+}
+
+.file-deleted {
+  background-color: #cc3d3d;
+}
+
+.file-tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  width: 100vw;
+}
+
+/* Style the buttons that are used to open the tab content */
+.file-tab button {
+  color: inherit;
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.file-tab button:hover {
+  color: #000000;
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.file-tab button.active {
+  color: #000000;
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+
+div.editor-header button.close-button, div.editor-header button.open-button, button.open-editor-button {
+  display: inline;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 30px;
+  border-radius: 10px;
+  border: 0;
+  padding: 0 15px;
+  background-color: #39c0ba;
+  color: #fff;
+}
+
+div.editor-header button.close-button:hover, div.editor-header button.open-button:hover, button.open-editor-button:hover { 
+  opacity: 0.8;
+}
+
+div.editor-header .indent-selector {
+  display: inline-block;
+}
+
+div.editor-header select, div.editor-header p {
+  display: inline;
+  vertical-align: top;
+}
+
+div.editor-area {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 90%;
+  height: 60vh;
+  color: inherit;
+  background-color: inherit;
+}
+
+div.editor-area textarea {
+  resize: none;
+}
+
+div.editor-area textarea.file {
+  float: left;
+  display: inline;
+  margin-right: 0;
+  width: 90%;
+  height: 100%;
+  overflow: auto;
+  white-space: nowrap;
+  color: inherit;
+  background-color: inherit;
+}
+
+div.editor-area textarea.lines {
+  float: left;
+  display: inline;
+  margin-left: 0;
+  width: 10%;
+  max-width: 40px;
+  height: 100%;
+  overflow: hidden;
+  text-align:right;
+  color: inherit;
+  background-color: inherit;
+}
+
+div.selected-commit-diff-panel{
+  padding-left: 45px;
+  padding-right: 45px;
+  background-color: #282828;
+}
+
+div.selected-commit-diff-panel .commit-diff-panel-body{
+  overflow-y:scroll;
+  height:90%;
+  width: 100%;
+  border: 3px solid #ccc;
+  background-color: #FFF;
+  display: none;
+}
+
+div.selected-commit-diff-panel button.close-button {
+  display: none;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 30px;
+  border-radius: 10px;
+  border: 0;
+  padding: 0 15px;
+  background-color: #39c0ba;
+  color: #fff;
+}
+
+.close-button {
+  float: right;
+  margin-right: 50px;
+}
+
+.open-button {
+  float: left;
+  margin-left: 50px;
+}
+
+.indent-selector {
+  display: inline;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  height: 30px;
+  padding: 0 15px;
+}
+
+.editor-panel {
+  position: absolute;
+  z-index: -10;
+  height: 0vh;
+  width: 0vw;
+  background-color: white;
+}
+
+/*Toolbar Styles*/
+.toolbar-Container {
+  /*max-height: 75px;*/
+ }
+
+.toolbar-Icons {
+  text-align: center;
+  cursor: pointer;
+  padding: 10px;
+  margin: 0 auto;
+  max-height: 65px;
+  max-width: 55px;
+}
+
+.toolbar-Icons:hover {
+  
+  text-align: center;
+  cursor: pointer;
+  padding: 10px;
+  margin: 0 auto;
+  max-height: 80px;
+  max-width: 75px;
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+.toolbar-Text {
+  font-size: 14px;
+  margin: 0 auto;
+  color: white;
+}
+
+#wiki-icon {
+  color: white;
+}
+
+/*Wiki panel Styles*/
+.wiki-panel{
+  position: absolute;
+  z-index: -10;
+  width: 0vw;
+  height: 0vh;
+  background-color: white;
+}
+
+#wiki-body {
+  overflow: auto;
+}
+
+.panel-heading {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+#wiki-content {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%;
+  height: 90vh;
+}
+
+#wiki-content p {
+  font-size: 16px;
+  color: rgb(0, 0, 0);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.wiki-header {
+  height: 60px;
+}
+
+div.wiki-header button.close-button, div.wiki-header button.open-button {
+  display: inline;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 30px;
+  border-radius: 10px;
+  border: 0;
+  padding: 0 15px;
+  background-color: #39c0ba;
+  color: #fff;
+}
+
+.wiki-button {
+  margin-left: 50px;
+  margin-top: 8px;
+}
+
+#open-editor-button {
+  float: right;
+  margin-right: 10px; 
+  visibility: hidden;
+}
+
+.diff-panel {
+  background-color: #282828;
+}
+
+.grey-out {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: 0.7;
+  position: absolute;
+  z-index: 10;
+  text-align: center;
+  display: none;
+}
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  position: fixed;
+  left: 50%;
+  margin-left: -60px;
+  top: 50%;
+  margin-top: -120px;
+}
+
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#signing-in {
+  position: relative;
+  font-size: 20px;
+  color: white;
+  top: 50%;
+}
+
+.spinner {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: 0.7;
+  position: absolute;
+  z-index: 10;
+  text-align: center;
+  display: none;
+}
+
+.spinnerGraph {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  position: fixed;
+  left: 50%;
+  margin-left: -60px;
+  top: 50%;
+  margin-top: -120px;
+}
+
+#loadingGraph{
+  position: relative;
+  font-size: 20px;
+  color: white;
+  top: 50%;
+}
+
+.branchModalHeader {
+  display: flex;
+}
+
+.branchModalTitle {
+  flex: 1;
+}
+
+.branchModalComponents {
+  margin: 6px;
+}
+
+.branchModalError {
+  color: darkorange;
+}
+.error {
+  background-color: #fce4e4;
+  border: 1px solid #cc0033;
+  outline: none;
+}
+
+.error-message {
+  color: #cc0033;
+  display: none;
+  font-size: 12px;
+  line-height: 15px;
+  margin: 5px 0 0;
+}
+
+.error-icon {
+  height: 20px;
+  width: 20px;
+}
+
+#password-error-icon, #username-error-icon {
+  visibility: hidden;
+}
+  .issue-panel {
+  position: absolute;
+  z-index: -10;
+  height: 0vh;
+  width: 0vw;
+  background-color: white;
+}
+div.wiki-header button.close-button, div.wiki-header button.open-button {
+  display: inline;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  height: 30px;
+  border-radius: 10px;
+  border: 0;
+  padding: 0 15px;
+  background-color: #39c0ba;
+  color: #fff;
+}
+
+/*
+  Pull request related css.
+*/
+body .pull-request-panel {
+  background-color: #282828;
+  display: block;
+  float: right;
+  height: 60vh;
+  overflow-y: auto;
+  transition: .5s;
+  width: 60px;
+  z-index: 0;
+}
+
+.right-pr-nav {
+  float: right;
+  height: 100%;
+  overflow: hidden;
+  width: 60px;
+}
+
+.right-pr-nav i img {
+  height: 48px;
+  margin-top: 20px;
+  text-align: center;
+  width: 48px;
+}
+
+.pr-list-container {
+  display: block;
+  float: right;
+  height: 100%;
+  overflow-y: auto;
+  transition: 0s;
+  width: calc(100% - 60px);
+}
+
+.pr-display-panel {
+  display: none;
+  float: left;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  width: calc(100% - 60px);
+}
+
+.pr-display-panel i {
+  color: inherit;
+  font-size: 3em;
+  margin-right: 20px;
+}
+
+.pr-card {
+  /* Add shadows to create the "card" effect */
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  width: 100%;
+}
+
+.pr-card:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.pr-card-container {
+  padding: 2px 16px;
+}
+
+.pr-comment-panel {
+  background-color: inherit;
+  color: white;
+  display: block;
+  float: left;
+  height: 80%;
+  margin-right: auto;
+  margin-left: auto;
+  overflow: auto;
+  resize: none;
+  white-space: nowrap;
+  width: 90%;
+}
+
+.pr-comment-submit {
+  margin-top: 10px;
+}
+
+.pr-list-container {
+  overflow-x: hidden;
+}
+
+.pr-list-container .pr-card {
+  margin: auto;
+  width: 90%;
+}
+
+.pr-list-container #pr-body {
+  resize: none;
+}
+
+.pr-list-container label {
+  color: white;
+}
+
+#pr-diff {
+  display: none;
+  margin: auto;
+  width: 90%;
+}
+
+#pr-list {
+  margin: auto;
+  width: 90%;
+}
+/*
+ End of pull request css.
+*/

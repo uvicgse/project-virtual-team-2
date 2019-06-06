@@ -1,0 +1,194 @@
+<!doctype html>
+
+<html>
+  <head lang="en">
+    <title>VisualGit</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.css" type="text/css">
+    <link rel="stylesheet" href="node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.css" type="text/css">
+    <link rel="stylesheet" href="node_modules/diff2html/dist/diff2html.css" type="text/css">
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script src="node_modules/systemjs/dist/system.src.js"></script>    
+    <script>var exports={};</script>
+    <script src="app/misc/gitCommands.js"></script>
+    <script src="app/misc/git.js"></script>
+    <script src="app/misc/graphing.js"></script>
+    <script src="app/misc/images.js"></script>
+    <script src="app/misc/repo.js"></script>
+    <script src="app/misc/graphSetup.js"></script>
+    <script src="app/misc/router.js"></script>
+    <script src="app/misc/authenticate.js"></script>
+    <script src="app/misc/readCredentials.js"></script>
+    <script src="app/misc/storeCredentials.js"></script>    
+    <script src="app/misc/color.js"></script>
+    <script src="app/misc/file.js"></script>
+    <script src="app/misc/wiki.js"></script>
+    <link href="node_modules/vis/dist/vis.min.css" rel="stylesheet" type="text/css">
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="node_modules/core-js/client/shim.min.js"></script>
+    <script src="node_modules/zone.js/dist/zone.js"></script>
+    <script src="node_modules/reflect-metadata/Reflect.js"></script>
+    <script src="node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
+    <script src="node_modules/jquery-contextmenu/dist/jquery.ui.position.min.js"></script>
+    <script src="node_modules/diff2html/dist/diff2html.js"></script>
+    <script>if (window.module) module = window.module;</script>
+    <script src="systemjs.config.js"></script>
+    <script>
+      System.import('app').catch(function(error) {
+        console.error(error);
+      });
+    </script>
+  </head>
+
+  <body>
+    <my-app></my-app>
+  </body>
+</html>
+
+<script>
+const ipcRenderer = require('electron').ipcRenderer;
+
+ipcRenderer.on('change-to-white-style', function() {
+    changeColor('white');
+});
+    
+ipcRenderer.on('change-to-pink-style', function() {
+    changeColor('pink');
+});
+
+ipcRenderer.on('change-to-blue-style', function() {
+    changeColor('blue');
+});
+    
+ipcRenderer.on('change-to-navy-style', function() {
+    changeColor('navy');
+});
+
+ipcRenderer.on('change-to-green-style', function() {
+    changeColor('green');
+});
+
+ipcRenderer.on('change-to-default-style', function() {
+    changeColor('default');
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    // Add click event to Commit button
+    document.getElementById('commit-button').addEventListener("click", function() {
+      console.log("commit button has been clicked");
+      addAndCommit();
+    });
+
+    document.getElementById('save-button').addEventListener("click", function() {
+      saveFile();
+    });
+
+    document.getElementById('cancel-button').addEventListener("click", function() {
+      cancelEdit();
+    });
+
+  }, 2000);
+
+  // Update modified files on left file panel every X seconds
+  setInterval(function() {
+    displayModifiedFiles();
+  }, 3000);
+}, false);
+
+$('#repo-modal').on('hidden.bs.modal', function (e) {
+  console.log(e+"Disabling clone button");
+  var butt = document.getElementById("cloneButton");
+  butt.innerHTML = 'Clone';
+  butt.setAttribute('class', 'btn btn-primary disabled');
+ });
+
+
+ $.contextMenu({
+   selector: ".file",
+   build: function($trigger) {
+     let branch;
+     var options = {
+       items: {
+         "edit": {
+           name: "Edit",
+           icon: "edit",
+           callback: function(itemKey, opt) {
+             let content = $trigger.text();
+             console.log("path of local repository: " + repoFullPath + "/" + content);
+             let doc = document.getElementById("diff-panel-body");
+             doc.innerHTML = "";
+             doc.contentEditable = "true";
+
+             displayDiffPanel();
+             enableSaveCancelButton();
+             readFromFile(content);
+           }
+         }
+       }
+     }
+     return options;
+   }
+ });
+
+$.contextMenu({
+  selector: ".network",
+
+  build: function($trigger) {
+    let branch;
+    var options = {
+      callback: function(key, options) {
+        var m = "clicked: " + key;
+        console.log(m);
+      },
+      items: {
+        "checkout this branch": {
+          name: "checkout this branch",
+          callback: function(itemKey, opt) {
+            checkoutLocalBranch(branch);
+            return true;
+          }
+        },
+
+        "merge to HEAD": {
+          name: "merge to HEAD"
+        },
+
+        "revert to previous": {
+          name: "revert to previous",
+          callback: function(itemKey, opt) {
+            revertCommit("refs/heads/" + branch);
+          }
+        },
+
+        "reset commit": {
+          name: "reset commit",
+          callback: function(itemKey, opt) {
+            resetCommit("refs/heads/" + branch);
+          }
+        }
+      }
+    };
+
+    if (toNode !== undefined) {
+      branch = toNode['label'];
+      if (branch.substring(0, 1) === '*') {
+        branch = branch.substring(1, branch.length);
+      }
+      options.items['merge to HEAD'].callback = function(itemKey, opt) {
+        console.log("meging to HEAD");
+        mergeInMenu(branch);
+      };
+    } else {
+      $('.network').data('contextMenuRoot').$('trigger').contextMenu('hide')
+    }
+    toNode = undefined;
+
+    return options;
+  }
+});
+</script>

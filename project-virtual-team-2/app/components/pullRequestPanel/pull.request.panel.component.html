@@ -1,0 +1,92 @@
+<div class="pull-request-panel" id="pull-request-panel">
+    <div id="pr-status-1">
+        <!-- Area to display PRs, comments etc. -->
+        <div class="pr-display-panel" id="pr-display-panel">
+            <div class="row">
+                <div class="col-sm-10">
+                    <button id="pr-diff-button" class="btn btn-success" (click)="togglePRDiff()">Show file differences</button>
+                </div>
+                <div class="col-sm-2">
+                    <i class="fa fa-arrow-right" (click)="halfExtendPRPanel()"></i>
+                </div>
+            </div>
+            <div id="pr-div">
+
+            </div>
+            <div id="pr-diff">
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav bar on the right of the screen to show/hide PR Icon. -->
+    <div class="right-pr-nav">
+        <i (click)="togglePRPanel()"><img src="./assets/PullRequestIcon.svg"></i>
+    </div>
+
+    <div id="pr-status-2">
+        <!-- Area to list all PRs. -->
+        <div class="pr-list-container" id="pr-list-container">
+            <div class="pr-card">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h3 id="create-pr-text">Create a pull request</h3>
+                    </div>
+                </div>
+                <form>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <p>From:</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <select id="pr-from">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 pull-right">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <p>To:</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <select id="pr-to">
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <label for="pr-title" id="new-pr-title">Title:</label>
+                                <input type="text" class="form-control" aria-placeholder="Enter the title here" id="pr-title">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <label for="pr-body">Body:</label>
+                                <textarea id="pr-body" class="form-control" aria-placeholder="Enter the body here"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12 text-center">
+                                <button class="btn btn-success create-pr-button" (click)="createNewPullRequest()">Create
+                                    Pull Request</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <h3>Open Pull Requests:</h3>
+            <ul class="list-group" id="pr-list" role="menu">
+            </ul>
+        </div>
+    </div>
+</div>

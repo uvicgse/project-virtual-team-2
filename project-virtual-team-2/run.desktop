@@ -1,0 +1,7 @@
+[Desktop Entry]
+Version=1.0
+Name=Visual Git
+Comment=Starts Visual Git
+Exec=bash -c '"$(dirname "$1")"/run-bash.sh' run-bash %k
+Terminal=true
+Type=Application

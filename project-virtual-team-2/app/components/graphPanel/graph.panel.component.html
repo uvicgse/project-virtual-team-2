@@ -1,0 +1,73 @@
+<div class="graph-panel" id="graph-panel">
+  <div class="network" id="my-network">
+  </div>
+  <ul class="dropdown-menu" role="menu" id="branchOptions">
+    <li><a tabindex="0" href="#">Checkout this branch</a></li>
+    <li class="dropdown-submenu">
+      <a tabindex="0" href="#">Merge from</a>
+      <ul class="dropdown-menu" role="menu" id="otherBranches"></ul>
+    </li>
+  </ul>
+  <div class="modal fade" id="mergeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Merge branches</h4>
+        </div>
+        <div class="modal-body">
+          <p id="mergeModalBody"></p>
+        </div>
+        <p class="invisible" id="fromMerge"></p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" (click)="mergeBranches()" data-dismiss="modal">Yes</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div>
+  <div class="modal fade" id="rebaseModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Rebase branches</h4>
+        </div>
+        <div class="modal-body">
+          <p id="rebaseModalBody"></p>
+        </div>
+        <p class="invisible" id="fromRebase"></p>
+        <p class="invisible" id="toRebase"></p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" (click)="mergeBranches()" data-dismiss="modal">Yes</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div>
+  <div class="modal fade" id="authorProfileModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title">Author</h4>
+        </div>
+        <div class="modal-body">
+          <img id="authorModalImage" src="" style="padding-right: 10px; float: left" width="90" height="80">
+          <div id="authorModalDetails">
+          </div>
+          <p class="clear">&nbsp;</p>
+        </div>
+        <div class="modal-footer">
+          <button id="authorModalProfileButton" type="button" class="btn btn-primary" data-dismiss="modal">View Github Profile</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+        </div>
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div>
+</div>
+
+<div class="spinner" id="spinner">
+  <div class="spinnerGraph"></div>
+  <div id="loadingGraph">Loading Graph</div>
+</div>

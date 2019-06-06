@@ -1,0 +1,26 @@
+<div class="editor-panel" id="editor-panel">
+    <div class="editor-header">
+        <button class="open-button" (click)="openFile()">Open File</button>
+        <input type="file" id="file-upload" (change)="newFileUpload()" style="display: none;" />
+        <button class="open-button" (click)="saveFile()" id="editor-save-button">Save</button>
+        <div class="indent-selector">
+            <p  id="indent-selector-p"> Spaces to indent: </p>
+            <select id="selected-indent" (change)="updateIndentAmount()">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4" selected="selected">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+        </div>
+        <button class="close-button" (click)="closeEditor()">Close</button>
+        <button class="close-button" (click)="hideEditor()">Hide</button>
+    </div>
+    <div class="file-tab" id="file-tab">
+    </div>
+    <div id="file-editors">
+    </div>
+</div>

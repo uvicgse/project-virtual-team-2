@@ -1,0 +1,401 @@
+<nav class="navbar navbar-inverse" role="navigation">
+  <div class="container-fluid row">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+        aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a href="#"><img src="./assets/AddRepositoryFolder.svg" onclick="switchToAddRepositoryPanel()"
+          class="add-repository-button" title="Add Repository"></a>
+    </div>
+    <div class="collapse navbar-collapse" id="navbar">
+      <ul class="nav navbar-nav col-md-5 hidden-xs">
+        <li><img src="./assets/RightArrow.svg" class="right-arrow"></li>
+        <li class="repo-name dropdown-toggle">
+          <a href="#" id="repo-name" data-toggle="modal" data-target="#repo-modal"
+            onclick="checkSignedIn()">repository</a>
+        </li>
+        <li><img src="./assets/RightArrow.svg" class="right-arrow"></li>
+        <li class="branch-name dropdown">
+          <a href="#" class="dropdown-toggle" id="branch-name" data-toggle="dropdown" onclick="switchToMainPanel()">
+            branch<span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
+            <li role="presentation" id="create-branch">
+              <div class="input-group menuitem">
+                <input type="text" id="branchName" class="form-control" placeholder="Search or create branch">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
+                </span>
+              </div>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <!--Toolbar-->
+      <ul class="navbar-nav col-md-4 hidden-xs toolbar-Container">
+        <li class="toolbar-Icons" onclick="openWiki()">
+          <i id="wiki-icon" class="fa fa-wikipedia-w fa-2x"></i>
+          <span class="toolbar-Text">Wiki</span>
+        </li>
+        <!--Commit-->
+        <li class="toolbar-Icons" onclick="commitModal()">
+          <a href="#"><img src="./assets/Plus.svg" height="40" width="48" class="add-repository-button"
+              title="Commit"></a>
+          <span class="toolbar-Text">Commit</span>
+        </li>
+
+        <!--Push-->
+        <li class="toolbar-Icons" onclick="pushToRemote()">
+          <a href="#"><img src="./assets/Push.svg" height="40" width="48"class="upload" title="Push"></a>
+          <span class="toolbar-Text">Push</span>
+        </li>
+
+        <!--Pull-->
+        <li class="toolbar-Icons" onclick="pullFromRemote()">
+          <a href='#'><img src="./assets/Pull.svg" height="40" width="48" class="download" title="Sync"></a>
+          <span class="toolbar-Text">Pull</span>
+        </li>
+
+        <!--Clean-->
+        <li class="toolbar-Icons" onclick="cleanRepo()">
+          <a href="#"><img src="./assets/Clean-Dark.svg" height="40" width="48" class="add-repository-button"
+              title="Clean"></a>
+          <span class="toolbar-Text">Clean</span>
+        </li>
+
+        <!--Branch-->
+        <li class="toolbar-Icons" onclick="openBranchModal()">
+          <a href="#"><img src="./assets/Branch.svg" height="40" width="48"  class="add-repository-button" title="Branch"></a>
+          <span class="toolbar-Text">Branch</span>
+        </li>
+
+        <!--Revert-->
+        <li class="toolbar-Icons" onclick="revertCommit()">
+            <a href="#"><img src="./assets/Revert.svg" height="40" width="48" class="add-repository-button" title="Revert"></a>
+            <span class="toolbar-Text">Revert</span>
+          </li>
+      </ul>
+
+      
+      <ul class="navbar-nav navbar-right hidden-xs">
+        <li>
+          <label id="githubname" style="color:white"></label>
+          <div id="Button_Sign_out">
+              <a class="btn btn-default btn-outline btn-circle"  id="avatar" data-toggle="collapse" href="#nav-collapse1" aria-expanded="false" aria-controls="nav-collapse1" onclick="signInOrOut()">Sign out</a>
+          </div>
+          <div id="Button_Sign_in">
+              <a class="btn btn-default btn-outline btn-circle"  id="avatar" data-toggle="collapse" href="#nav-collapse1" aria-expanded="false" aria-controls="nav-collapse1" onclick="hideSignInButton()">Sign in</a>
+          </div>
+          </li>
+      </ul>
+
+
+      <div class="collapse nav navbar-nav nav-collapse" id="nav-collapse1">
+        <form class="navbar-form navbar-right form-inline" role="form" style="width:280px;">
+          <div class="form-group">
+            <label class="sr-only" for="Email">User name</label>
+            <img src="./assets/error.png" class="error-icon" id="username-error-icon">
+            <input type="text" class="form-control" id="Email1" placeholder="Username or Email" autofocus required style="width: 206px !important"/>
+          </div>
+          <div class="form-group">
+            <label class="sr-only" for="Password">Password</label>
+            <img src="./assets/error.png" class="error-icon" id="password-error-icon">
+            <input type="password" class="form-control" id="Password1" placeholder="Password" required />
+          </div>
+          <button type="submit" class="btn btn-success" (click)="switchToMainPanel()">Sign in</button>
+        </form>
+      </div>
+
+      <ul class="nav navbar-nav visible-xs">
+        <li (click)="promptUserToAddRepository()"><a>&nbsp;&nbsp;add repository</a></li>
+        <li class="dropdown">
+          <a id="repo-name" data-toggle="modal" data-target="#repo-modal" href="#">
+            &nbsp;&nbsp;repository
+            <span class="caret"></span>
+          </a>
+        </li>
+        <li class="dropdown">
+          <a id="branch-name" data-toggle="dropdown" href="#">
+            &nbsp;&nbsp;branch
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
+            <li role="presentation" id="create-branch">
+              <div class="input-group menuitem">
+                <input type="text" id="branchName" class="form-control" placeholder="Search or create branch">
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
+                </span>
+              </div>
+            </li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a id="merge-name" onclick="getOtherBranches()" data-toggle="dropdown" href="#">
+            &nbsp;&nbsp;update from
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" id="merge-dropdown" role="menu">
+          </ul>
+        </li>
+        <li class="upload" onclick="pushToRemote()"><a href="#">&nbsp;&nbsp;pull</a></li>
+        <li class="download" onclick="pullFromRemote()"><a href="#">&nbsp;&nbsp;push</a></li>
+        <li class="clone" onclick="cloneFromRemote()"><a href="#">&nbsp;&nbsp;clone</a></li>
+        <li class="clean" onclick="cleanRepo()"><a href="#">&nbsp;&nbsp;clean</a></li>
+        <li class="sync" onclick="requestLinkModal()"><a href="#">&nbsp;&nbsp;sync</a></li>
+      </ul>
+    </div>
+    <div id="cloneProgressDiv" class="progress" style="visibility: collapse">
+      <div id="cloneProgressBar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20"
+        aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div id="otpModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Two Factor Authentication</h4>
+      </div>
+      <div class="modal-body">
+        Please enter your authentication code (SMS or from authenticator app)
+        <div class="input-group">
+          <br>
+          <input id="otp" type="text" class="form-control" placeholder="Authentication Code" aria-describedby="basic-addon1">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="submitOtpButton" class="btn btn-primary" data-dismiss="modal">Submit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Info</h4>
+      </div>
+      <div class="modal-body" id="modal-text-box">
+        unset
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalW" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Warning!</h4>
+      </div>
+      <div class="modal-body" id="modal-text-box">
+        You have changes that have not been committed or pushed. If you exit or reload now you will lose progress.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="Reload()">Reload</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="Close()">Exit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="modalW2" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Warning!</h4>
+      </div>
+      <div class="modal-body" id="modal-text-box">
+
+        You have changes that have not been committed or pushed. If you log out now you will lose progress.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="WarningSignIn()">OK</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalW3" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Warning!</h4>
+      </div>
+      <div class="modal-body" id="modal-text-box">
+        You have changes that have not been committed or pushed. If you Pull now you will lose progress.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="pullFromRemote()">OK</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="modalW2" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Warning!</h4>
+      </div>
+      <div class="modal-body" id="modal-text-box">
+
+        You have changes that have not been committed or pushed. If you log out now you will lose progress.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="WarningSignIn()">OK</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalW3" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Warning!</h4>
+      </div>
+      <div class="modal-body" id="modal-text-box">
+        You have changes that have not been committed or pushed. If you Pull now you will lose progress.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="pullFromRemote()">OK</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="repo-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" id="repo-list-modal">
+      <input type="text" id="searchRep" class="form-control" placeholder="Search Repository">
+      <span class="input-group-btn">
+        <button class="btn btn-default" type="button" onclick="searchRepoName()">Search</button>
+      </span>
+      <ul class="list-group"id="repo-dropdown" role="menu" aria-labelledby="repo-name">
+      </ul>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary disabled" id="cloneButton" onclick="cloneRepo()">Clone</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
+
+<div id="fetch-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content" style=" width: 602px !important">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Info</h4>
+      </div>
+      <div class="modal-body" id="modal-text-box">
+        Please provide the HTTP path to the original repository:
+        <input type="text" id="origin-path" style=" width: 554px !important" placeholder="https://github.com/ORIGINAL_OWNER/ORIGINAL_OWNER_REPOSITORY.git">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="fetchFromOrigin()">Confirm</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Modal for creating a new branch-->
+<div id="branch-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <!---->
+    <div class="modal-content" id="rep-modal">
+      <div class="modal-header branchModalHeader">
+        <h4 class="modal-title branchModalTitle branchModalComponents" >Create a new Branch</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true" onclick="clearBranchErrorText()" class="branchModalComponents">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!--Current Branch Text-->
+        <h5 type="text" id="currentBranchText" class="branchModalComponents"> Current Branch: </h5>
+        <br>
+        <input type="text" id="branch-name-input" class="form-control branchModalComponents" placeholder="New Branch">
+        <br>
+        <div class="modal-body branchModalError branchModalComponents" id="branchErrorText"></div>
+      </div>
+
+
+
+        <!--<input type="text" id="asdasda" class="form-control" placeholder="Search Repository">-->
+        <!--<span class="input-group-btn">-->
+          <!--<button class="btn btn-default" type="button" onclick="searchRepoName()">Search</button>-->
+        <!--</span>-->
+        <!--<ul class="list-group"id="adadadada" role="menu" aria-labelledby="repo-name">-->
+        <!--</ul>-->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="createBranchButton" onclick="createBranch()">Create</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
+
+<!-- Modal for deleting branches -->
+<div id="delete-branch-modal" class="modal fade">
+  <input type="hidden" id="branch-to-delete" name="branch-to-delete" />
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Confirmation</h4>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete the branch <code id="displayedBranchName"></code>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-warning" id="localDeleteButton" onClick="deleteLocalBranch()">Delete Local Branch</button>
+        <button type="button" class="btn btn-warning" id="remoteDeleteButton" onClick="deleteRemoteBranch()">Delete Remote Branch</button>
+      </div>
+    </div>
+  </div>
+</div>
