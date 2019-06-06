@@ -906,6 +906,14 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
   color: darkorange;
 }
 
+
+#graphNodeClickModal .modal-content{
+  width:118%;
+}
+#graphNodeClickModal{
+  vertical-align: middle;
+}
+
 #graphNodeClickModal .row {
   padding: 0px 4px;
 }
@@ -923,12 +931,7 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 #graphNodeClickModal table td{
   padding:5px;
 }
-#graphNodeClickModal table td:first-child{
-  width:40%;
-}
-#graphNodeClickModal table td:nth-child(2){
-  width:100%;
-}
+
 /* Added the display: inline-block 
 
 Added the margin top and margin bottom to add space between each of the blackboxes
