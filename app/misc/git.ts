@@ -784,7 +784,6 @@ function checkIfExistOrigin(branchName) {
 
 function pushToRemote() {
     // checking status of remote repository and only push if you are ahead of remote
-    // Todo use nodegit to get the name of branch
     let branch = document.getElementById("branch-name").innerText;
     //checks if the remote version of your current branch exist
     checkIfExistOrigin(branch).then(function(remoteBranchExist){
