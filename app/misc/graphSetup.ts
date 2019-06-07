@@ -186,24 +186,20 @@ function drawGraph() {
             };
 
             if (network.getScale() > 1.5 && callback.direction === '+' && flag === 'abstract') {
-                console.log('erwerwrwerrw');
                 network.setData(data);
                 flag = 'node';
                 network.fit(moveOptions);
                 //network.redraw();
             } else if (network.getScale() < 0.4 && callback.direction === '-' && flag === 'node') {
-                console.log('111erwdfdfdferwrwerrw');
                 network.setData(abData);
                 flag = 'abstract';
                 network.fit(moveOptions);
                 //network.redraw();
             } else if (network.getScale() > 1.5 && callback.direction === '+' && flag === 'basic') {
-                console.log('34234eeewrwdfdfdferwrwerrw');
                 network.setData(abData);
                 flag = 'abstract';
                 network.fit(moveOptions);
             } else if (network.getScale() < 0.4 && callback.direction === '-' && flag === 'abstract') {
-                console.log('980erwdfdfdferwrwerrw');
                 network.setData(bsData);
                 flag = 'basic';
                 network.fit(moveOptions);
@@ -255,7 +251,7 @@ function drawGraph() {
 
                 if (clicknode != undefined) {
                     // add class to modal for display
-                    $("#graphNodeClickModal").addClass('loadTags')
+                    $("#graphNodeClickModal").addClass('loadTags');
                     let name = clicknode.author.name().toString();
                     let email = clicknode.author.email().toString();
                     // Cache first commit hash from each graph node to check for tags later

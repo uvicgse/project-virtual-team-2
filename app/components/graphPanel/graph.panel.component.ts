@@ -1,23 +1,18 @@
 import { Component, HostListener, ViewChild, ElementRef} from "@angular/core";
-import { tagItem } from "../../misc/git";
 import { resolve } from "url";
-
-
-
-declare let getTags:any;
 
 @Component({
   selector: "graph-panel",
-  templateUrl: 'app/components/graphPanel/graph.panel.component.html'
+  templateUrl: 'app/components/graphPanel/graph.panel.component.html',
+  styles: ['#authorModalImage {padding-right: 10px; float: left;}']
 })
 
 export class GraphPanelComponent {
   tagList: any;
   showCommitList: boolean;
-  getTags: any;
   @ViewChild('graphNodeClickModal') modal: ElementRef;
   //
-  // Listen for user click on graph and display if nodelclicked
+  // Listen for user click on graph and display if node clicked
   @HostListener('click', ['$event']) 
   async onClick() {
     // Check if modal has show class
@@ -26,10 +21,7 @@ export class GraphPanelComponent {
     if(modal){
       let beginnningHash = document.getElementById('commitHash').innerHTML;
       let numCommit = document.getElementById('numCommit').innerHTML;
-      console.log('inComponent');
-      console.log(numCommit);
       await this.asyncCall(beginnningHash, numCommit);
-      console.log(this.tagList);
       this.showCommitList = true;
     }
     // remove if show class
@@ -38,7 +30,6 @@ export class GraphPanelComponent {
   
   // get all tags and commits information
   async asyncCall(beginnningHash, endingHash) {
-    console.log('GRAPH');
     this.tagList = await getTags(beginnningHash, endingHash);
   }
 

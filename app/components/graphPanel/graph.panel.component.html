@@ -45,7 +45,6 @@
       </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
   </div>
-  <!--TODO: redesign graph node click modal-->
   <!--Changed id for berevity-->
   <!-- ** The commit name needs to be only a maximum number of characters **-->
   <div class="modal fade" id="graphNodeClickModal" tabindex="-1" role="dialog">
@@ -58,7 +57,7 @@
         <div class="modal-body">
           <div class="row">
             <h4>Author</h4>
-            <img id="authorModalImage" src="" style="padding-right: 10px; float: left" width="90" height="80">
+            <img id="authorModalImage" src="" width="90" height="80">
             <div id="authorModalDetails"></div>
           </div>
           <div class="row">
@@ -67,7 +66,6 @@
                 <h4>Commit History</h4>
                 <table>
                   <tbody id="commitTagList" *ngIf="showCommitList">
-                    <!-- TODO: this will be an *ngFor that populates the commits and and tag names-->
                     <tr *ngFor="let tag of tagList">
                       <td><h4>{{tag.commitMsg}}</h4></td>
                       <td id="tagDiv">

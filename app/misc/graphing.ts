@@ -354,8 +354,7 @@ function makeBasicNode(c, column: number) {
 
         let shaList = [];
         shaList.push(c.toString());
-        // console.log('Basic Node');
-        // console.log(numOfCommits);
+
         basicList.push({
             sha: shaList,
             id: id,
@@ -414,7 +413,6 @@ function makeAbsNode(c, column: number) {
                 abstractList[i]['count'] += 1;
                 count = abstractList[i]['count'];
                 abstractList[i]['sha'].push(c.toString());
-                console.log('Abstract', count);
                 abNodes.update({id: i+1, title: "Author: " + name + "<br>" + "Number of Commits: " + count, count: count});
                 break;
             }
@@ -469,8 +467,6 @@ function makeAbsNode(c, column: number) {
 
         let shaList = [];
         shaList.push(c.toString());
-        // console.log('Abstract Node');
-        // console.log('Number of commits',numOfCommits);
         abstractList.push({
             sha: shaList,
             id: id,
@@ -492,9 +488,8 @@ function makeNode(c, column: number) {
     let email = stringer.split("%")[1];
     let title = "Author: " + name + "<br>" + "Message: " + c.message();
     let flag = false;
-    // console.log('Each individual node');
-    // console.log(c.sha());
-    
+   
+
     // Need to store beginning hash and number of commits in the node to track the commits that belong to a node
     nodes.add({
         id: id,
