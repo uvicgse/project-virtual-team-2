@@ -6,7 +6,7 @@ var options = {
     // This is given by registering VisualGit with Github Oauth
     client_id: '096b43fe7908abe70257',
     // Possibly shouldn't be used because unsure if electron can hide this data
-    client_secret: 'client_secret',
+    client_secret: 'c61f9340a34bf3c7a34897e538dd05acd18f8802',
     // 
     scopes: ["user:email", "notifications"]
 };
