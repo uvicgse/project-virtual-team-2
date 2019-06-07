@@ -337,7 +337,7 @@ function addAndStash(options) {
       let branch = document.getElementById("branch-name").innerText;
       console.log("Current branch: " + branch);
 
-      stashMessage = document.getElementById("commit-message-input").value;
+      stashMessage = document.getElementById("stash-message-input").value;
 
       /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head */
       if(stashMessage == null || stashMessage == ""){

@@ -1171,3 +1171,22 @@ body .pull-request-panel {
 
 .show {display:block;}
 /* stash-item dropdown menu styles END */
+
+/* Stash-functions START */
+.stash-functions textarea {
+    resize: none;
+    width: 95%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    height: 50px;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.stash-function-buttons {
+  text-align: center;
+}
+/* Stash-functions END */
