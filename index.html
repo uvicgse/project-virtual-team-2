@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="node_modules/diff2html/dist/diff2html.css" type="text/css">
     <link rel="stylesheet" href="stylesheets/styles.css">
     <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-    <script src="node_modules/systemjs/dist/system.src.js"></script>    
+    <script src="node_modules/systemjs/dist/system.src.js"></script>
     <script>var exports={};</script>
     <script src="app/misc/gitCommands.js"></script>
     <script src="app/misc/git.js"></script>
@@ -22,7 +22,7 @@
     <script src="app/misc/router.js"></script>
     <script src="app/misc/authenticate.js"></script>
     <script src="app/misc/readCredentials.js"></script>
-    <script src="app/misc/storeCredentials.js"></script>    
+    <script src="app/misc/storeCredentials.js"></script>
     <script src="app/misc/color.js"></script>
     <script src="app/misc/file.js"></script>
     <script src="app/misc/wiki.js"></script>
@@ -55,7 +55,7 @@ const ipcRenderer = require('electron').ipcRenderer;
 ipcRenderer.on('change-to-white-style', function() {
     changeColor('white');
 });
-    
+
 ipcRenderer.on('change-to-pink-style', function() {
     changeColor('pink');
 });
@@ -63,7 +63,7 @@ ipcRenderer.on('change-to-pink-style', function() {
 ipcRenderer.on('change-to-blue-style', function() {
     changeColor('blue');
 });
-    
+
 ipcRenderer.on('change-to-navy-style', function() {
     changeColor('navy');
 });
@@ -180,7 +180,7 @@ $.contextMenu({
         branch = branch.substring(1, branch.length);
       }
       options.items['merge to HEAD'].callback = function(itemKey, opt) {
-        console.log("meging to HEAD");
+        console.log("merging to HEAD");
         mergeInMenu(branch);
       };
     } else {

@@ -10,18 +10,18 @@ function encrypt(username, password) {
 
     //OS.hostname() is the key.
     //AES encryption
-       
+
     encryptedUsername = CryptoJS.AES.encrypt(username, os.hostname());
     encryptedPassword = CryptoJS.AES.encrypt(password, os.hostname());
 
 
     writetoJSON(encryptedUsername, encryptedPassword);
-    
+
 }
 
 function encryptTemp(username, password) {
   encryptedUsername = CryptoJS.AES.encrypt(username, os.hostname());
-  encryptedPassword = CryptoJS.AES.encrypt(password, os.hostname());  
+  encryptedPassword = CryptoJS.AES.encrypt(password, os.hostname());
 }
 
 function getUsernameTemp() {
@@ -43,15 +43,15 @@ function getPasswordTemp() {
 }
 
 function writetoJSON(encryptedUsername, encryptedPassword) {
-      
+
    console.log("encrypted username is: " + encryptedUsername);
    var file = 'data.json';
    var obj = {'username': encryptedUsername.toString(), 'password': encryptedPassword.toString()};
-    
+
    jsonfile.writeFile(file, obj, function (err) {
      if (err) throw err;
-     console.log('username and password succesfullt saved');
-     
+     console.log('username and password succesfully saved');
+
    })
 
 }

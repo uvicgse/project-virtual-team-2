@@ -9,8 +9,9 @@ let fs = require("fs");
 let async = require("async");
 let readFile = require("fs-sync");
 let green = "#84db00";
+
 let path = require('path');
-let repo, index, oid, remote, commitMessage;
+let repo, index, oid, remote, commitMessage, stashMessage;
 let filesToAdd = [];
 let theirCommit = null;
 let modifiedFiles;
@@ -20,6 +21,7 @@ let stagedFiles: any;
 let vis = require("vis");
 let commitHistory = [];
 let commitList: [any];
+let stashHistory = [""];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
@@ -176,6 +178,42 @@ async function getRefObject(repo, ref){
 }
 
 
+
+
+/*
+  - Gathers the current stashes kept in refs/stash and places their names in an array for git stash list
+  - Function entered onclick from the Stash button on the NavBar
+  - Updates the stash modal with the current stash history list
+  - Contructs a DOM elements that gives users stash options for each stash
+*/
+function refreshStashHistory(){
+    stashHistory = [""];
+    console.log("initializing stash history...");
+    if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
+      let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
+      txt.pop();
+      console.log("/.git/logs/refs/stash/\n" + txt);
+      txt.forEach(function(line) {
+        line = line.split(" ").slice(6, line.length).join(" ");
+        console.log("Adding " + line + " to Stash history");
+        stashHistory.unshift(line);
+      });
+    }
+    stashHistory.pop();
+    let stashListHTML = '';
+    stashHistory.forEach((stash, i) => {
+      stashListHTML +=
+        '<div id="stash-item">' +
+        'Stash{' + i + '}: ' + stash +
+        '<div id="stash-actions">' +
+        '<button class="btn btn-primary" onclick="popStash(' + i + ')" data-dismiss="modal">Pop</button>' +
+        '<button class="btn btn-primary" onclick="applyStash(' + i + ')" data-dismiss="modal">Apply</button>' +
+        '<button class="btn btn-primary" onclick="dropStash(' + i + ')" data-dismiss="modal">Drop</button><div/>' +
+        '</div>'
+        ;
+    });
+    document.getElementById('stash-list').innerHTML = stashListHTML;
+  }
 
 
 function passReferenceCommits(){
@@ -374,14 +412,6 @@ function addAndCommit() {
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
-      /*
-        Issue 8: Making a commit through visual git does not cause the graph to update
-        'addAndCommit' function was not reaching beyond this point therefore 'refreshAll(repository)'
-        was not able to update the graph and labels for the new commit. It is believed that the functionality
-        of a 'SelectAllCheckbox' was either removed or has yet to be implemented. Commenting out this function fixes the issue.
-        A new issue will be opened such that we may implement this feature. -mdesco18
-      */
-      //clearSelectAllCheckbox();
       for (let i = 0; i < filesToAdd.length; i++) {
         addCommand("git add " + filesToAdd[i]);
       }
@@ -396,15 +426,155 @@ function addAndCommit() {
         console.log('tag failed');
       }
       refreshAll(repository);
-    })
-    .catch ((err) => {
-      console.log("git.ts, line 112, could not commit, " + err);
+    }, function (err) {
+      console.log("git.ts, func addAndCommit(), could not commit, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to commit.") {
         displayModal(err.message);
       } else {
-        console.log(err);
-        updateModalText("You have not logged in. Please login to commit a change");
+        updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
+      }
+    });
+}
+
+/* Issue 35: Add stashing functionality
+   Mostly copied from addAndCommit
+    - Function entered from Stash button
+    - Must have a stash message where text is input in commit-message-input
+*/
+function addAndStash(options) {
+  stashMessage = document.getElementById("commit-message-input").value;
+  if(stashMessage == null || stashMessage == ""){
+    window.alert("Cannot stash without a stash message. Please add a stash message before stashing");
+  return;
+  }
+  if(options == null) options = 0;
+  let repository;
+  Git.Repository.open(repoFullPath)
+    .then(function (repoResult) {
+      repository = repoResult;
+      console.log("found a repository");
+      return repository.refreshIndex();
+    })
+
+    .then(function (indexResult) {
+      console.log("found a file to stage");
+      index = indexResult;
+      let filesToStage = [];
+      filesToAdd = [];
+      let fileElements = document.getElementsByClassName('file');
+      for (let i = 0; i < fileElements.length; i++) {
+        let fileElementChildren = fileElements[i].childNodes;
+        if (fileElementChildren[1].checked === true) {
+          filesToStage.push(fileElementChildren[0].innerHTML);
+          filesToAdd.push(fileElementChildren[0].innerHTML);
+        }
+      }
+      if (filesToStage.length > 0) {
+        console.log("staging files");
+        return index.addAll(filesToStage);
+      } else if(options != 2){
+        //If no files checked, then throw error to stop empty commits
+        throw new Error("No files selected to stash.");
+      }
+    })
+
+    .then(function () {
+      console.log("found an index to write result to");
+      return index.write();
+    })
+
+    .then(function () {
+      console.log("creating a tree object using current index");
+      return index.writeTree();
+    })
+
+    .then(function (oidResult) {
+      console.log("changing " + oid + " to " + oidResult);
+      oid = oidResult;
+      return Git.Reference.nameToId(repository, "HEAD");
+    })
+
+    .then(function (head) {
+      console.log("found the current commit");
+      return repository.getCommit(head);
+    })
+
+    .then(function (parent) {
+      console.log("Verifying account");
+      let sign;
+
+      sign = repository.defaultSignature();
+
+      console.log("Signature to be put on stash: " + sign.toString());
+
+
+      // First branch of this If might be unecessary or replaceable by .git/refs/stash to check something else
+      if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
+        let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
+        console.log("head commit on remote: " + tid);
+        console.log("head commit on local repository: " + parent.id.toString());
+        return Git.Stash.save(repository, sign, stashMessage, options);
+      } else {
+        console.log('no other commits');
+        return Git.Stash.save(repository, sign, stashMessage, options);
+      }
+    })
+    .then(function (stashOID) {
+      theirCommit = null;
+      changes = 0;
+
+      let branch = document.getElementById("branch-name").innerText;
+      console.log("Current branch: " + branch);
+
+      //The next 6 lines are somewhat unnecessary but useful for logging
+      var comMessage = Git.Commit.lookup(repository, oid)
+      .then(function(commit){
+        return commit.message();
+      });
+      var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0,8) + " " + comMessage);
+      console.log("Stashing: "+ stashName);
+
+      stagedFiles = null;
+
+      hideDiffPanel();
+      clearStagedFilesList();
+      clearCommitMessage();
+
+      for (let i = 0; i < filesToAdd.length; i++) {
+        addCommand("git add " + filesToAdd[i]);
+      }
+      stashName = "On " + branch + ": " + stashMessage;
+      console.log("Saved as: " + stashName);
+
+      /* options
+         Stash.FLAGS.DEFAULT             0
+         Stash.FLAGS.KEEP_INDEX          1
+         Stash.FLAGS.INCLUDE_UNTRACKED   2
+         Stash.FLAGS.INCLUDE_IGNORED     4
+      */
+      switch(options){
+        case "0":
+          addCommand('git stash push -m "' + stashMessage + '"');
+          break;
+        case "1":
+          addCommand('git stash push -k -m "' + stashMessage + '"');
+          break;
+        case "2":
+          addCommand('git stash push -u -m "' + stashMessage + '"');
+          break;
+      }
+
+     updateModalText("Stash successful!");
+     stashHistory.unshift(stashName);
+     refreshAll(repository);
+    }, function (err) {
+      console.log("git.ts, func addAndStash(), could not stash, " + err);
+      // Added error thrown for if files not selected
+      if (err.message == "No files selected to stash.") {
+        displayModal(err.message);
+      } else {
+        updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
       }
     });
 }
@@ -433,6 +603,191 @@ function deleteTag(tagName) {
 
 
 
+/* Issue 35: Add applying functionality
+   Skeleton copied from pullFromRemote()
+    - Function entered from onclick of the given stash in Stashing options window
+    - pops stash from given index and merges into working directory. Fails if conflicts found.
+
+    //TODO: Consider a revision in merging the pop/apply/drop functions. Easy to test with seperate functions for now.
+*/
+function popStash(index) {
+
+  let repository;
+  let branch = document.getElementById("branch-name").innerText;
+  if (modifiedFiles.length > 0) {
+    updateModalText("Please commit before popping stash!");
+  }
+  Git.Repository.open(repoFullPath)
+    .then(function (repo) {
+      if (index == null) index = 0;
+      repository = repo;
+      console.log("Popping stash at index " + index);
+      addCommand("git stash pop stash@{" + index +"}");
+      var stashName = stashHistory[index];
+      displayModal("Popping stash: "+ stashName);
+
+      let ret = Git.Stash.pop(repository, index, 0);
+      console.log("Pop returned: " + ret);
+
+      //ret returns an unknown object but API Doc says it should return ERROR.CODE
+      if (ret == 0) {
+        return;
+      } else if (ret == Git.Error.CODE.ENOTFOUND){
+        throw new Error("No stash found at given index.");
+      } else if (ret == Git.Error.CODE.EMERGECONFLICT){
+        throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
+      }
+
+    })
+    .then(function () {
+      return Git.Reference.nameToId(repository, "refs/stash");
+    })
+     .then(function (oid) {
+      console.log("Looking up stash with id " + oid + " in all repositories");
+      return Git.AnnotatedCommit.lookup(repository, oid);
+    })
+    .then(function (annotated) {
+      if(annotated != null){
+        console.log("merging " + annotated.id() + " with local safely");
+       var ret2 = Git.Merge.merge(repository, annotated, {fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
+         flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
+          checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
+        });
+       console.log("Merge returned: " + ret2);
+      }
+      theirCommit = annotated;
+      return ret2;
+    })
+    .then(function (mergeCode) {
+      if(mergeCode == -13){
+        window.alert("Conflicts exists! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you pop again!");
+        updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
+      } else {
+        //TODO: refreshIndex with the stash node gone if not done automatically
+
+        stashHistory.splice(index, 1);
+        updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
+      }
+      refreshAll(repository);
+      }, function(err) {
+        console.log("git.ts, func popStash(), could not pop stash, " + err);
+        displayModal(err.message);
+        //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
+      });
+
+}
+
+/* Issue 35+: Add applying functionality
+   copied from popStash()
+    - Function entered from onclick of the given stash in Stashing options window
+    - applies stash from given index and merges into working directory.
+*/
+function applyStash(index) {
+
+  let repository;
+  let branch = document.getElementById("branch-name").innerText;
+  if (modifiedFiles.length > 0) {
+    updateModalText("Please commit before applying stash!");
+  }
+  Git.Repository.open(repoFullPath)
+    .then(function (repo) {
+      if (index == null) index = 0;
+      repository = repo;
+      console.log("applying stash at index " + index);
+      addCommand("git stash apply stash@{" + index +"}");
+      var stashName = stashHistory[index];
+      displayModal("Applying stash: "+ stashName);
+
+      let ret = Git.Stash.apply(repository, index, 0);
+      console.log("Apply returned: " + ret);
+
+      //ret returns an unknown object but API Doc says it should return ERROR.CODE
+      if (ret == 0) {
+        return;
+      } else if (ret == -3 /*id not found*/){
+        throw new Error("No stash found at given index.");
+      } else if (ret == -13 /*Merge Conflict*/){
+        throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
+      }
+
+    })
+    .then(function () {
+      return Git.Reference.nameToId(repository, "refs/stash");
+    })
+     .then(function (oid) {
+      console.log("Looking up stash with id " + oid + " in all repositories");
+      return Git.AnnotatedCommit.lookup(repository, oid);
+    })
+    .then(function (annotated) {
+      if(annotated != null){
+        console.log("merging " + annotated.id() + " with local safely");
+       var ret2 = Git.Merge.merge(repository, annotated, {fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
+         flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
+          checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
+        });
+       console.log("Merge returned: " + ret2);
+      }
+      theirCommit = annotated;
+      return ret2;
+    })
+    .then(function (mergeCode) {
+      if(mergeCode == -13){
+        window.alert("Conflicts exists! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you apply again!");
+        updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
+      } else {
+        //TODO: refreshIndex with the stash node gone if not done automatically
+
+        updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
+      }
+      refreshAll(repository);
+      }, function(err) {
+        console.log("git.ts, func applyStash(), could not apply stash, " + err);
+        displayModal(err.message);
+        //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
+      });
+
+}
+/* Issue 35+: Add dropping stash functionality
+   copied from popStash()
+    - Function entered from onclick of the given stash in Stashing options window
+    - drops stash from given index.
+
+    //TODO: DROP IS NOT FUNCTIONAL ATM
+*/
+function dropStash(index) {
+
+  let repository;
+  let branch = document.getElementById("branch-name").innerText;
+
+  Git.Repository.open(repoFullPath)
+    .then(function (repo) {
+      if (index == null) index = 0;
+      repository = repo;
+      console.log("Dropping stash at index " + index);
+      addCommand("git stash drop stash@{" + index +"}");
+      var stashName = stashHistory.splice(index, 1);
+      displayModal("Dropping stash: "+ stashName);
+
+      let ret = Git.Stash.drop(repository, index, 0);
+      console.log("Drop returned: " + ret);
+
+      //ret returns an unknown object but API Doc says it should return ERROR.CODE
+      if (ret === 0) {
+        return;
+      } else if (ret === -3 /*Git.Error.CODE.ENOTFOUND*/){
+        throw new Error("No stash found at given index.");
+      }
+      //TODO: refreshIndex with the stash node gone if not done automatically
+
+        updateModalText("Success! Stash at index " + index + " dropped from list.");
+        refreshAll(repository);
+      }, function(err) {
+        console.log("git.ts, func dropStash(), could not drop stash, " + err);
+        displayModal(err.message);
+        //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
+      });
+
+}
 
 
 function clearStagedFilesList() {
@@ -468,10 +823,7 @@ function clearModifiedFilesList() {
 function clearCommitMessage() {
   document.getElementById('commit-message-input').value = "";
 }
-/* See line 207 for details
-function clearSelectAllCheckbox() {
-  document.getElementById('select-all-checkbox').checked = false;
-}*/
+
 
 function getAllCommits(callback) {
   clearModifiedFilesList();
@@ -526,7 +878,7 @@ function getAllCommits(callback) {
         },
 
         function (err) {
-          console.log("git.ts, line 203, cannot load all commits" + err);
+          console.log("git.ts, func getAllCommits(), cannot load all commits" + err);
           callback(allCommits);
         });
     });
@@ -557,6 +909,8 @@ function pullFromRemote() {
       return repository.fetchAll({
         callbacks: {
           credentials: function () {
+            let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+            cred = user.credentials;
             return cred;
           },
           certificateCheck: function () {
@@ -574,7 +928,7 @@ function pullFromRemote() {
       console.log("Looking up commit with id " + oid + " in all repositories");
       return Git.AnnotatedCommit.lookup(repository, oid);
     }, function (err) {
-      console.log("fetching all remgit.ts, line 251, cannot find repository with old id" + err);
+      console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
     })
     .then(function (annotated) {
       console.log("merging " + annotated + "with local forcefully");
@@ -623,7 +977,10 @@ function pushToRemote() {
                 ["refs/heads/" + branch + ":refs/heads/" + branch],
                 {
                   callbacks: {
+                    // obtain a new copy of cred every time when user push.
                     credentials: function () {
+                      let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                      cred = user.credentials;
                       return cred;
                     }
                   }
@@ -708,7 +1065,7 @@ function createBranch() {
               repo.defaultSignature(),
               "Created new-branch on HEAD");
           }, function (err) {
-            console.log("git.ts, line 337, error occurred while trying to create a new branch " + err);
+            console.log("git.ts, func createBranch(), error occurred while trying to create a new branch " + err);
           });
       }).done(function () {
         $('#branch-modal').modal('hide');
@@ -780,6 +1137,8 @@ function deleteRemoteBranch() {
               {
                 callbacks: { // pass in user credentials as a parameter
                   credentials: function () {
+                    let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                    cred = user.credentials;
                     return cred;
                   }
                 }
@@ -960,42 +1319,43 @@ function revertCommit() {
   .then(function(Commits){
     sortedListOfCommits(Commits);
      console.log("Commits; "+ commitHistory[0]);
-    })
+  })
 
-    Git.Repository.open(repoFullPath)
-    .then(function(repo){
-      repos = repo;
-      return repos;
-      console.log("This is repos "+ repos);
-    })
-    .then(function(Commits){
-      let index = returnSelectedNodeValue()-1;
-      let commitToRevert = commitHistory[index].sha().substr(0,7);
-      addCommand("git revert "+ commitToRevert);
+  Git.Repository.open(repoFullPath)
+  .then(function(repo){
+    repos = repo;
+    return repos;
+    console.log("This is repos "+ repos);
+  })
+  .then(function(Commits){
+    let index = returnSelectedNodeValue()-1;
+    let commitToRevert = commitHistory[index].sha().substr(0,7);
+    addCommand("git revert "+ commitToRevert)});
 
-    let revertOptions = new Git.RevertOptions();
-    revertOptions.mainline = 0;
-    if(commitHistory[index].parents().length > 1) {
-      revertOptions.mainline = 1;
+  let revertOptions = new Git.RevertOptions();
+  revertOptions.mainline = 0;
+  if(commitHistory[index].parents().length > 1) {
+    revertOptions.mainline = 1;
+  }
+
+  revertOptions.mergeInMenu = 1;
+  return Git.Revert.revert(repos, commitHistory[index],revertOptions)
+  .then(function(number) {
+    console.log("Reverting to " + number);
+    if (number === -1) {
+      updateModalText("Revert failed, please check if you have pushed the commit.");
+    } else {
+      updateModalText("Revert successfully.");
     }
-
-    revertOptions.mergeInMenu = 1;
-    return Git.Revert.revert(repos, commitHistory[index],revertOptions)
-    .then(function(number) {
-      console.log("Reverting to " + number);
-      if (number === -1) {
-        updateModalText("Revert failed, please check if you have pushed the commit.");
-      } else {
-        updateModalText("Revert successfully.");
-      }
-      refreshAll(repos);
-    })
-    .catch(function (err) {
-      console.log(err);
-      updateModalText("Error reverting commit, please commit changes as they will be overwritten, then try again");
-    })
-  }}
+    refreshAll(repos);
+  })
+  .catch(function (err) {
+    console.log(err);
+    updateModalText("Error reverting commit, please commit changes as they will be overwritten, then try again");
+  });
 }
+
+
 
 // Makes a modal for confirmation pop up instead of actually exiting application for confirmation.
 function ExitBeforePush() {
@@ -1048,7 +1408,7 @@ function displayModifiedFiles() {
           let filePaths = document.getElementsByClassName('file-path');
           for (let i = 0; i < filePaths.length; i++) {
             if (filePaths[i].parentElement.className !== "file file-deleted") {
-              let filePath = repoFullPath + "\\" + filePaths[i].innerHTML;
+              let filePath = path.join(repoFullPath, filePaths[i].innerHTML); //modified for *NIX users
               if (!fs.existsSync(filePath)) {
                 filePaths[i].parentElement.remove();
               }
@@ -1434,7 +1794,7 @@ function deleteFile(filePath: string) {
     fs.unlink(newFilePath, (err) => {
       if (err) {
         alert("An error occurred updating the file" + err.message);
-        console.log("git.ts, line 759, an error occurred updating the file " + err);
+        console.log("git.ts, func deleteFile(), an error occurred updating the file " + err);
         return;
       }
       console.log("File successfully deleted");
@@ -1456,7 +1816,7 @@ function cleanRepo() {
 
         //Gets NEW/untracked files and deletes them
         function deleteUntrackedFiles(file) {
-          let filePath = repoFullPath + "\\" + file.path();
+          let filePath = path.join(repoFullpath, file.path()); //modified for *NIX users
           let modification = calculateModification(file);
           if (modification === "NEW") {
             console.log("DELETING FILE " + filePath);
