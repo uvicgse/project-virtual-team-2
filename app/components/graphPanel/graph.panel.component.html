@@ -67,24 +67,25 @@
                 <h4>Commit History</h4>
                 <table>
                   <tbody id="commitTagList" *ngIf="showCommitList">
-                    <!-- TODO: this will be an *ngFor that populates the commits and and tag names-->
-                    <tr *ngFor="let tag of tagList">
-                      <td><h4>{{tag.commitMsg}}</h4></td>
+                    <!-- This is an *ngFor that populates the commits and tag names-->
+                    <tr *ngFor="let commit of commitList">
+                      <td><h4>{{commit.commitMsg}}</h4></td>
                       <td id="tagDiv">
                         <table>
                           <tr>
                             <td>
-                                <button class="btn-sm btn-success">Add</button>
-                            </td>
+                                <button *ngIf="commit.hasTag" class="btn-sm btn-success" (click)="addOrModifyTag(commit)">Modify</button>
+                                <button *ngIf="!commit.hasTag" class="btn-sm btn-success" (click)="addOrModifyTag(commit)">Add</button>
+                              </td>
                             <td>
                                 <div>
-                                    <input placeholder="{{tag.tagName}}" class="tag-div-name-input" id="tag-div-name-input"/>
-                                    <input placeholder="{{tag.tagMsg}}" class="tag-div-message-input" id="tag-div-message-input"/>
+                                    <input placeholder="{{commit.tagName}}" class="tag-div-name-input" id="tag-div-name-input"/>
+                                    <input placeholder="{{commit.tagMsg}}" class="tag-div-message-input" id="tag-div-message-input"/>
                                   </div>
 
                             </td>
                             <td>
-                                <button class="btn-sm btn-danger" (click)="deleteTag(tag.tagName)">Delete</button>
+                                <button class="btn-sm btn-danger" (click)="deleteTag(commit.tagName)">Delete</button>
                             </td>
                               
                           </tr>

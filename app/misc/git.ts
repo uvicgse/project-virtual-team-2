@@ -30,7 +30,7 @@ let commitID = 0;
 //
 // Tag Item Object for issue40
 //
-// export class tagItem {
+// export class CommitItem {
 //   public tagName: string;
 //   public commitMsg: string;
 //   public tagMsg: string;
@@ -41,17 +41,19 @@ let commitID = 0;
 //     this.tagMsg = tagMsg;
 //   }
 // }
-export class tagItem {
+export class CommitItem {
   public tagName: string;
   public commitMsg: string;
   public tagMsg: string;
-  public commitSha: string
+  public commitSha: string;
+  public hasTag: boolean;
   
-  constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string){
+  constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string, hasTag:boolean){
     this.tagName = tagName;
     this.commitMsg = commitMsg;
     this.tagMsg = tagMsg;
     this.commitSha = commitSha;
+    this.hasTag = hasTag;
   }
 }
 
@@ -93,7 +95,7 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of tagItems based on size of commitList
+// Returns an array of CommitItems based on size of commitList
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
@@ -106,12 +108,12 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
       console.log(ref);
       tag = await getRefObject(repo, ref);
       commit = await getCommit(repo, ref);
-      return new tagItem(tag.name(), commit.message(), tag.message(), commit.sha());
+      return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
     }
   }));
 
-  // Check to see if commits match with any tags, if so, include tag name and message in tagItem. 
-  // If unable to match a tag with a commit, return tagItem without tag name and message
+  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem. 
+  // If unable to match a tag with a commit, return CommitItem without tag name and message
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
       if (tItems[j]) {
@@ -120,7 +122,7 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
         }
       }
     }
-    return new tagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
+    return new CommitItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha(), false);
   }));
 
   return tags;

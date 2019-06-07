@@ -1,7 +1,4 @@
 import { Component, HostListener, ViewChild, ElementRef} from "@angular/core";
-import { tagItem } from "../../misc/git";
-import { resolve } from "url";
-
 
 
 declare let getTags:any;
@@ -12,7 +9,7 @@ declare let getTags:any;
 })
 
 export class GraphPanelComponent {
-  tagList: any;
+  commitList: any;
   showCommitList: boolean;
   getTags: any;
   @ViewChild('graphNodeClickModal') modal: ElementRef;
@@ -28,8 +25,8 @@ export class GraphPanelComponent {
       let numCommit = document.getElementById('numCommit').innerHTML;
       console.log('inComponent');
       console.log(numCommit);
-      await this.asyncCall(beginnningHash, numCommit);
-      console.log(this.tagList);
+      await this.asyncGetCommits(beginnningHash, numCommit);
+      console.log(this.commitList + "BLAH");
       this.showCommitList = true;
     }
     // remove if show class
@@ -37,9 +34,9 @@ export class GraphPanelComponent {
   }
   
   // get all tags and commits information
-  async asyncCall(beginnningHash, endingHash) {
+  async asyncGetCommits(beginnningHash, endingHash) {
     console.log('GRAPH');
-    this.tagList = await getTags(beginnningHash, endingHash);
+    this.commitList = await getTags(beginnningHash, endingHash);
   }
 
   mergeBranches(): void {
@@ -58,8 +55,13 @@ export class GraphPanelComponent {
     deleteTag(tagName);
     let beginnningHash = document.getElementById('commitHash').innerHTML;
     let numCommit = document.getElementById('numCommit').innerHTML;
-    this.asyncCall(beginnningHash, numCommit);
+    this.asyncGetCommits(beginnningHash, numCommit);
     //this.modal.nativeElement.contentWindow.location.reload(true);
+  }
+
+  addOrModifyTag(commit): void {
+    console.log("ADD OR MODIFY COMMIT");
+    console.log(commit);
   }
 
 
