@@ -7,7 +7,6 @@ import { Component, OnInit, } from "@angular/core";
 
 export class AuthenticateComponent implements OnInit {
   ngOnInit(): any {
-/* 
     // useSavedCredentials returns true if there is a saved credential and uses it.
     if (useSavedCredentials()){
       // @ts-ignore
@@ -16,11 +15,27 @@ export class AuthenticateComponent implements OnInit {
       // @ts-ignore
       document.getElementById("rememberLogin").checked = false;
     }
-*/
   }
+
+  /*
+  This function runs upon clicking the log in button on the main page
+  It then first checks if there is already a token 
+    if there is not it calls the logic to authenticate and make a token
+  now that there is a token, logs in with that token
+  */
 
   switchToMainPanel(): void {
     console.log("switchToMainPanel: Authenticate.component.ts");
+    if (getOauthToken() == null){
+      createOauthToken();
+    }
+    if (getOauthToken() == null){
+      console.log("there was a log in error as there is still no token (switchToMainPanel: Authenticate.component.ts)");
+    }
+    else {
+      getUserInfo(switchToAddRepositoryPanel);
+    }
+
     /* previous log in logic
     // Check if either the password/username or both fields are empty and show an appropriate message if they are
     if (document.getElementById('password').value == "" && document.getElementById('username').value == "") {
@@ -38,9 +53,7 @@ export class AuthenticateComponent implements OnInit {
       notEmptyUsername();      
       document.getElementById('grey-out').style.display = 'block';
       */
-
-      getUserInfo(switchToAddRepositoryPanel);
-    }
+    //}
   }
 
   testing(): void {
