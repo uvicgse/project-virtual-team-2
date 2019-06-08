@@ -26,7 +26,7 @@ export class GraphPanelComponent {
       console.log('inComponent');
       console.log(numCommit);
       await this.asyncGetCommits(beginnningHash, numCommit);
-      console.log(this.commitList + "BLAH");
+      console.log(this.commitList);
       this.showCommitList = true;
     }
     // remove if show class
@@ -51,17 +51,21 @@ export class GraphPanelComponent {
   }
 
   // Delete tag when delete tag button is clicked. Method will reload list of commits after tag has been deleted
-  deleteTag(tagName): void {
-    deleteTag(tagName);
-    let beginnningHash = document.getElementById('commitHash').innerHTML;
-    let numCommit = document.getElementById('numCommit').innerHTML;
-    this.asyncGetCommits(beginnningHash, numCommit);
+  async deleteTag(tagName): void {
+    await deleteTag(tagName);
+    this.reloadTaglist();
     //this.modal.nativeElement.contentWindow.location.reload(true);
   }
 
-  addOrModifyTag(commit): void {
-    console.log("ADD OR MODIFY COMMIT");
-    console.log(commit);
+  async addOrModifyTag(commit): void {
+    await addOrModifyTag(commit);
+    this.reloadTaglist();
+  }
+
+  reloadTaglist(): void {
+    let beginnningHash = document.getElementById('commitHash').innerHTML;
+    let numCommit = document.getElementById('numCommit').innerHTML;
+    this.asyncGetCommits(beginnningHash, numCommit);
   }
 
 

@@ -79,10 +79,9 @@
                               </td>
                             <td>
                                 <div>
-                                    <input placeholder="{{commit.tagName}}" class="tag-div-name-input" id="tag-div-name-input"/>
-                                    <input placeholder="{{commit.tagMsg}}" class="tag-div-message-input" id="tag-div-message-input"/>
-                                  </div>
-
+                                    <input type="text" [(ngModel)]="commit.tagName" placeholder="Add Tag Name" class="tag-div-name-input" id="tag-div-name-input"/>
+                                    <input type="text" [(ngModel)]="commit.tagMsg" placeholder="Add Tag Message" class="tag-div-message-input" id="tag-div-message-input"/>
+                                </div>
                             </td>
                             <td>
                                 <button class="btn-sm btn-danger" (click)="deleteTag(commit.tagName)">Delete</button>
