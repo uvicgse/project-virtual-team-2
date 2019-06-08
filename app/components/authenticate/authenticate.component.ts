@@ -18,6 +18,7 @@ export class AuthenticateComponent implements OnInit {
   }
 
   switchToMainPanel(): void {
+    console.log("switchToMainPanel: Authenticate.component.ts");
     // Check if either the password/username or both fields are empty and show an appropriate message if they are
     if (document.getElementById('password').value == "" && document.getElementById('username').value == "") {
       emptyPassword();
@@ -38,6 +39,11 @@ export class AuthenticateComponent implements OnInit {
     }
   }
 
+  testing(): void {
+    console.log("testing: Authenticate.component.ts");
+    openOauthWindow();
+  }
+
   createNewAccount(): void {
     window.open("https://github.com/join?", "_blank");
   }
@@ -45,6 +51,14 @@ export class AuthenticateComponent implements OnInit {
   openGitHubPasswordResetPage() : void {
     window.open("https://github.com/password_reset", "_blank");
   }
+}
+
+/*
+  This function will open a new browser window to GitHub's Oauth authentication page and request a token,
+  will then store this token in file system which can be retrieved later with another function
+*/
+function createOauthToken() {
+  return;
 }
 
 /*
