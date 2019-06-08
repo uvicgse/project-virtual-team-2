@@ -58,6 +58,14 @@ export class AuthenticateComponent implements OnInit {
 }
 
 /*
+  This function will open a new browser window to GitHub's Oauth authentication page and request a token,
+  will then store this token in file system which can be retrieved later with another function
+*/
+function createOauthToken() {
+  return;
+}
+
+/*
   If the password is empty, made the input field for the password red and show a message saying its 
   a required field.
 */
