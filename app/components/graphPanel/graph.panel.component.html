@@ -74,7 +74,7 @@
                         <table>
                           <tr>
                             <td>
-                                <button *ngIf="commit.hasTag" class="btn-sm btn-success" (click)="addOrModifyTag(commit)">Modify</button>
+                                <button *ngIf="commit.hasTag" class="btn-sm btn-warning" (click)="addOrModifyTag(commit)">Modify</button>
                                 <button *ngIf="!commit.hasTag" class="btn-sm btn-success" (click)="addOrModifyTag(commit)">Add</button>
                               </td>
                             <td>
