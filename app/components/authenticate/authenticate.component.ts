@@ -7,6 +7,7 @@ import { Component, OnInit, } from "@angular/core";
 
 export class AuthenticateComponent implements OnInit {
   ngOnInit(): any {
+/* 
     // useSavedCredentials returns true if there is a saved credential and uses it.
     if (useSavedCredentials()){
       // @ts-ignore
@@ -15,10 +16,12 @@ export class AuthenticateComponent implements OnInit {
       // @ts-ignore
       document.getElementById("rememberLogin").checked = false;
     }
+*/
   }
 
   switchToMainPanel(): void {
     console.log("switchToMainPanel: Authenticate.component.ts");
+    /* previous log in logic
     // Check if either the password/username or both fields are empty and show an appropriate message if they are
     if (document.getElementById('password').value == "" && document.getElementById('username').value == "") {
       emptyPassword();
@@ -32,9 +35,10 @@ export class AuthenticateComponent implements OnInit {
     } else {
       // Both the fields filled so check if they can log in
       notEmptyPassword();
-      notEmptyUsername();
-      
+      notEmptyUsername();      
       document.getElementById('grey-out').style.display = 'block';
+      */
+
       getUserInfo(switchToAddRepositoryPanel);
     }
   }
@@ -65,38 +69,43 @@ function createOauthToken() {
   If the password is empty, made the input field for the password red and show a message saying its 
   a required field.
 */
+/*
 function emptyPassword() {
   document.getElementById('password').classList.add("error");
   document.getElementById('password-error').style.display = 'inline-block';
 }
-
+*/
 /*
   If the username is empty, made the input field for the username red and show a message saying its 
   a required field.
 */
+/*
 function emptyUsername() {
   document.getElementById('username').classList.add('error');
   document.getElementById('username-error').style.display = 'inline-block';
 }
-
+*/
 /*
   If the username is not empty and the input field has been made red, change it back to normal and get
   rid of the warning message.
 */
+/*
 function notEmptyUsername() {
   if (document.getElementById('username').classList.contains('error')) {
     document.getElementById('username').classList.remove('error');
     document.getElementById('username-error').style.display = 'none';
   }
 }
-
+*/
 /*
   If the password is not empty and the input field has been made red, change it back to normal and get
   rid of the warning message.
 */
+/*
 function notEmptyPassword() {
   if (document.getElementById('password').classList.contains('error')) {
     document.getElementById('password').classList.remove('error');
     document.getElementById('password-error').style.display = 'none';
   }
 }
+*/
