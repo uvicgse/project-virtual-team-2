@@ -62,21 +62,6 @@ function createOauthToken() {
 }
 
 /*
-  This function takes in an Oauth token and stores it in the file system
-*/
-function storeOauthToken(token) {
-  return;
-}
-
-/*
-  This function retrieves and returns a valid Oauth token from the file system
-  returns null if no token exists
-*/
-function getOauthToken() {
-  return null;
-}
-
-/*
   If the password is empty, made the input field for the password red and show a message saying its 
   a required field.
 */

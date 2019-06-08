@@ -24,6 +24,13 @@ function encryptTemp(username, password) {
   encryptedPassword = CryptoJS.AES.encrypt(password, os.hostname());
 }
 
+/*
+  This function takes in an Oauth token and stores it in the file system
+*/
+function storeOauthToken(token) {
+  return;
+}
+
 function getUsernameTemp() {
   if (encryptedUsername === undefined){ // the user has not logged in, return null
     return null;
