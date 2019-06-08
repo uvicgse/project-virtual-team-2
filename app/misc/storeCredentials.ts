@@ -51,7 +51,7 @@ function storeOauthToken(accessToken) {
 }
 
 /*
-  This function will ecrypt an Oauth token and store in memmory
+  This function will ecrypt an Oauth token and store in memory
   encrypted using AES encryption and using os.hostname() as the key
 */
 function encryptOauthToken(accessToken) {
