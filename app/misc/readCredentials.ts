@@ -16,6 +16,14 @@ function decrypt() {
   encryptedPassword = objRead.password;
 }
 
+/*
+  This function retrieves and returns a valid Oauth token from the file system
+  returns null if no token exists
+*/
+function getOauthToken() {
+  return null;
+}
+
 function getUsername() {
   if (encryptedUsername != null) {
     var decryptedUsernameBytes = CryptoJS.AES.decrypt(
