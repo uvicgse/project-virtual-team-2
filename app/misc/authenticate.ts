@@ -130,13 +130,11 @@ function getUserInfo(callback) {
   client = github.client(getOauthToken());
   var ghme = client.me();
 
-  //previous method was to check login error, since we don't use username and password anymore, cleaned this.
   ghme.info(function(err, data, head) {
       processLogin(ghme, callback);
   });
 }
 
-//TODO: Remove the login box
 function processLogin(ghme, callback) {
   ghme.info(function(err, data, head) {
     if (err) {
