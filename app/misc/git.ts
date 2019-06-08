@@ -991,6 +991,11 @@ function getAllCommits(callback) {
 
 
 async function pullFromRemote() {
+
+    if(!(readFile.exists(repoFullPath + "/.git/refs/remotes"))){
+    updateModalText("Cannot pull. No remote repositories exist.");
+    return;
+    }
     let repository;
     let branch = "";
     await getBranchName().then((branchName) => {
@@ -1077,6 +1082,7 @@ function getAheadBehindCommits(branchName) {
         });
     });
 }
+
 
 //checks if the remote version of your current branch exist
 function checkIfExistOrigin(branchName) {
