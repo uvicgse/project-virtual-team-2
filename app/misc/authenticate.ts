@@ -33,6 +33,7 @@ function CommitNoPush() {
         }
 }
 //constructor method to create a new copy of cred every time
+//TODO: delete this as no longer needed
 function createCredentials(username, password) {
   this.username = username;
   this.password = password;
@@ -125,75 +126,15 @@ function getUserInfo(callback) {
   let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
   cred = user.credentials;
 
-  client = github.client({
-    username: getUsernameTemp(),
-    password: getPasswordTemp()
-  });
+  //build a client from access token
+  client = github.client(getOauthToken());
   var ghme = client.me();
 
+
   ghme.info(function(err, data, head) {
-    if (err) {
-      if (err.toString().indexOf("OTP") !== -1)
-      {
-        github.auth.config({
-          username: getUsernameTemp(),
-          password: getPasswordTemp()
-        }).login({"scopes": loginScopes,
-          "note": Math.random().toString()
-        }, function (err, id, token, headers) {
-          document.getElementById("submitOtpButton")!.onclick = function() {
-            submitOTP(callback);
-          }
-          $("#otpModal").modal('show');
-        });
-      }
-      else if (err == "Error: getaddrinfo ENOTFOUND api.github.com api.github.com:443" || err == "Error: getaddrinfo ENOENT api.github.com:443" || err == "Error: getaddrinfo EAI_AGAIN api.github.com:443") {
-
-        displayModal("No internet connection - Unable to complete sign in"); //catch any sign in errors related to internet connectivity and display a clear message
-
-      }
-      else if(err == "Error: Bad credentials"){   //if github sends as err, replace with the more complete message below
-
-          displayModal("Incorrect username or password - Unable to complete sign in");
-
-      }
-      else{
-
-        displayModal(err); //catch any unanticipated errors
-
-      }
-      document.getElementById('grey-out').style.display = 'none';
-    }
-
-    if (!err) {
       processLogin(ghme, callback);
-    }
-
-  });
-
-
-}
-
-
-function submitOTP(callback) {
-  github.auth.config({
-    username: getUsernameTemp(),
-    password: getPasswordTemp(),
-    otp: document.getElementById("otp")!.value
-  }).login({"scopes": loginScopes,
-    "note": Math.random().toString()
-  }, function (err, id, token, headers) {
-    if (err) {
-      displayModal(err);
-    }
-    else {
-      client = github.client(token);
-      var ghme = client.me();
-      processLogin(ghme, callback);
-    }
   });
 }
-
 
 function processLogin(ghme, callback) {
   ghme.info(function(err, data, head) {
