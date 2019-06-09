@@ -1,6 +1,10 @@
 import * as nodegit from "git";
-import NodeGit, { Status } from "nodegit";
+import NodeGit, {Graph, Status} from "nodegit";
 import { resolve } from "path";
+
+
+
+
 
 let opn = require('opn');
 let $ = require("jquery");
@@ -825,6 +829,7 @@ function clearCommitMessage() {
 }
 
 
+
 function getAllCommits(callback) {
   clearModifiedFilesList();
   let repos;
@@ -958,44 +963,98 @@ function pullFromRemote() {
     });
 }
 
-function pushToRemote() {
-    if (CommitButNoPush === 0) {
-        window.alert("Cannot push without a commit.");
-        return;
-    }
-  let branch = document.getElementById("branch-name").innerText;
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      console.log("Pushing changes to remote")
-      displayModal("Pushing changes to remote...");
-      addCommand("git push -u origin " + branch);
-      repo.getRemotes()
-        .then(function (remotes) {
-          repo.getRemote(remotes[0])
-            .then(function (remote) {
-              return remote.push(
-                ["refs/heads/" + branch + ":refs/heads/" + branch],
-                {
-                  callbacks: {
-                    // obtain a new copy of cred every time when user push.
-                    credentials: function () {
-                      let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                      cred = user.credentials;
-                      return cred;
-                    }
-                  }
-                }
-              );
-            })
-            .then(function () {
-              CommitButNoPush = 0;
-              window.onbeforeunload = Confirmed;
-              console.log("Push successful");
-              updateModalText("Push successful");
-              refreshAll(repo);
+// function to determine the status of the remote repository compared to local repository
+// functions takes the name of the branch
+function getAheadBehindCommits(branchName) {
+    let origin = "origin";
+    origin = path.join(origin, branchName);
+    return Git.Repository.open(repoFullPath).then(function (repo) {
+        // returns commit that head is pointing too (most recent local commit)
+        return repo.getHeadCommit().then(function (commit) {
+            return repo.getReferenceCommit(origin).then(function (remoteCommit) {
+                // return an object { ahead : <number of commits ahead>, behind: <number of commits behind>
+                return Graph.aheadBehind(repo, commit.id(), remoteCommit.id()).then(function (aheadBehind) {
+                    return aheadBehind;
+                });
+            }, function (e) {
+                console.log(e.message)
             });
         });
     });
+}
+
+//checks if the remote version of your current branch exist
+function checkIfExistOrigin(branchName) {
+    let origin = "origin";
+    origin = path.join(origin, branchName);
+    return Git.Repository.open(repoFullPath).then(function (repo) {
+        return repo.getReferenceCommit(origin).then(function (originCommit) {
+            return true;
+        }, function (e) {
+            return false
+        });
+    });
+}
+
+function pushToRemote() {
+  // checking status of remote repository and only push if you are ahead of remote
+  let branch = document.getElementById("branch-name").innerText;
+  //checks if the remote version of your current branch exist
+  checkIfExistOrigin(branch).then(function(remoteBranchExist){
+    if (!remoteBranchExist) {
+      window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
+          "To push the current branch and set the remote as upstream, use\n" +
+          "\n" +
+          "    git push --set-upstream origin test-branch");
+      return;
+    } else {
+      // tells the user if their branch is up to date or behind the remote branch
+      getAheadBehindCommits(branch).then(function (aheadBehind) {
+        if (aheadBehind.behind !== 0) {
+          window.alert("your branch is behind remote by " + aheadBehind.behind);
+          return;
+
+        } else if (aheadBehind.ahead === 0) {
+          window.alert("Your branch is already up to date");
+          return;
+        } else {
+          // Do the Push
+          Git.Repository.open(repoFullPath).then(function (repo) {
+            console.log("Pushing changes to remote");
+            displayModal("Pushing changes to remote...");
+            addCommand("git push -u origin " + branch);
+            repo.getRemotes().then(function (remotes) {
+              repo.getRemote(remotes[0]).then(function (remote) {
+                return remote.push(
+                    ["refs/heads/" + branch + ":refs/heads/" + branch],
+                    {
+                      callbacks: {
+                        // obtain a new copy of cred every time when user push.
+                        credentials: function () {
+                          let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                          cred = user.credentials;
+                          return cred;
+                        }
+                      }
+                    }
+                );
+              }, function(e){
+                console.log(Error(e));
+              }).then(function () {
+                CommitButNoPush = 0;
+                window.onbeforeunload = Confirmed;
+                console.log("Push successful");
+                updateModalText("Push successful");
+                refreshAll(repo);
+              });
+            }, function(e){
+              console.log(Error(e));
+            });
+          });
+        }
+      });
+    }
+  });
 }
 
 function commitModal() {
