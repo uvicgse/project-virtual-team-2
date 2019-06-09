@@ -22,6 +22,7 @@ let stashHistory = [""];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
+let GITHUB_TOKEN = 'e19c69d6d5b54b55f99741eb92bdc43c877c54fe';
 
 export class CommitItem {
   public tagName: string;
@@ -1229,34 +1230,48 @@ async function pushToRemote() {
           window.alert("Your branch is already up to date");
           return;
         } else {
-          // Do the Push
-          Git.Repository.open(repoFullPath).then(function (repo) {
-            displayModal("Pushing changes to remote...");
-            addCommand("git push");
-            repo.getRemotes().then(function (remotes) {
-              repo.getRemote(remotes[0]).then(function (remote) {
-                return remote.push(
-                    ["refs/heads/" + branch + ":refs/heads/" + branch],
-                    {
-                      callbacks: {
-                        // obtain a new copy of cred every time when user push.
-                        credentials: function () {
-                          let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                          cred = user.credentials;
-                          return cred;
-                        }
-                      }
-                    }
-                );
-              }, function (e) {
-                console.log(Error(e));
-              }).then(async function () {
-                window.onbeforeunload = Confirmed;
-                await refreshAll(repo);
-                updateModalText("Push successful");
-              });
-            }, function (e) {
-              console.log(Error(e));
+            // tells the user if their branch is up to date or behind the remote branch
+            getAheadBehindCommits(branch).then(function (aheadBehind) {
+                if (aheadBehind.behind !== 0) {
+                    window.alert("your branch is behind remote by " + aheadBehind.behind);
+                    return;
+
+                } else if (aheadBehind.ahead === 0) {
+                    window.alert("Your branch is already up to date");
+                    return;
+                } else {
+                    // Do the Push
+                    Git.Repository.open(repoFullPath).then(function (repo) {
+                        displayModal("Pushing changes to remote...");
+                        addCommand("git push");
+                        repo.getRemotes().then(function (remotes) {
+                            repo.getRemote(remotes[0]).then(function (remote) {
+                                return remote.push(
+                                    ["refs/heads/" + branch + ":refs/heads/" + branch],
+                                    {
+                                        callbacks: {
+                                            // obtain a new copy of cred every time when user push.
+                                            credentials: function () {
+                                                return Git.Cred.userpassPlaintextNew(GITHUB_TOKEN, 'x-oauth-basic')
+                                                // let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                                                // cred = user.credentials;
+                                                // return cred;
+                                            }
+                                        }
+                                    }
+                                );
+                            }, function (e) {
+                                console.log(Error(e));
+                            }).then(async function () {
+                                window.onbeforeunload = Confirmed;
+                                await refreshAll(repo);
+                                updateModalText("Push successful");
+                            });
+                        }, function (e) {
+                            console.log(Error(e));
+                        });
+                    });
+                }
             });
           });
         }
