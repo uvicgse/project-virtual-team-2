@@ -13,7 +13,9 @@ export class GraphPanelComponent {
   showCommitList: boolean;
   getTags: any;
   @ViewChild('graphNodeClickModal') modal: ElementRef;
-  //
+  
+
+
   // Listen for user click on graph and display if nodelclicked
   @HostListener('click', ['$event']) 
   async onClick() {
@@ -53,20 +55,20 @@ export class GraphPanelComponent {
   // Delete tag when delete tag button is clicked. Method will reload list of commits after tag has been deleted
   async deleteTag(tagName): void {
     await deleteTag(tagName);
-    this.reloadTaglist();
+    document.getElementById("onExit").click();
     //this.modal.nativeElement.contentWindow.location.reload(true);
   }
 
   async addOrModifyTag(commit): void {
     await addOrModifyTag(commit);
-    this.reloadTaglist();
+    document.getElementById("onExit").click();
   }
 
-  reloadTaglist(): void {
-    let beginnningHash = document.getElementById('commitHash').innerHTML;
-    let numCommit = document.getElementById('numCommit').innerHTML;
-    this.asyncGetCommits(beginnningHash, numCommit);
-  }
+  // reloadTaglist(): void {
+  //   let beginnningHash = document.getElementById('commitHash').innerHTML;
+  //   let numCommit = document.getElementById('numCommit').innerHTML;
+  //   this.asyncGetCommits(beginnningHash, numCommit);
+  // }
 
 
   

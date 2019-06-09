@@ -521,7 +521,7 @@ async function deleteTag(tagName) {
           .then(() => {
             console.log(`${name} deleted`);
             addCommand('git tag -d '+ name);
-            refreshAll(repository);
+            
           })
           .then((res) =>{
             resolve(res);
