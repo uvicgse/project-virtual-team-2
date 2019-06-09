@@ -22,7 +22,7 @@ let stashHistory = [""];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
-let GITHUB_TOKEN = 'e19c69d6d5b54b55f99741eb92bdc43c877c54fe';
+let GITHUB_TOKEN = getOauthToken();
 
 export class CommitItem {
   public tagName: string;
