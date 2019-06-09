@@ -25,6 +25,114 @@ let loginScopes = [
   "user"
 ];
 
+/* // Code for requesting Oauth token using https and then storing using storeOauthToken()
+   // Possibly works possibly not, might just use the electron-oauth2 library to do same thing instead
+// https for communicating with Github
+var https = require("https");
+const {BrowserWindow} = require('electron').remote
+// GitHub Credentials
+var options = {
+    // This is given by registering VisualGit with Github Oauth
+    client_id: '096b43fe7908abe70257',
+    // Possibly shouldn't be used because unsure if electron can hide this data
+    client_secret: 'c61f9340a34bf3c7a34897e538dd05acd18f8802',
+    // To adjust permissions
+    scopes: 'gist'
+};
+
+function openOauthWindow(){
+  console.log("Oauth: OpenOauthWindow");
+
+  // Create the URL for GitHub Oauth
+  var authWindow = new BrowserWindow({ width: 800, height: 600, show: false, 'node-integration': false })
+  var githubUrl = 'https://github.com/login/oauth/authorize?';
+  var authUrl = githubUrl + 'client_id=' + options.client_id + '&scope=' + options.scopes;
+
+  // Load the Oauth URL
+  authWindow.loadURL(authUrl);
+  authWindow.show();
+
+  authWindow.webContents.on('will-navigate', function (event, url) {
+    handleCallback(url, authWindow);
+  });
+
+  authWindow.webContents.on('did-get-redirect-request', function (event, oldUrl, newUrl) {
+    handleCallback(newUrl, authWindow);
+  });
+
+  authWindow.on('close', function() {
+    authWindow = null;
+  }, false);
+
+}
+
+function handleCallback(url, authWindow){
+  var raw_code = /code=([^&]*)/.exec(url) || null;
+  var code = (raw_code && raw_code.length > 1) ? raw_code[1] : null;
+  var error = /\?error=(.+)$/.exec(url);
+
+  if (code || error) {
+    // Close the browser if code found or error
+    authWindow.destroy();
+  }
+
+  // If there is a code, proceed to get token from github
+  if (code) {
+    requestGithubToken(options, code);
+  } else if (error) {
+    alert('Oops! Something went wrong and we couldn\'t' +
+      'log you in using Github. Please try again.');
+  }
+}
+
+function requestGithubToken (options, code) {
+  console.log("code received: " + code);
+
+  var postData = 'client_id=' + options.client_id +
+   '&client_secret=' + options.client_secret +
+   '&code=' + code;
+
+  var post = {
+      host: "github.com",
+      path: "/login/oauth/access_token",
+      method: "POST",
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+              'Content-Length': postData.length,
+              "Accept": "application/json"
+      }
+  };
+
+  var req = https.request(post, function(response){
+      var result = '';
+      response.on('data', function(data) {
+          result = result + data;
+      });
+      response.on('end', function () {
+          var json = JSON.parse(result.toString());
+          console.log("access token recieved: " + json.access_token);
+          if (response && response.ok) {
+              // Success - Received Token.
+              // Store it
+              console.log('received token: ' + response.body.access_token);
+              storeOauthToken(response.body.access_token);
+          }
+      });
+      response.on('error', function (err) {
+          console.log("GITHUB OAUTH REQUEST ERROR: " + err.message);
+      });
+  });
+
+  req.write(postData);
+  req.end();
+} */
+
+//Called then user pushes to sign out even if they have commited changes but not pushed; prompts a confirmation modal
+function CommitNoPush() {
+        if (CommitButNoPush == 1) {
+                $("#modalW2").modal();
+        }
+}
 
 
 //constructor method to create a new copy of cred every time

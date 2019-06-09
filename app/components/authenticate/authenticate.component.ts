@@ -58,7 +58,10 @@ export class AuthenticateComponent implements OnInit {
   will then store this token in file system which can be retrieved later with another function
 */
 function createOauthToken() {
-  return;
+  //Maybe here should call openOauthWindow or just remove the function altogether
+  //openOauthWindow();
+  //For now and testing just enter a valid token and store it
+  storeOauthToken('PutYourTokenHere');
 }
 
 /*
