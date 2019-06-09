@@ -33,7 +33,7 @@ function createCredentials(username, password) {
   this.password = password;
   this.credentials = Git.Cred.userpassPlaintextNew(username,password);
 }
-
+/*
 function signInHead(callback) {
   encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
   continuedWithoutSignIn = false;
@@ -67,7 +67,7 @@ function loginWithSaved(callback) {
     document.getElementById("username").value = getUsername();
     document.getElementById("password").value = getPassword(); //get decrypted username n password
 }
-
+*/
 function searchRepoName() {
   let ul = document.getElementById("repo-dropdown");
 
@@ -108,9 +108,8 @@ function searchRepoName() {
 }
 
 function getUserInfo(callback) {
-
-
-  if (signedAfter === true){  // if the trys to login after clicking "continues without sign in"
+/*
+  if (signedAfter === true){  // if the trys to login after clicking "continues without sign in" 
     encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
   }
   else {
@@ -120,14 +119,35 @@ function getUserInfo(callback) {
   let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
   cred = user.credentials;
 
-  client = github.client('e19c69d6d5b54b55f99741eb92bdc43c877c54fe');
+  client = github.client(getOauthToken());
   var ghme = client.me();
 
   ghme.info(function(err, data, head) {
     if (!err) {
       processLogin(ghme, callback);
     }
+    
+  });
+*/
+}
 
+
+function submitOTP(callback) {
+  github.auth.config({
+    username: getUsernameTemp(),
+    password: getPasswordTemp(),
+    otp: document.getElementById("otp")!.value
+  }).login({"scopes": loginScopes,
+    "note": Math.random().toString()
+  }, function (err, id, token, headers) {
+    if (err) {
+      displayModal(err);
+    }
+    else {
+      client = github.client(token);
+      var ghme = client.me();
+      processLogin(ghme, callback);
+    }
   });
 
 
