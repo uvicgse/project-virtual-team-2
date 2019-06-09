@@ -36,3 +36,5 @@ is over them.
 I figured that if we can link the commit of the node currently being hovered, we can then check the hashes with one another,
 then return the tag name of the one where the hashes match. The only blockage I have at the moment is that I am unsure as to how to link
 the displaying of the tag names at the location of the nodes on the front end.
+
+There are 3 different types of nodes to be dealt with in the case of displaying a tag name, bsNodes, basicNdoes, and Nodes.
