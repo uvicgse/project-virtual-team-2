@@ -14,7 +14,7 @@ var encryptedOauthToken;
   and stores the value in memory
 */
 function retrieveEncryptedToken() {
-  file = "data.json";
+  file = "token.json";
 
   // JSON object containg token
   var objRead = jsonfile.readFileSync(file);
@@ -27,6 +27,7 @@ function retrieveEncryptedToken() {
   returns null if no token exists
 */
 function getOauthToken() {
+  retrieveEncryptedToken();
   if (encryptedOauthToken != null) {
     var decryptedTokenBytes = CryptoJS.AES.decrypt(
       encryptedOauthToken.toString(),

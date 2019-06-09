@@ -2,11 +2,16 @@ var CryptoJS = require("crypto-js");
 const os = require('os');
 var jsonfile = require('jsonfile');
 var fs = require('fs');
+// import {createOauthToken} from "../../app/components/authenticate/authenticate.component"
 //TODO: I think the password and username can be removed
 var encryptedPassword;
 var encryptedUsername;
-var encryptedOauthToken
+var encryptedOauthToken;
 
+//test to call function and store token.
+//you should use your token for testing and only push to your private repository!!!
+var accessToken = 'replacewithyourtoken';
+storeOauthToken(accessToken);
 
 //TODO: I think this can/should be removed
 function encrypt(username, password) {
@@ -33,13 +38,13 @@ function encryptTemp(username, password) {
   and then stores it in data.json
 */
 function storeOauthToken(accessToken) {
-  
+
   //Encrypt token
   encryptOauthToken(accessToken);
 
   //Write to the JSON file
   console.log("encrypted Oauth token is: " + encryptedOauthToken);
-  var file = 'data.json';
+  var file = 'token.json';
   var obj = {'OauthToken': encryptedOauthToken.toString()};
 
   jsonfile.writeFile(file, obj, function (err) {

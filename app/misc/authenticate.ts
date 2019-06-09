@@ -120,7 +120,7 @@ function getUserInfo(callback) {
   let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
   cred = user.credentials;
 
-  client = github.client('e19c69d6d5b54b55f99741eb92bdc43c877c54fe');
+  client = github.client(getOauthToken());
   var ghme = client.me();
 
   ghme.info(function(err, data, head) {
