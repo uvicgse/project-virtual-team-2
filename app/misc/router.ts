@@ -102,9 +102,16 @@ function switchToAddRepositoryPanel() {
 
 function hideSignInButton():void{
   document.getElementById("Button_Sign_in").style.display = "none";
+  hideFilePanel();
+  hidePullRequestPanel();
+  hideGraphPanel();
+  hideClonePanel();
+  displayAuthenticatePanel();
+  /*
   if(previousWindow!="repoPanel"){
     switchToMainPanel();
   }
+  */
 }
 
 function wait(ms) {
