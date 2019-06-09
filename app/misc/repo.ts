@@ -16,9 +16,9 @@ let repoName : string = "";
 let fs = require('fs').promises;
 let jsonfile = require('jsonfile');
 let path = require('path');
-
 let settingsPath = path.join(__dirname, ".settings");
 const recentFiles = path.join(settingsPath, 'recent_repos.json');
+
 
 function downloadRepository() {
   let fullLocalPath;

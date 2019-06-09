@@ -466,7 +466,7 @@ body .navbar .fa-clone {
 
 body .footer {
   width: 100%;
-  height: 15vh;
+  height: 18vh;
   background-color: #282828;
   border-top: 2px solid #181818;
   position: fixed;
@@ -494,6 +494,28 @@ body .footer .commit-panel .commit-message-input {
   border-radius: 5px;
   padding: 5px;
 }
+
+#tag-name-input{
+  padding: 2px;
+  margin: 5px 5px 5px 15px;
+  background-color: #000;
+  width: 40%;
+}
+
+#tag-message-input {
+  padding: 2px;
+  margin: 5px 0;
+  background-color: #000;
+  width: 45%;
+}
+
+#tag-name-input, select textarea  {
+  color:rgb(158, 158, 158);
+}
+#tag-message-input, select textarea  {
+  color:rgb(158, 158, 158);
+}
+
 
 body .footer .commit-panel .commit-button-wrapper {
   /* positioned relative to its normal position(bottom left corner) */
@@ -891,6 +913,57 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 .branchModalError {
   color: darkorange;
 }
+
+#graphNodeClickModal .modal-content{
+  width: 118%;
+}
+
+#graphNodeClickModal .row {
+  padding: 0px 4px;
+}
+
+#graphNodeClickModal .row:nth-child(2){
+  background-color: lightgray;
+}
+
+#graphNodeClickModal table{
+  margin: 0 5%;
+}
+#graphNodeClickModal h4 {
+  color: black;
+}
+#graphNodeClickModal table td{
+  padding:5px;
+}
+#graphNodeClickModal table td:first-child{
+  width:40%;
+}
+#graphNodeClickModal table td:nth-child(2){
+  width:100%;
+}
+/* Added the display: inline-block 
+
+Added the margin top and margin bottom to add space between each of the blackboxes
+
+in the model that pops-up when you click on a node */
+#tagDiv {
+
+  padding: 0 30px 0 0;
+  display: inline-block;
+  margin: 13px 0px 2px 0px;
+  background-color: black;
+  box-shadow: 3px 3px 3px darkgrey;
+  border-radius: 5px;
+}
+
+#tagDiv input{
+  border-radius: 3px;
+  padding: 2px;
+}
+
+#tagDiv table {
+ margin:2px;
+} 
 .error {
   background-color: #fce4e4;
   border: 1px solid #cc0033;
