@@ -182,8 +182,6 @@ async function getRefObject(repo, ref){
 }
 
 
-
-
 /*
   - Gathers the current stashes kept in refs/stash and places their names in an array for git stash list
   - Function entered onclick from the Stash button on the NavBar
@@ -217,9 +215,9 @@ function refreshStashHistory(){
                   '<li></li>' +
               '</ul>' +
               '<div id="stash-item-dropdown" class="dropdown-content">' +
-                  '<a onclick="popStash(0)">Pop</a>' +
-                  '<a onclick="applyStash(0)">Apply</a>' +
-                  '<a onclick="dropStash(0)">Drop</a>' +
+                  '<a onclick="popStash('+i+')">Pop</a>' +
+                  '<a onclick="applyStash('+i+')">Apply</a>' +
+                  '<a onclick="dropStash('+i+')">Drop</a>' +
               '</div>' +
           '</div>' +
         '</div>';
@@ -460,8 +458,8 @@ function addAndStash(options) {
 
   if(options == null) options = 0;
 
-  var command = "git stash ";
-  var stashName = "";
+  var command = "git stash "; //default command for console
+  var stashName = ""; //default stash name for stashHistory
 
   let repository;
   Git.Repository.open(repoFullPath)
@@ -484,11 +482,12 @@ function addAndStash(options) {
           filesToAdd.push(fileElementChildren[0].innerHTML);
         }
       }
+
       if (filesToStage.length > 0) {
         console.log("staging files");
         return index.addAll(filesToStage);
       } else if(options != 2){
-        //If no files checked, then throw error to stop empty commits
+        //If no files checked, then throw error to stop empty commits unless untracked option used
         throw new Error("No files selected to stash.");
       }
     })
@@ -527,15 +526,18 @@ function addAndStash(options) {
 
       stashMessage = document.getElementById("stash-message-input").value;
 
-      /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head */
-      if(stashMessage == null || stashMessage == ""){
+      /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head and message */
+      if(stashMessage == null || stashMessage == "") {
+
         var comMessage = "";
+
         await Git.Commit.lookup(repository, parent)
         .then(function(commit){
           comMessage = commit.message();
         }, (rej) => {
-          console.log("Looking up commit message failed: " + rej);
+          console.log("Lookup commit message failed: " + rej);
         });
+
         stashMessage = oid.tostrS().substring(0,8) + " " + comMessage;
         stashName = "WIP ";
       } else {
@@ -550,21 +552,27 @@ function addAndStash(options) {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
         console.log("head commit on remote: " + tid);
         console.log("head commit on local repository: " + parent.id.toString());
+
+        //perform git stash
         return await Git.Stash.save(repository, sign, stashMessage, options).then( (res) => {
           console.log("Stash resolved: " + res);
         }, (rej) => {
           console.log("Stash rejected: " + rej);
         });
+
       } else {
         console.log('no other commits');
+
+        //perform git stash
         return await Git.Stash.save(repository, sign, stashMessage, options).then( (res) => {
           console.log("Stash resolved: " + res);
         }, (rej) => {
           console.log("Stash rejected: " + rej);
         });
+
       }
     })
-    .then(function (stashOID) {
+    .then(function (stashOID) { //Cleanup file panel, update console with commands, refresh working tree
       theirCommit = null;
       changes = 0;
 
@@ -600,7 +608,8 @@ function addAndStash(options) {
      updateModalText("Stash successful!");
      stashHistory.unshift(stashName);
      refreshAll(repository);
-    }, function (err) {
+
+    }, function (err) { //catch any known or unknown errors that may have occured since beginning of function
       console.log("git.ts, func addAndStash(), could not stash, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to stash.") {
@@ -618,13 +627,15 @@ function addAndStash(options) {
     - If the file is tracked by the working tree, Merge will return conflict error but safely merge.
 */
 function popStash(index) {
-  if (index == null) index = 0;
+  if (index == null) index = 0; //default option pops most recent stash
 
   let repository;
   let branch = document.getElementById("branch-name").innerText;
+
   if (modifiedFiles.length > 0) {
     updateModalText("Please commit before popping stash!");
   }
+
    Git.Repository.open(repoFullPath)
     .then( async function (repo) {
       repository = repo;
@@ -633,6 +644,7 @@ function popStash(index) {
       var stashName = stashHistory[index];
       updateModalText("Popping stash: "+ stashName);
 
+      //perform git stash pop
       let ret = await Git.Stash.pop(repository, index, 0)
       .then((res) => {
         console.log("Pop resolved: " + res);
@@ -643,7 +655,7 @@ function popStash(index) {
         return rej;
       });
 
-      //pop returns an undefined object on success but API Doc says it should return ERROR.CODE
+      //Possible error codes returned from pop. Use try/catch if entered.
       if (ret == 0) {
         return;
       } else if (ret == Git.Error.CODE.ENOTFOUND){
@@ -660,7 +672,7 @@ function popStash(index) {
       console.log("Looking up stash with id " + stashOid + " in all repositories");
       return Git.AnnotatedCommit.lookup(repository, stashOid);
     })
-    .then(async function (annotated) {
+    .then(async function (annotated) { //try to merge popped stash with current working tree
       let ret2 = 0;
       if(annotated != null){
         console.log("merging " + annotated.id() + " with local safely");
@@ -680,7 +692,7 @@ function popStash(index) {
       theirCommit = annotated;
       return ret2;
     })
-    .then(function (mergeCode) {
+    .then(function (mergeCode) { //display result of merge and update/refresh app
       if(mergeCode == -13){
         window.alert("Conflicts may exist in the working tree! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you pop again!");
         updateModalText("Merged with possible conflicts. Please consider resolving conflicts in modified files or dropping stash.");
@@ -689,9 +701,9 @@ function popStash(index) {
       }
       stashHistory.splice(index, 1);
       refreshAll(repository);
-     }, function(err) {
+     }, function(err) { //catch all errors thrown since beginning of function
          console.log("git.ts, func popStash(): update, could not pop stash, " + err);
-         updateModalText(err.message);
+         updateModalText("Unexpected Error: " + err.message + "Please restart and try again.");
      });
 
 }
@@ -706,9 +718,11 @@ function applyStash(index) {
 
   let repository;
   let branch = document.getElementById("branch-name").innerText;
+
   if (modifiedFiles.length > 0) {
     updateModalText("Please commit before applying stash!");
   }
+
   Git.Repository.open(repoFullPath)
     .then(async function (repo) {
       repository = repo;
@@ -717,6 +731,7 @@ function applyStash(index) {
       var stashName = stashHistory[index];
       updateModalText("Applying stash: "+ stashName);
 
+      //perform git stash apply
       let ret = await Git.Stash.apply(repository, index, 0)
         .then( (res) => {
           console.log("Apply resolved: " + res);
@@ -725,9 +740,9 @@ function applyStash(index) {
           console.log("Apply rejected: " + rej);
           throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
           return rej;
-        }
-        );
-      //apply returns an undefined object on success but API Doc says it should return ERROR.CODE
+        });
+
+      //Possible error codes returned from apply. Use try/catch if entered
       if (ret == 0) {
         return;
       } else if (ret == Git.Error.CODE.ENOTFOUND){
@@ -735,6 +750,7 @@ function applyStash(index) {
       } else if (ret == Git.Error.CODE.EMERGECONFLICT){
         throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
       }
+
     })
     .then(function () {
       return Git.Reference.nameToId(repository, "refs/stash");
@@ -743,7 +759,7 @@ function applyStash(index) {
       console.log("Looking up stash with id " + stashOid + " in all repositories");
       return Git.AnnotatedCommit.lookup(repository, stashOid);
     })
-    .then(async function (annotated) {
+    .then(async function (annotated) { //try to merge applied stash and working tree
       let ret2 = 0;
       if(annotated != null){
         console.log("merging " + annotated.id() + " with local safely");
@@ -763,7 +779,7 @@ function applyStash(index) {
       theirCommit = annotated;
       return ret2;
     })
-    .then(function (mergeCode) {
+    .then(function (mergeCode) { //display result of merge and refresh app
       if(mergeCode == -13){
         window.alert("Conflicts may exist in the working tree! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you pop again!");
         updateModalText("Merged with possible conflicts. Please consider resolving conflicts in modified files or dropping stash.");
@@ -771,7 +787,7 @@ function applyStash(index) {
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
       refreshAll(repository);
-     }, function(err) {
+     }, function(err) { //catch all errors thrown since beginning of function
          console.log("git.ts, func applyStash(): update, could not apply stash, " + err);
          updateModalText(err.message);
      });
@@ -784,38 +800,50 @@ function applyStash(index) {
 
     //TODO: DROP IS NOT FUNCTIONAL ATM
 */
-function dropStash(index) {
+async function dropStash(index) {
   if (index == null) index = 0;
 
   let repository;
   let branch = document.getElementById("branch-name").innerText;
 
-  Git.Repository.open(repoFullPath)
-    .then( function (repo) {
+  await Git.Repository.open(repoFullPath)
+    .then( async function (repo) {
       repository = repo;
       console.log("Dropping stash at index " + index);
       addCommand("git stash drop stash@{" + index +"}");
       var stashName = stashHistory.splice(index, 1);
       updateModalText("Dropping stash: "+ stashName);
 
-      Git.Stash.drop(repository, index, 0)
-        .then(function(res){
-          console.log("Drop resolved: " + res);
-          if(res == 0){
-            updateModalText("Success! Stash at index " + index + " dropped from list.");
-            refreshAll(repository);
-          }else if (res == -3 /*Git.Error.CODE.ENOTFOUND*/){
-            throw new Error("No stash found at given index.");
+      try{
+        //perform git stash drop
+        let ret = await Git.Stash.drop(repository, index, 0)
+          .then( (res) => {
+            console.log("Drop resolved: " + res);
+            //have the error code check inside the resolution or
+            //with the returned value of promise.
+            //Will decide once callback function stops rejecting drop
+            if(res == 0){
+              updateModalText("Success! Stash at index " + index + " dropped from list.");
+              refreshAll(repository);
+            }else if (res == -3 /*Git.Error.CODE.ENOTFOUND*/){
+              throw new Error("No stash found at given index.");
+            }
+            return res;
+          }, (err) => {
+            console.log("Drop rejected: " + err); //callback required
+            throw new Error(err.message);
           }
-        }, function(err){
-          console.log("Drop rejected: " + err);
-          throw new Error(err);
-        }
-      );
+        );
+
+       } catch(err) {
+          console.log("git.ts, func dropStash(): catch, could not drop stash, " + err);
+          updateModalText("Unexpected Error: " + err.message + "Please restart and try again.");
+
+       }
 
     }, function(err) {
         console.log("git.ts, func dropStash(), could not drop stash, " + err);
-        updateModalText(err.message);
+        updateModalText("Unexpected Error: " + err.message + "Please restart and try again.");
       }
     );
 
