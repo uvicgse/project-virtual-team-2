@@ -1025,9 +1025,8 @@ function pushToRemote() {
         } else {
           // Do the Push
           Git.Repository.open(repoFullPath).then(function (repo) {
-            console.log("Pushing changes to remote");
             displayModal("Pushing changes to remote...");
-            addCommand("git push -u origin " + branch);
+            addCommand("git push");
             repo.getRemotes().then(function (remotes) {
               repo.getRemote(remotes[0]).then(function (remote) {
                 return remote.push(
@@ -1045,12 +1044,11 @@ function pushToRemote() {
                 );
               }, function(e){
                 console.log(Error(e));
-              }).then(function () {
+              }).then(async function () {
                 CommitButNoPush = 0;
                 window.onbeforeunload = Confirmed;
-                console.log("Push successful");
+                await refreshAll(repo);
                 updateModalText("Push successful");
-                refreshAll(repo);
               });
             }, function(e){
               console.log(Error(e));
