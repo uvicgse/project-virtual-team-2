@@ -1078,20 +1078,20 @@ function displayAheadBehind() {
 
   checkIfExistOrigin(branch).then(function(remoteBranchExist){
     if (!remoteBranchExist) {
-      display.message = "remote does not exist";
+      display.innerHTML = "remote does not exist";
     } else {
       // tells the user if their branch is up to date or behind the remote branch
       getAheadBehindCommits(branch).then(function (aheadBehind) {
         console.log(aheadBehind);
         if (aheadBehind.behind !== 0) {
           console.log("behind");
-          display.message = "your branch is behind remote " + aheadBehind.behind;
+          display.innerHTML = "your branch is behind remote " + aheadBehind.behind;
           return;
         } else if (aheadBehind.ahead === 0) {
-          display.message = "Up to Date";
+          display.innerHTML = "Up to Date";
           return;
         } else {
-          display.message = "your branch is ahead remote " + aheadBehind.ahead;
+          display.innerHTML = "your branch is ahead remote " + aheadBehind.ahead;
         }
       });
     }
