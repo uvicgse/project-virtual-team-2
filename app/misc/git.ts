@@ -408,7 +408,12 @@ function addAndCommit() {
       console.log("Commit successful: " + oid.tostrS());
       stagedFiles = null;
       console.log(oid.tostrS());
-      return repository.createTag(oid.tostrS(), tagName, tagMessage);
+      // Create tag if tag name is not empty
+      if (tagName != "") {
+        return repository.createTag(oid.tostrS(), tagName, tagMessage);
+      } else {
+        return 
+      }
     })
     // will update user interface after new commit and tag has been handled
     .then(function (tag: any) {
