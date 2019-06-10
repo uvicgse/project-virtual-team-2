@@ -1082,13 +1082,13 @@ function displayAheadBehind() {
       //check if ahead, behind, or up to date
       getAheadBehindCommits(branch).then(function (aheadBehind) {
         if (aheadBehind.behind !== 0) {
-          display.innerHTML = "your branch is behind remote " + aheadBehind.behind;
+          display.innerHTML = "your branch is " + aheadBehind.behind + " behind remote";
           return;
         } else if (aheadBehind.ahead === 0) {
           display.innerHTML = "Up to Date";
           return;
         } else {
-          display.innerHTML = "your branch is ahead of remote " + aheadBehind.ahead ;
+          display.innerHTML = "your branch is " + aheadBehind.ahead + " ahead of remote" ;
         }
       });
     }
