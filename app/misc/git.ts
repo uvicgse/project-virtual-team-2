@@ -156,6 +156,7 @@ function addAndCommit() {
     window.alert("Cannot commit without a commit message. Please add a commit message before committing");
     return;
   }
+  updateModalText("Committing changes...");
   let repository;
 
   Git.Repository.open(repoFullPath)
@@ -247,7 +248,7 @@ function addAndCommit() {
       console.log("git.ts, func addAndCommit(), could not commit, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to commit.") {
-        displayModal(err.message);
+        updateModalText(err.message);
       } else {
         updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
       }
@@ -257,7 +258,7 @@ function addAndCommit() {
 /* Issue 35: Add stashing functionality
    Mostly copied from addAndCommit
     - Function entered from Stash button
-    - Must have a stash message where text is input in commit-message-input
+    - stages files and stashes them
 */
 function addAndStash(options) {
 
@@ -335,7 +336,7 @@ function addAndStash(options) {
         //window.alert("Cannot stash without a stash message. Please add a stash message before stashing"); return;
         var comMessage;
         Git.Commit.lookup(repository, oid)
-        .then(function(commit){ //TODO: commit currently returning undefined
+        .then(function(commit){ //TODO: commit currently returning undefined object
           console.log(commit);
           comMessage = commit.message();
         });
@@ -348,7 +349,7 @@ function addAndStash(options) {
 
       console.log("Stashing: " + stashName );
 
-      // First branch of this If might be unecessary or replaceable by .git/refs/stash to check something else
+      //checks if current status of the branch is merging
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
         console.log("head commit on remote: " + tid);
@@ -399,7 +400,7 @@ function addAndStash(options) {
       console.log("git.ts, func addAndStash(), could not stash, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to stash.") {
-        displayModal(err.message);
+        updateModalText(err.message);
       } else {
         updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
       }
@@ -416,6 +417,7 @@ function addAndStash(options) {
     //TODO: Consider a revision in merging the pop/apply/drop functions. Easy to test with seperate functions for now.
 */
 function popStash(index) {
+  if (index == null) index = 0;
 
   let repository;
   let branch = document.getElementById("branch-name").innerText;
@@ -424,12 +426,11 @@ function popStash(index) {
   }
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
-      if (index == null) index = 0;
       repository = repo;
       console.log("Popping stash at index " + index);
       addCommand("git stash pop stash@{" + index +"}");
       var stashName = stashHistory[index];
-      displayModal("Popping stash: "+ stashName);
+      updateModalText("Popping stash: "+ stashName);
 
       let ret = Git.Stash.pop(repository, index, 0);
       console.log("Pop returned: " + ret);
@@ -469,6 +470,7 @@ function popStash(index) {
         updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
       } else {
         //TODO: refreshIndex with the stash node gone if not done automatically
+        //It is done automatically if no conflicts or other stashes
 
         stashHistory.splice(index, 1);
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
@@ -476,7 +478,7 @@ function popStash(index) {
       refreshAll(repository);
       }, function(err) {
         console.log("git.ts, func popStash(), could not pop stash, " + err);
-        displayModal(err.message);
+        updateModalText(err.message);
         //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
       });
 
@@ -488,6 +490,7 @@ function popStash(index) {
     - applies stash from given index and merges into working directory.
 */
 function applyStash(index) {
+  if (index == null) index = 0;
 
   let repository;
   let branch = document.getElementById("branch-name").innerText;
@@ -496,17 +499,17 @@ function applyStash(index) {
   }
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
-      if (index == null) index = 0;
       repository = repo;
       console.log("applying stash at index " + index);
       addCommand("git stash apply stash@{" + index +"}");
       var stashName = stashHistory[index];
-      displayModal("Applying stash: "+ stashName);
+      updateModalText("Applying stash: "+ stashName);
 
       let ret = Git.Stash.apply(repository, index, 0);
       console.log("Apply returned: " + ret);
 
       //ret returns an unknown object but API Doc says it should return ERROR.CODE
+      //If it didn't, Merge code might not be required.
       if (ret == 0) {
         return;
       } else if (ret == -3 /*id not found*/){
@@ -547,7 +550,7 @@ function applyStash(index) {
       refreshAll(repository);
       }, function(err) {
         console.log("git.ts, func applyStash(), could not apply stash, " + err);
-        displayModal(err.message);
+        updateModalText(err.message);
         //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
       });
 
@@ -560,21 +563,25 @@ function applyStash(index) {
     //TODO: DROP IS NOT FUNCTIONAL ATM
 */
 function dropStash(index) {
+  if (index == null) index = 0;
 
   let repository;
   let branch = document.getElementById("branch-name").innerText;
 
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
-      if (index == null) index = 0;
       repository = repo;
       console.log("Dropping stash at index " + index);
       addCommand("git stash drop stash@{" + index +"}");
       var stashName = stashHistory.splice(index, 1);
-      displayModal("Dropping stash: "+ stashName);
+      updateModalText("Dropping stash: "+ stashName);
+      try{
+        let ret = Git.Stash.drop(repository, index, 0);
+        console.log("Drop returned: " + ret);
+      } catch(e){
+        console.log(e);
+      }
 
-      let ret = Git.Stash.drop(repository, index, 0);
-      console.log("Drop returned: " + ret);
 
       //ret returns an unknown object but API Doc says it should return ERROR.CODE
       if (ret === 0) {
@@ -588,7 +595,7 @@ function dropStash(index) {
         refreshAll(repository);
       }, function(err) {
         console.log("git.ts, func dropStash(), could not drop stash, " + err);
-        displayModal(err.message);
+        updateModalText(err.message);
         //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
       });
 
@@ -703,7 +710,7 @@ function pullFromRemote() {
       repository = repo;
       console.log("Pulling new changes from the remote repository");
       addCommand("git pull");
-      displayModal("Pulling new changes from the remote repository");
+      updateModalText("Pulling new changes from the remote repository");
 
       return repository.fetchAll({
         callbacks: {
@@ -766,7 +773,7 @@ function pushToRemote() {
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
       console.log("Pushing changes to remote")
-      displayModal("Pushing changes to remote...");
+      updateModalText("Pushing changes to remote...");
       addCommand("git push -u origin " + branch);
       repo.getRemotes()
         .then(function (remotes) {
@@ -799,7 +806,7 @@ function pushToRemote() {
 
 function commitModal() {
   // TODO: implement commit modal
-  displayModal("Commit inside a modal yet to be implemented");
+  updateModalText("Commit inside a modal yet to be implemented");
 }
 
 function openBranchModal() {
@@ -1608,7 +1615,7 @@ function cleanRepo() {
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
       console.log("Removing untracked files")
-      displayModal("Removing untracked files...");
+      updateModalText("Removing untracked files...");
       addCommand("git clean -f");
       repo.getStatus().then(function (arrayStatusFiles) {
         arrayStatusFiles.forEach(deleteUntrackedFiles);
@@ -1638,7 +1645,7 @@ function cleanRepo() {
     },
       function (err) {
         console.log("Waiting for repo to be initialised");
-        displayModal("Please select a valid repository");
+        updateModalText("Please select a valid repository");
       });
 }
 
@@ -1661,7 +1668,7 @@ function fetchFromOrigin() {
     Git.Repository.open(repoFullPath)
       .then(function (repo) {
         console.log("fetch path valid")
-        displayModal("Beginning Synchronisation...");
+        updateModalText("Beginning Synchronisation...");
         addCommand("git remote add upstream " + upstreamRepoPath);
         addCommand("git fetch upstream");
         addCommand("git merge upstrean/master");
@@ -1671,9 +1678,9 @@ function fetchFromOrigin() {
       },
         function (err) {
           console.log("Waiting for repo to be initialised");
-          displayModal("Please select a valid repository");
+          updateModalText("Please select a valid repository");
         });
   } else {
-    displayModal("No Path Found.")
+    updateModalText("No Path Found.")
   }
 }
