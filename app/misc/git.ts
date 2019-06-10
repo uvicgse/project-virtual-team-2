@@ -202,6 +202,8 @@ function refreshStashHistory(){
     }
     stashHistory.pop();
     let stashListHTML = '';
+
+    // For each stash create a unique element with unique pop, drop, and apply functionality.
     stashHistory.forEach((stash, i) => {
       stashListHTML +=
         '<div id="stash-item">' +
@@ -209,15 +211,16 @@ function refreshStashHistory(){
               'Stash{' + i + '}: ' + stash +
           '</div>' +
           '<div class="stash-actions">' +
-              '<ul class="dropbtn icons" onclick="showDropdown()">' +
+              '<ul class="dropbtn icons" onclick="showDropdown(' + i + ')">' +
                   '<li></li>' +
                   '<li></li>' +
                   '<li></li>' +
               '</ul>' +
-              '<div id="stash-item-dropdown" class="dropdown-content">' +
-                  '<a onclick="popStash('+i+')">Pop</a>' +
-                  '<a onclick="applyStash('+i+')">Apply</a>' +
-                  '<a onclick="dropStash('+i+')">Drop</a>' +
+
+              '<div id="stash-item-' + i + '-dropdown" class="dropdown-content">' +
+                  '<a onclick="popStash(' + i + ')">Pop</a>' +
+                  '<a onclick="applyStash(' + i + ')">Apply</a>' +
+                  '<a onclick="dropStash(' + i + ')">Drop</a>' +
               '</div>' +
           '</div>' +
         '</div>';

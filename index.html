@@ -107,8 +107,9 @@ $('#repo-modal').on('hidden.bs.modal', function (e) {
   butt.setAttribute('class', 'btn btn-primary disabled');
  });
 
-function showDropdown() {
-  document.getElementById("stash-item-dropdown").classList.toggle("show");
+// Toggles the visibility of each unique stash element.
+function showDropdown(row) {
+  document.getElementById("stash-item-" + row + "-dropdown").classList.toggle("show");
 }
 
 // Close the dropdown if the user clicks outside of it
