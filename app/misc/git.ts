@@ -104,22 +104,31 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tItems;
   let found = false;
   let tags;
+  let temp;
   // Create array of tags
   tItems = await Promise.all(sharedRefs.map(async (ref) => {
     if (ref.isTag()) {
       console.log(ref);
-      tag = await getRefObject(repo, ref);
-      commit = await getCommit(repo, ref);
+      temp = await getRefObject(repo, ref);
+      tag = temp.tag;
+      commit = temp.commit;
       return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
     }
   }));
-
+  for (let k=0; k <tItems.length; k++) {
+    if (tItems[k]) {
+      console.log('Tag Name', tItems[k].tagName );
+      console.log('Commit sha', tItems[k].commitSha);
+      console.log('Commit message', tItems[k].commitMsg);
+    }
+  }
   // Check to see if commits match with any tags, if so, include tag name and message in CommitItem. 
   // If unable to match a tag with a commit, return CommitItem without tag name and message
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
       if (tItems[j]) {
         if (tItems[j].commitSha === commit.sha()) {
+          console.log(`THIS IS THE TAG SHA ${tItems[j].commitSha} and this is the commit sha ${commit.sha()} `)
           return tItems[j];
         }
       }
@@ -127,7 +136,10 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
     return new CommitItem("", commit.message(), "", commit.sha(), false);
   }));
 
-  return tags;
+  // return tags;
+  return await new Promise(resolve=> {
+    resolve(tags);
+  })
 }
 
 // get each commit's sha for a graph node
@@ -211,24 +223,30 @@ async function getCommitShaFromNode(repo, beginningHash, numCommit) {
   }); 
 }
 
-// get commit from tag reference
-async function getCommit(repo, ref) {
-  let c = await ref.peel(Git.Object.TYPE.COMMIT);
-  let commit = await repo.getCommit(c);
-  return commit;
+// Get tag and commit object
+function getRefObject(repo, ref){
+  let returnTag;
+  return new Promise(resolve => {
+    Git.Reference.nameToId(repo, ref.name())
+      .then(function(oid){
+        return Git.Tag.lookup(repo, oid);
+      })
+      .then(function(tag){
+        returnTag = tag;
+        return ref.peel(Git.Object.TYPE.COMMIT);
+      })
+      .then(function(c) {
+        return repo.getCommit(c);
+      })
+      .then(function(returnCommit) {
+        resolve({
+          tag: returnTag, 
+          commit: returnCommit
+        });
+      })
+
+  });
 }
-
-// Get tag object based on tag name
-async function getRefObject(repo, ref){
-  let oid = await Git.Reference.nameToId(repo, ref.name())
-  let tag = await Git.Tag.lookup(repo, oid);
-  console.log(oid);
-  console.log(tag.name());
-  return tag;
-}
-
-
-
 
 function passReferenceCommits(){
   Git.Repository.open(repoFullPath)
