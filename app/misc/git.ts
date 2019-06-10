@@ -817,32 +817,19 @@ async function dropStash(index) {
       var stashName = stashHistory.splice(index, 1);
       updateModalText("Dropping stash: "+ stashName);
 
-      try{
         //perform git stash drop
-        let ret = await Git.Stash.drop(repository, index, 0)
+        let ret = await Git.Stash.drop(repository, index)
           .then( (res) => {
             console.log("Drop resolved: " + res);
-            //have the error code check inside the resolution or
-            //with the returned value of promise.
-            //Will decide once callback function stops rejecting drop
-            if(res == 0){
+            //should return error code but isn't
               updateModalText("Success! Stash at index " + index + " dropped from list.");
               refreshAll(repository);
-            }else if (res == -3 /*Git.Error.CODE.ENOTFOUND*/){
-              throw new Error("No stash found at given index.");
-            }
             return res;
           }, (err) => {
             console.log("Drop rejected: " + err); //callback required
             throw new Error(err.message);
           }
         );
-
-       } catch(err) {
-          console.log("git.ts, func dropStash(): catch, could not drop stash, " + err);
-          updateModalText("Unexpected Error: " + err.message + "Please restart and try again.");
-
-       }
 
     }, function(err) {
         console.log("git.ts, func dropStash(), could not drop stash, " + err);
