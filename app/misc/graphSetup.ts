@@ -235,12 +235,14 @@ function drawGraph() {
         network.on('click', function (properties) {
             if (properties.nodes.length > 0) {
                 let clicknode = properties.nodes[0];
-
+                console.log('CLICKNODE');
+                
                 if (flag === 'node') {
                     clicknode = nodes.get(clicknode);
 					displaySelectedCommitDiffPanel(properties.nodes[0]);
                 } else if (flag === 'abstract') {
                     clicknode = abNodes.get(clicknode);
+                    console.log(clicknode);
                 } else if (flag === 'basic') {
                     clicknode = bsNodes.get(clicknode);
                 } else {
@@ -248,9 +250,17 @@ function drawGraph() {
                 }
 
                 if (clicknode != undefined) {
+                    // add class to modal for display
+                    $("#graphNodeClickModal").addClass('loadTags');
                     let name = clicknode.author.name().toString();
                     let email = clicknode.author.email().toString();
-
+                    // Cache first commit hash from each graph node to check for tags later
+                    document.getElementById("commitHash")!.innerHTML = clicknode.beginningSha;
+                    // Cache number of commits represented by each graph node
+                    if (clicknode.count) {
+                        document.getElementById("numCommit")!.innerHTML = clicknode.count;
+                    }
+                    console.log('in graph setup', clicknode.count);
                     document.getElementById("authorModalDetails")!.innerHTML = "Author Name: " + clicknode.author.toString() + "<br>" + "Email: " + email;
                     document.getElementById("authorModalProfileButton")!.onclick = function () {
                         window.open("https://github.com/" + name, "Author Profile");
@@ -258,7 +268,7 @@ function drawGraph() {
 
                     imageForUser(name, email, function (pic) {
                         document.getElementById("authorModalImage")!.src = pic;
-                        $("#authorProfileModal").modal('show');
+                        $("#graphNodeClickModal").modal('show');
                     })
                 }
             }

@@ -1,5 +1,10 @@
 import * as nodegit from "git";
-import NodeGit, { Status } from "nodegit";
+import NodeGit, {Graph, Status} from "nodegit";
+import { resolve } from "path";
+
+
+
+
 
 let opn = require('opn');
 let $ = require("jquery");
@@ -8,19 +13,176 @@ let fs = require("fs");
 let async = require("async");
 let readFile = require("fs-sync");
 let green = "#84db00";
+
+let path = require('path');
 let repo, index, oid, remote, commitMessage, stashMessage;
 let filesToAdd = [];
 let theirCommit = null;
 let modifiedFiles;
 let warnbool;
-var CommitButNoPush = 0;
+let CommitButNoPush = 0;
 let stagedFiles: any;
 let vis = require("vis");
 let commitHistory = [];
+let commitList: [any];
 let stashHistory = [""];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
+
+export class TagItem {
+  public tagName: string;
+  public commitMsg: string;
+  public tagMsg: string;
+  public commitSha: string
+
+  constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string){
+    this.tagName = tagName;
+    this.commitMsg = commitMsg;
+    this.tagMsg = tagMsg;
+    this.commitSha = commitSha;
+  }
+}
+
+
+//
+// Abstract from issue 40
+//
+export async function getTags(beginningHash, numCommit){
+  let commitList
+  let tags;
+
+  let sharedRepo, sharedRefs;
+  // get repo and refs in order
+  await Git.Repository.open(repoFullPath).then(function(repo){
+    sharedRepo = repo;
+  })
+  await sharedRepo.getReferences(Git.Reference.TYPE.OID).then(function(refs){
+    sharedRefs = refs;
+  })
+
+  commitList = await getCommitShaFromNode(sharedRepo, beginningHash, numCommit);
+  commitList = await getCommitFromShaList(commitList, sharedRepo);
+  tags = await aggregateCommits(commitList, sharedRepo, sharedRefs);
+  //tags = await processArray(sharedRepo, sharedRefs, beginningHash, numCommit);
+
+  return await new Promise(resolve=> {
+    resolve(tags);
+  })
+
+}
+
+// Return an array of commit objects from array of commit shas
+async function getCommitFromShaList(commitList, repo) {
+  return await Promise.all(commitList.map(async (sha) => {
+    const commit = await repo.getCommit(sha);
+    return commit;
+  }));
+}
+
+// Returns an array of tagItems based on size of commitList
+const aggregateCommits = async (commitList, repo, sharedRefs) => {
+  let tag;
+  let commit;
+  let tItems;
+  let found = false;
+  let tags;
+  // Create array of tags
+  tItems = await Promise.all(sharedRefs.map(async (ref) => {
+    if (ref.isTag()) {
+      tag = await getRefObject(repo, ref);
+      commit = await getCommit(repo, ref);
+      return new TagItem(tag.name(), commit.message(), tag.message(), commit.sha());
+    }
+  }));
+
+  // Check to see if commits match with any tags, if so, include tag name and message in TagItem.
+  // If unable to match a tag with a commit, return TagItem without tag name and message
+  tags = await Promise.all(commitList.map(async (commit) => {
+    for (let j=0; j < tItems.length; j++) {
+      if (tItems[j]) {
+        if (tItems[j].commitSha === commit.sha()) {
+          return tItems[j];
+        }
+      }
+    }
+    return new TagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
+  }));
+
+  return tags;
+}
+
+// get each commit's sha for a graph node
+async function getCommitShaFromNode(repo, beginningHash, numCommit) {
+  let commitList = [];
+  let commitListRet = [];
+  return new Promise(function(resolve){
+    repo.getReferences(Git.Reference.TYPE.LISTALL)
+    .then(function (refs) {
+    // Check to see that reference is not to tag or remote
+      for (let i =0; i<refs.length; i++) {
+        if (!refs[i].isTag() && !refs[i].isRemote()) {
+          repo.getReferenceCommit(refs[i])
+          // Find all commits from branch
+          .then(function (commit) {
+            let history = commit.history(Git.Revwalk.SORT.Time);
+            history.on("end", function (commits) {
+
+              // Store commit hash for every commit in branch
+              for (let i = 0; i < commits.length; i++) {
+                if (commitList.indexOf(commits[i].toString()) < 0) {
+                  commitList.push(commits[i].toString());
+                }
+              }
+              // Prune early commits that do not belong to node
+              if (commitList.indexOf(beginningHash) >= 0) {
+                let stop = commitList.length - commitList.indexOf(beginningHash) -1;
+                commitList.splice(commitList.indexOf(beginningHash)+1, stop);
+              }
+
+
+              // Prune later commits that do not belong to node. If no numCommit exist, prune list of commits down to 1
+              commitList.reverse();
+              if (numCommit > 0) {
+                let deleteNum = commitList.length - numCommit;
+                if (deleteNum > 0) {
+                  commitList.splice(numCommit, deleteNum);
+                }
+              }
+
+              resolve(commitList);
+            });
+
+            history.start();
+          }).catch ((err) => {
+            console.log(err);
+          });
+        }
+      }
+
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  });
+}
+
+// get commit from tag reference
+async function getCommit(repo, ref) {
+  let c = await ref.peel(Git.Object.TYPE.COMMIT);
+  let commit = await repo.getCommit(c);
+  return commit;
+}
+
+// Get tag object based on tag name
+async function getRefObject(repo, ref){
+  let oid = await Git.Reference.nameToId(repo, ref.name())
+  let tag = await Git.Tag.lookup(repo, oid);
+  return tag;
+}
+
+
+
 
 /*
   - Gathers the current stashes kept in refs/stash and places their names in an array for git stash list
@@ -64,6 +226,7 @@ function refreshStashHistory(){
     });
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
+
 
 function passReferenceCommits(){
   Git.Repository.open(repoFullPath)
@@ -161,11 +324,20 @@ function stage() {
 
 function addAndCommit() {
   commitMessage = document.getElementById('commit-message-input').value;
+  let tagMessage = document.getElementById('tag-message-input').value;
+  let tagName = document.getElementById('tag-name-input').value;
+
   if (commitMessage == null || commitMessage == "") {
     window.alert("Cannot commit without a commit message. Please add a commit message before committing");
     return;
   }
   updateModalText("Committing changes...");
+  // A new tag must include a tag name and tag message or tag cannot be created
+  if (tagName == "" && tagMessage != "") {
+    window.alert("Cannot create tag without a tag name. Please add a tag name before committing");
+    return;
+  }
+
   let repository;
 
   Git.Repository.open(repoFullPath)
@@ -245,6 +417,12 @@ function addAndCommit() {
       console.log("Commit successful: " + oid.tostrS());
       stagedFiles = null;
 
+      console.log(oid.tostrS());
+      return repository.createTag(oid.tostrS(), tagName, tagMessage);
+    })
+    // will update user interface after new commit and tag has been handled
+    .then(function (tag: any) {
+      console.log(oid.tostrS());
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
@@ -252,6 +430,15 @@ function addAndCommit() {
         addCommand("git add " + filesToAdd[i]);
       }
       addCommand('git commit -m "' + commitMessage + '"');
+
+      // Check that tag was created and whether tag message exists or not
+      if (tag && tagMessage != '') {
+        addCommand('git tag -a '+ tagName + ' -m ' + '"' + tagMessage + '"');
+      } else if (tag && tagMessage == '') {
+        addCommand('git tag -a '+ tagName);
+      } else{
+        console.log('tag failed');
+      }
       refreshAll(repository);
     }, function (err) {
       console.log("git.ts, func addAndCommit(), could not commit, " + err);
@@ -414,6 +601,28 @@ function addAndStash(options) {
         updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
       }
     });
+}
+
+// Delete tag based on tag name and display corresponding git command to footer in VisualGit
+function deleteTag(tagName) {
+  let repository;
+  console.log(repoFullPath);
+  let name = tagName.split(path.sep);
+  name = name[name.length-1];
+  console.log(name);
+  Git.Repository.open(repoFullPath)
+    .then(function (repoResult) {
+      repository = repoResult;
+      repository.deleteTagByName(name)
+        .then(function() {
+          console.log(`${name} deleted`);
+          addCommand('git tag -d '+ name);
+          refreshAll(repository);
+        })
+        .catch((err) => console.log(err));
+    })
+    .catch((err) => console.log(err));
+
 }
 
 
@@ -610,6 +819,7 @@ function dropStash(index) {
 
 }
 
+
 function clearStagedFilesList() {
   let filePanel = document.getElementById("files-staged");
   while (filePanel.firstChild) {
@@ -645,11 +855,14 @@ function clearCommitMessage() {
 }
 
 
+
 function getAllCommits(callback) {
   clearModifiedFilesList();
   let repos;
   let allCommits = [];
   let aclist = [];
+  let singleReference;
+  let name;
   console.log("Finding all commits");
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
@@ -666,25 +879,28 @@ function getAllCommits(callback) {
         },
 
         function (cb) {
-          if (!refs[count].isRemote()) {
+          // Remove tag references or because getReferenceCommit does not recognize tag references
+          if (!refs[count].isTag() && !refs[count].isRemote()) {
             console.log("referenced branch exists on remote repository");
             repos.getReferenceCommit(refs[count])
-              .then(function (commit) {
-                let history = commit.history(Git.Revwalk.SORT.Time);
-                history.on("end", function (commits) {
-                  for (let i = 0; i < commits.length; i++) {
-                    if (aclist.indexOf(commits[i].toString()) < 0) {
-                      allCommits.push(commits[i]);
-                      aclist.push(commits[i].toString());
-                    }
+            .then(function (commit) {
+              let history = commit.history(Git.Revwalk.SORT.Time);
+              history.on("end", function (commits) {
+                for (let i = 0; i < commits.length; i++) {
+                  if (aclist.indexOf(commits[i].toString()) < 0) {
+                    allCommits.push(commits[i]);
+                    aclist.push(commits[i].toString());
                   }
-                  count++;
-                  console.log(count + " out of " + allCommits.length + " commits");
-                  cb();
-                });
-
-                history.start();
+                }
+                count++;
+                console.log(count + " out of " + allCommits.length + " commits");
+                cb();
               });
+
+              history.start();
+            }).catch ((err) => {
+              console.log(err);
+            });
           } else {
             console.log('current branch does not exist on remote');
             count++;
@@ -773,44 +989,99 @@ function pullFromRemote() {
     });
 }
 
-function pushToRemote() {
-    if (CommitButNoPush === 0) {
-        window.alert("Cannot push without a commit.");
-        return;
-    }
-  let branch = document.getElementById("branch-name").innerText;
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      console.log("Pushing changes to remote")
-      updateModalText("Pushing changes to remote...");
-      addCommand("git push -u origin " + branch);
-      repo.getRemotes()
-        .then(function (remotes) {
-          repo.getRemote(remotes[0])
-            .then(function (remote) {
-              return remote.push(
-                ["refs/heads/" + branch + ":refs/heads/" + branch],
-                {
-                  callbacks: {
-                    // obtain a new copy of cred every time when user push.
-                    credentials: function () {
-                      let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                      cred = user.credentials;
-                      return cred;
-                    }
-                  }
-                }
-              );
-            })
-            .then(function () {
-              CommitButNoPush = 0;
-              window.onbeforeunload = Confirmed;
-              console.log("Push successful");
-              updateModalText("Push successful");
-              refreshAll(repo);
+// function to determine the status of the remote repository compared to local repository
+// functions takes the name of the branch
+function getAheadBehindCommits(branchName) {
+    let origin = "origin";
+    origin = path.join(origin, branchName);
+    return Git.Repository.open(repoFullPath).then(function (repo) {
+        // returns commit that head is pointing too (most recent local commit)
+        return repo.getHeadCommit().then(function (commit) {
+            return repo.getReferenceCommit(origin).then(function (remoteCommit) {
+                // return an object { ahead : <number of commits ahead>, behind: <number of commits behind>
+                return Graph.aheadBehind(repo, commit.id(), remoteCommit.id()).then(function (aheadBehind) {
+                    return aheadBehind;
+                });
+            }, function (e) {
+                console.log(e.message)
             });
         });
     });
+}
+
+//checks if the remote version of your current branch exist
+function checkIfExistOrigin(branchName) {
+    let origin = "origin";
+    origin = path.join(origin, branchName);
+    return Git.Repository.open(repoFullPath).then(function (repo) {
+        return repo.getReferenceCommit(origin).then(function (originCommit) {
+            return true;
+        }, function (e) {
+            return false
+        });
+    });
+}
+
+function pushToRemote() {
+  // checking status of remote repository and only push if you are ahead of remote
+  let branch = document.getElementById("branch-name").innerText;
+
+  //checks if the remote version of your current branch exist
+  checkIfExistOrigin(branch).then(function(remoteBranchExist){
+    if (!remoteBranchExist) {
+      window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
+          "To push the current branch and set the remote as upstream, use\n" +
+          "\n" +
+          "    git push --set-upstream origin test-branch");
+      return;
+    } else {
+      // tells the user if their branch is up to date or behind the remote branch
+      getAheadBehindCommits(branch).then(function (aheadBehind) {
+        if (aheadBehind.behind !== 0) {
+          window.alert("your branch is behind remote by " + aheadBehind.behind);
+          return;
+
+        } else if (aheadBehind.ahead === 0) {
+          window.alert("Your branch is already up to date");
+          return;
+        } else {
+          // Do the Push
+          Git.Repository.open(repoFullPath).then(function (repo) {
+            console.log("Pushing changes to remote");
+            displayModal("Pushing changes to remote...");
+            addCommand("git push -u origin " + branch);
+            repo.getRemotes().then(function (remotes) {
+              repo.getRemote(remotes[0]).then(function (remote) {
+                return remote.push(
+                    ["refs/heads/" + branch + ":refs/heads/" + branch],
+                    {
+                      callbacks: {
+                        // obtain a new copy of cred every time when user push.
+                        credentials: function () {
+                          let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                          cred = user.credentials;
+                          return cred;
+                        }
+                      }
+                    }
+                );
+              }, function(e){
+                console.log(Error(e));
+              }).then(function () {
+                CommitButNoPush = 0;
+                window.onbeforeunload = Confirmed;
+                console.log("Push successful");
+                updateModalText("Push successful");
+                refreshAll(repo);
+              });
+            }, function(e){
+              console.log(Error(e));
+            });
+          });
+        }
+      });
+    }
+  });
 }
 
 function commitModal() {
