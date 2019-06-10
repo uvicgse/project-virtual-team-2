@@ -45,13 +45,22 @@ function refreshStashHistory(){
     stashHistory.forEach((stash, i) => {
       stashListHTML +=
         '<div id="stash-item">' +
-        'Stash{' + i + '}: ' + stash +
-        '<div id="stash-actions">' +
-        '<button class="btn btn-primary" onclick="popStash(' + i + ')" data-dismiss="modal">Pop</button>' +
-        '<button class="btn btn-primary" onclick="applyStash(' + i + ')" data-dismiss="modal">Apply</button>' +
-        '<button class="btn btn-primary" onclick="dropStash(' + i + ')" data-dismiss="modal">Drop</button><div/>' +
-        '</div>'
-        ;
+          '<div id="stash-id">' +
+              'Stash[' + i + ']: ' + stash +
+          '</div>' +
+          '<div class="stash-actions">' +
+              '<ul class="dropbtn icons" onclick="showDropdown()">' +
+                  '<li></li>' +
+                  '<li></li>' +
+                  '<li></li>' +
+              '</ul>' +
+              '<div id="stash-item-dropdown" class="dropdown-content">' +
+                  '<a onclick="popStash(0)">Pop</a>' +
+                  '<a onclick="applyStash(0)">Apply</a>' +
+                  '<a onclick="dropStash(0)">Drop</a>' +
+              '</div>' +
+          '</div>' +
+        '</div>';
     });
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
@@ -329,7 +338,7 @@ function addAndStash(options) {
       let branch = document.getElementById("branch-name").innerText;
       console.log("Current branch: " + branch);
 
-      stashMessage = document.getElementById("commit-message-input").value;
+      stashMessage = document.getElementById("stash-message-input").value;
 
       /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head */
       if(stashMessage == null || stashMessage == ""){

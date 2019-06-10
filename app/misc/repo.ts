@@ -401,8 +401,8 @@ function openRepository() {
           }
           repoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
         }
-        document.getElementById("repo-name").innerHTML = repoLocalPath;
-        document.getElementById("branch-name").innerHTML = branch + '<span class="caret"></span>';
+        document.getElementById("repo-name").value = repoLocalPath;
+        document.getElementById("branch-name").value = branch + '<span class="caret"></span>';
       }, function (err) {
         //If the repository has no commits, getCurrentBranch will throw an error.
         //Default values will be set for the branch labels

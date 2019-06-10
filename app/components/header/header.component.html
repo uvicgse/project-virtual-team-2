@@ -327,10 +327,13 @@
         <h4 class="modal-title">Stash</h4>
       </div>
       <div class="modal-body">
-        <div>
-          <button type="button" class="btn btn-primary" onclick="addAndStash(0)" data-dismiss="modal">Stash</button>
-          <button type="button" class="btn btn-primary" onclick="addAndStash(1)" data-dismiss="modal">Stash and keep index</button>
-          <button type="button" class="btn btn-primary" onclick="addAndStash(2)" data-dismiss="modal">Stash untracked files</button>
+        <div class="stash-functions" id="stash-functions">
+          <textarea class="stash-message-input" id="stash-message-input" placeholder="Describe your changes here..." style="visibility: visible;"></textarea>
+          <div class="stash-function-buttons" id="stash-function-buttons">
+            <button type="button" class="btn btn-primary" onclick="addAndStash(0)" data-dismiss="modal">Stash</button>
+            <button type="button" class="btn btn-primary" onclick="addAndStash(1)" data-dismiss="modal">Stash and keep index</button>
+            <button type="button" class="btn btn-primary" onclick="addAndStash(2)" data-dismiss="modal">Stash untracked files</button>
+          </div>
         </div>
         <div>
           <h3><u>Stash List</u></h3>
