@@ -1,4 +1,4 @@
-import {Graph} from "nodegit";
+import {Graph, Branch} from "nodegit";
 
 
 let opn = require('opn');
@@ -522,54 +522,57 @@ function addAndStash(options) {
         return Git.Stash.save(repository, sign, stashMessage, options);
       }
     })
-    .then(function (stashOID) {
-      theirCommit = null;
-      changes = 0;
+    .then(async function (stashOID) {
+        theirCommit = null;
+        changes = 0;
 
-      let branch = getBranchName();
-      console.log("Current branch: " + branch);
+        let branch = "";
+        await getBranchName().then((branchName) => {
+            branch = branchName;
+        });
+        console.log("Current branch: " + branch);
 
-      //The next 6 lines are somewhat unnecessary but useful for logging
-      var comMessage = Git.Commit.lookup(repository, oid)
-      .then(function(commit){
-        return commit.message();
-      });
-      var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0,8) + " " + comMessage);
-      console.log("Stashing: "+ stashName);
+        //The next 6 lines are somewhat unnecessary but useful for logging
+        var comMessage = Git.Commit.lookup(repository, oid)
+            .then(function (commit) {
+                return commit.message();
+            });
+        var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0, 8) + " " + comMessage);
+        console.log("Stashing: " + stashName);
 
-      stagedFiles = null;
+        stagedFiles = null;
 
-      hideDiffPanel();
-      clearStagedFilesList();
-      clearCommitMessage();
+        hideDiffPanel();
+        clearStagedFilesList();
+        clearCommitMessage();
 
-      for (let i = 0; i < filesToAdd.length; i++) {
-        addCommand("git add " + filesToAdd[i]);
-      }
-      stashName = "On " + branch + ": " + stashMessage;
-      console.log("Saved as: " + stashName);
+        for (let i = 0; i < filesToAdd.length; i++) {
+            addCommand("git add " + filesToAdd[i]);
+        }
+        stashName = "On " + branch + ": " + stashMessage;
+        console.log("Saved as: " + stashName);
 
-      /* options
-         Stash.FLAGS.DEFAULT             0
-         Stash.FLAGS.KEEP_INDEX          1
-         Stash.FLAGS.INCLUDE_UNTRACKED   2
-         Stash.FLAGS.INCLUDE_IGNORED     4
-      */
-      switch(options){
-        case "0":
-          addCommand('git stash push -m "' + stashMessage + '"');
-          break;
-        case "1":
-          addCommand('git stash push -k -m "' + stashMessage + '"');
-          break;
-        case "2":
-          addCommand('git stash push -u -m "' + stashMessage + '"');
-          break;
-      }
+        /* options
+           Stash.FLAGS.DEFAULT             0
+           Stash.FLAGS.KEEP_INDEX          1
+           Stash.FLAGS.INCLUDE_UNTRACKED   2
+           Stash.FLAGS.INCLUDE_IGNORED     4
+        */
+        switch (options) {
+            case "0":
+                addCommand('git stash push -m "' + stashMessage + '"');
+                break;
+            case "1":
+                addCommand('git stash push -k -m "' + stashMessage + '"');
+                break;
+            case "2":
+                addCommand('git stash push -u -m "' + stashMessage + '"');
+                break;
+        }
 
-     updateModalText("Stash successful!");
-     stashHistory.unshift(stashName);
-     refreshAll(repository);
+        updateModalText("Stash successful!");
+        stashHistory.unshift(stashName);
+        refreshAll(repository);
     }, function (err) {
       console.log("git.ts, func addAndStash(), could not stash, " + err);
       // Added error thrown for if files not selected
@@ -612,70 +615,75 @@ function deleteTag(tagName) {
 
     //TODO: Consider a revision in merging the pop/apply/drop functions. Easy to test with seperate functions for now.
 */
-function popStash(index) {
+async function popStash(index) {
 
-  let repository;
-  let branch = getBranchName();
-  if (modifiedFiles.length > 0) {
-    updateModalText("Please commit before popping stash!");
-  }
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      if (index == null) index = 0;
-      repository = repo;
-      console.log("Popping stash at index " + index);
-      addCommand("git stash pop stash@{" + index +"}");
-      var stashName = stashHistory[index];
-      displayModal("Popping stash: "+ stashName);
+    let repository;
+    let branch = "";
+    await getBranchName().then((branchName) => {
+        branch = branchName;
+    });
+    if (modifiedFiles.length > 0) {
+        updateModalText("Please commit before popping stash!");
+    }
+    Git.Repository.open(repoFullPath)
+        .then(function (repo) {
+            if (index == null) index = 0;
+            repository = repo;
+            console.log("Popping stash at index " + index);
+            addCommand("git stash pop stash@{" + index + "}");
+            var stashName = stashHistory[index];
+            displayModal("Popping stash: " + stashName);
 
-      let ret = Git.Stash.pop(repository, index, 0);
-      console.log("Pop returned: " + ret);
+            let ret = Git.Stash.pop(repository, index, 0);
+            console.log("Pop returned: " + ret);
 
-      //ret returns an unknown object but API Doc says it should return ERROR.CODE
-      if (ret == 0) {
-        return;
-      } else if (ret == Git.Error.CODE.ENOTFOUND){
-        throw new Error("No stash found at given index.");
-      } else if (ret == Git.Error.CODE.EMERGECONFLICT){
-        throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
-      }
+            //ret returns an unknown object but API Doc says it should return ERROR.CODE
+            if (ret == 0) {
+                return;
+            } else if (ret == Git.Error.CODE.ENOTFOUND) {
+                throw new Error("No stash found at given index.");
+            } else if (ret == Git.Error.CODE.EMERGECONFLICT) {
+                throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
+            }
 
-    })
-    .then(function () {
-      return Git.Reference.nameToId(repository, "refs/stash");
-    })
-     .then(function (oid) {
-      console.log("Looking up stash with id " + oid + " in all repositories");
-      return Git.AnnotatedCommit.lookup(repository, oid);
-    })
-    .then(function (annotated) {
-      if(annotated != null){
-        console.log("merging " + annotated.id() + " with local safely");
-       var ret2 = Git.Merge.merge(repository, annotated, {fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
-         flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
-          checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
+        })
+        .then(function () {
+            return Git.Reference.nameToId(repository, "refs/stash");
+        })
+        .then(function (oid) {
+            console.log("Looking up stash with id " + oid + " in all repositories");
+            return Git.AnnotatedCommit.lookup(repository, oid);
+        })
+        .then(function (annotated) {
+            if (annotated != null) {
+                console.log("merging " + annotated.id() + " with local safely");
+                var ret2 = Git.Merge.merge(repository, annotated, {
+                    fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
+                    flags: Git.Merge.FLAG.FAIL_ON_CONFLICT
+                }, {
+                    checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
+                });
+                console.log("Merge returned: " + ret2);
+            }
+            theirCommit = annotated;
+            return ret2;
+        })
+        .then(function (mergeCode) {
+            if (mergeCode == -13) {
+                window.alert("Conflicts exists! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you pop again!");
+                updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
+            } else {
+                //TODO: refreshIndex with the stash node gone if not done automatically
+
+                stashHistory.splice(index, 1);
+                updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
+            }
+            refreshAll(repository);
+        }, function (err) {
+            console.log("git.ts, func popStash(), could not pop stash, " + err);
+            displayModal(err.message);
+            //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
         });
-       console.log("Merge returned: " + ret2);
-      }
-      theirCommit = annotated;
-      return ret2;
-    })
-    .then(function (mergeCode) {
-      if(mergeCode == -13){
-        window.alert("Conflicts exists! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you pop again!");
-        updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
-      } else {
-        //TODO: refreshIndex with the stash node gone if not done automatically
-
-        stashHistory.splice(index, 1);
-        updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
-      }
-      refreshAll(repository);
-      }, function(err) {
-        console.log("git.ts, func popStash(), could not pop stash, " + err);
-        displayModal(err.message);
-        //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
-      });
 
 }
 
@@ -684,69 +692,74 @@ function popStash(index) {
     - Function entered from onclick of the given stash in Stashing options window
     - applies stash from given index and merges into working directory.
 */
-function applyStash(index) {
+async function applyStash(index) {
 
-  let repository;
-  let branch = getBranchName();
-  if (modifiedFiles.length > 0) {
-    updateModalText("Please commit before applying stash!");
-  }
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      if (index == null) index = 0;
-      repository = repo;
-      console.log("applying stash at index " + index);
-      addCommand("git stash apply stash@{" + index +"}");
-      var stashName = stashHistory[index];
-      displayModal("Applying stash: "+ stashName);
+    let repository;
+    let branch = "";
+    await getBranchName().then((branchName) => {
+        branch = branchName;
+    });
+    if (modifiedFiles.length > 0) {
+        updateModalText("Please commit before applying stash!");
+    }
+    Git.Repository.open(repoFullPath)
+        .then(function (repo) {
+            if (index == null) index = 0;
+            repository = repo;
+            console.log("applying stash at index " + index);
+            addCommand("git stash apply stash@{" + index + "}");
+            var stashName = stashHistory[index];
+            displayModal("Applying stash: " + stashName);
 
-      let ret = Git.Stash.apply(repository, index, 0);
-      console.log("Apply returned: " + ret);
+            let ret = Git.Stash.apply(repository, index, 0);
+            console.log("Apply returned: " + ret);
 
-      //ret returns an unknown object but API Doc says it should return ERROR.CODE
-      if (ret == 0) {
-        return;
-      } else if (ret == -3 /*id not found*/){
-        throw new Error("No stash found at given index.");
-      } else if (ret == -13 /*Merge Conflict*/){
-        throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
-      }
+            //ret returns an unknown object but API Doc says it should return ERROR.CODE
+            if (ret == 0) {
+                return;
+            } else if (ret == -3 /*id not found*/) {
+                throw new Error("No stash found at given index.");
+            } else if (ret == -13 /*Merge Conflict*/) {
+                throw new Error("Conflicts found while merging. Solve conflicts before continuing.");
+            }
 
-    })
-    .then(function () {
-      return Git.Reference.nameToId(repository, "refs/stash");
-    })
-     .then(function (oid) {
-      console.log("Looking up stash with id " + oid + " in all repositories");
-      return Git.AnnotatedCommit.lookup(repository, oid);
-    })
-    .then(function (annotated) {
-      if(annotated != null){
-        console.log("merging " + annotated.id() + " with local safely");
-       var ret2 = Git.Merge.merge(repository, annotated, {fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
-         flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
-          checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
+        })
+        .then(function () {
+            return Git.Reference.nameToId(repository, "refs/stash");
+        })
+        .then(function (oid) {
+            console.log("Looking up stash with id " + oid + " in all repositories");
+            return Git.AnnotatedCommit.lookup(repository, oid);
+        })
+        .then(function (annotated) {
+            if (annotated != null) {
+                console.log("merging " + annotated.id() + " with local safely");
+                var ret2 = Git.Merge.merge(repository, annotated, {
+                    fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
+                    flags: Git.Merge.FLAG.FAIL_ON_CONFLICT
+                }, {
+                    checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
+                });
+                console.log("Merge returned: " + ret2);
+            }
+            theirCommit = annotated;
+            return ret2;
+        })
+        .then(function (mergeCode) {
+            if (mergeCode == -13) {
+                window.alert("Conflicts exists! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you apply again!");
+                updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
+            } else {
+                //TODO: refreshIndex with the stash node gone if not done automatically
+
+                updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
+            }
+            refreshAll(repository);
+        }, function (err) {
+            console.log("git.ts, func applyStash(), could not apply stash, " + err);
+            displayModal(err.message);
+            //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
         });
-       console.log("Merge returned: " + ret2);
-      }
-      theirCommit = annotated;
-      return ret2;
-    })
-    .then(function (mergeCode) {
-      if(mergeCode == -13){
-        window.alert("Conflicts exists! If safe to merge, stash will be applied.\nOtherwise, please stage and commit changes or\nresolve conflicts before you apply again!");
-        updateModalText("Merged with conflicts. Please consider resolving conflicts in modified files or dropping stash.");
-      } else {
-        //TODO: refreshIndex with the stash node gone if not done automatically
-
-        updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
-      }
-      refreshAll(repository);
-      }, function(err) {
-        console.log("git.ts, func applyStash(), could not apply stash, " + err);
-        displayModal(err.message);
-        //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
-      });
 
 }
 /* Issue 35+: Add dropping stash functionality
@@ -756,38 +769,41 @@ function applyStash(index) {
 
     //TODO: DROP IS NOT FUNCTIONAL ATM
 */
-function dropStash(index) {
+async function dropStash(index) {
 
-  let repository;
-  let branch = getBranchName();
+    let repository;
+    let branch = "";
+    await getBranchName().then((branchName) => {
+        branch = branchName;
+    });
 
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      if (index == null) index = 0;
-      repository = repo;
-      console.log("Dropping stash at index " + index);
-      addCommand("git stash drop stash@{" + index +"}");
-      var stashName = stashHistory.splice(index, 1);
-      displayModal("Dropping stash: "+ stashName);
+    Git.Repository.open(repoFullPath)
+        .then(function (repo) {
+            if (index == null) index = 0;
+            repository = repo;
+            console.log("Dropping stash at index " + index);
+            addCommand("git stash drop stash@{" + index + "}");
+            var stashName = stashHistory.splice(index, 1);
+            displayModal("Dropping stash: " + stashName);
 
-      let ret = Git.Stash.drop(repository, index, 0);
-      console.log("Drop returned: " + ret);
+            let ret = Git.Stash.drop(repository, index, 0);
+            console.log("Drop returned: " + ret);
 
-      //ret returns an unknown object but API Doc says it should return ERROR.CODE
-      if (ret === 0) {
-        return;
-      } else if (ret === -3 /*Git.Error.CODE.ENOTFOUND*/){
-        throw new Error("No stash found at given index.");
-      }
-      //TODO: refreshIndex with the stash node gone if not done automatically
+            //ret returns an unknown object but API Doc says it should return ERROR.CODE
+            if (ret === 0) {
+                return;
+            } else if (ret === -3 /*Git.Error.CODE.ENOTFOUND*/) {
+                throw new Error("No stash found at given index.");
+            }
+            //TODO: refreshIndex with the stash node gone if not done automatically
 
-        updateModalText("Success! Stash at index " + index + " dropped from list.");
-        refreshAll(repository);
-      }, function(err) {
-        console.log("git.ts, func dropStash(), could not drop stash, " + err);
-        displayModal(err.message);
-        //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
-      });
+            updateModalText("Success! Stash at index " + index + " dropped from list.");
+            refreshAll(repository);
+        }, function (err) {
+            console.log("git.ts, func dropStash(), could not drop stash, " + err);
+            displayModal(err.message);
+            //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
+        });
 
 }
 
@@ -888,69 +904,72 @@ function getAllCommits(callback) {
 }
 
 
-function pullFromRemote() {
-  let repository;
-  let branch = getBranchName();
-  if (modifiedFiles.length > 0) {
-    updateModalText("Please commit before pulling from remote!");
-  }
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      repository = repo;
-      console.log("Pulling new changes from the remote repository");
-      addCommand("git pull");
-      displayModal("Pulling new changes from the remote repository");
-
-      return repository.fetchAll({
-        callbacks: {
-          credentials: function () {
-            let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-            cred = user.credentials;
-            return cred;
-          },
-          certificateCheck: function () {
-            return 1;
-          }
-        }
-      });
-    })
-    // Now that we're finished fetching, go ahead and merge our local branch
-    // with the new one
-    .then(function () {
-      return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
-    })
-    .then(function (oid) {
-      console.log("Looking up commit with id " + oid + " in all repositories");
-      return Git.AnnotatedCommit.lookup(repository, oid);
-    }, function (err) {
-      console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
-    })
-    .then(function (annotated) {
-      console.log("merging " + annotated + "with local forcefully");
-      Git.Merge.merge(repository, annotated, null, {
-        checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
-      });
-      theirCommit = annotated;
-    })
-    .then(function () {
-      let conflicsExist = false;
-      let tid = "";
-      if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
-        tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
-        conflicsExist = tid.indexOf("Conflicts") !== -1;
-      }
-
-      if (conflicsExist) {
-        let conflictedFiles = tid.split("Conflicts:")[1];
-        refreshAll(repository);
-
-        window.alert("Conflicts exists! Please check the following files:" + conflictedFiles +
-         "\n Solve conflicts before you commit again!");
-      } else {
-        updateModalText("Successfully pulled from remote branch " + branch + ", and your repo is up to date now!");
-        refreshAll(repository);
-      }
+async function pullFromRemote() {
+    let repository;
+    let branch = "";
+    await getBranchName().then((branchName) => {
+        branch = branchName;
     });
+    if (modifiedFiles.length > 0) {
+        updateModalText("Please commit before pulling from remote!");
+    }
+    Git.Repository.open(repoFullPath)
+        .then(function (repo) {
+            repository = repo;
+            console.log("Pulling new changes from the remote repository");
+            addCommand("git pull");
+            displayModal("Pulling new changes from the remote repository");
+
+            return repository.fetchAll({
+                callbacks: {
+                    credentials: function () {
+                        let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                        cred = user.credentials;
+                        return cred;
+                    },
+                    certificateCheck: function () {
+                        return 1;
+                    }
+                }
+            });
+        })
+        // Now that we're finished fetching, go ahead and merge our local branch
+        // with the new one
+        .then(function () {
+            return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
+        })
+        .then(function (oid) {
+            console.log("Looking up commit with id " + oid + " in all repositories");
+            return Git.AnnotatedCommit.lookup(repository, oid);
+        }, function (err) {
+            console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
+        })
+        .then(function (annotated) {
+            console.log("merging " + annotated + "with local forcefully");
+            Git.Merge.merge(repository, annotated, null, {
+                checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
+            });
+            theirCommit = annotated;
+        })
+        .then(function () {
+            let conflicsExist = false;
+            let tid = "";
+            if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
+                tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
+                conflicsExist = tid.indexOf("Conflicts") !== -1;
+            }
+
+            if (conflicsExist) {
+                let conflictedFiles = tid.split("Conflicts:")[1];
+                refreshAll(repository);
+
+                window.alert("Conflicts exists! Please check the following files:" + conflictedFiles +
+                    "\n Solve conflicts before you commit again!");
+            } else {
+                updateModalText("Successfully pulled from remote branch " + branch + ", and your repo is up to date now!");
+                refreshAll(repository);
+            }
+        });
 }
 
 // function to determine the status of the remote repository compared to local repository
@@ -988,65 +1007,73 @@ function checkIfExistOrigin(branchName) {
 
 //returns the name of the current branch
 function getBranchName() {
-    return document.getElementById("branch-name").innerText;
+    return Git.Repository.open(repoFullPath).then((repo) => {
+        return repo.getCurrentBranch().then((currBranch) => {
+            return Branch.name(currBranch).then((branchName) => {
+                return branchName;
+            });
+        });
+    });
 }
 
-function pushToRemote() {
-  // checking status of remote repository and only push if you are ahead of remote
-  let branch = getBranchName();
-  //checks if the remote version of your current branch exist
-  checkIfExistOrigin(branch).then(function(remoteBranchExist){
-    if (!remoteBranchExist) {
-      window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
-          "To push the current branch and set the remote as upstream, use\n" +
-          "\n" +
-          "    git push --set-upstream origin test-branch");
-      return;
-    } else {
-      // tells the user if their branch is up to date or behind the remote branch
-      getAheadBehindCommits(branch).then(function (aheadBehind) {
-        if (aheadBehind.behind !== 0) {
-          window.alert("your branch is behind remote by " + aheadBehind.behind);
-          return;
-
-        } else if (aheadBehind.ahead === 0) {
-          window.alert("Your branch is already up to date");
-          return;
+async function pushToRemote() {
+    let branch = "";
+    await getBranchName().then((branchName) => {
+        branch = branchName;
+    });
+    //checks if the remote version of your current branch exist
+    checkIfExistOrigin(branch).then(function (remoteBranchExist) {
+        if (!remoteBranchExist) {
+            window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
+                "To push the current branch and set the remote as upstream, use\n" +
+                "\n" +
+                "    git push --set-upstream origin test-branch");
+            return;
         } else {
-          // Do the Push
-          Git.Repository.open(repoFullPath).then(function (repo) {
-            displayModal("Pushing changes to remote...");
-            addCommand("git push");
-            repo.getRemotes().then(function (remotes) {
-              repo.getRemote(remotes[0]).then(function (remote) {
-                return remote.push(
-                    ["refs/heads/" + branch + ":refs/heads/" + branch],
-                    {
-                      callbacks: {
-                        // obtain a new copy of cred every time when user push.
-                        credentials: function () {
-                          let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                          cred = user.credentials;
-                          return cred;
-                        }
-                      }
-                    }
-                );
-              }, function(e){
-                console.log(Error(e));
-              }).then(async function () {
-                window.onbeforeunload = Confirmed;
-                await refreshAll(repo);
-                updateModalText("Push successful");
-              });
-            }, function(e){
-              console.log(Error(e));
+            // tells the user if their branch is up to date or behind the remote branch
+            getAheadBehindCommits(branch).then(function (aheadBehind) {
+                if (aheadBehind.behind !== 0) {
+                    window.alert("your branch is behind remote by " + aheadBehind.behind);
+                    return;
+
+                } else if (aheadBehind.ahead === 0) {
+                    window.alert("Your branch is already up to date");
+                    return;
+                } else {
+                    // Do the Push
+                    Git.Repository.open(repoFullPath).then(function (repo) {
+                        displayModal("Pushing changes to remote...");
+                        addCommand("git push");
+                        repo.getRemotes().then(function (remotes) {
+                            repo.getRemote(remotes[0]).then(function (remote) {
+                                return remote.push(
+                                    ["refs/heads/" + branch + ":refs/heads/" + branch],
+                                    {
+                                        callbacks: {
+                                            // obtain a new copy of cred every time when user push.
+                                            credentials: function () {
+                                                let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                                                cred = user.credentials;
+                                                return cred;
+                                            }
+                                        }
+                                    }
+                                );
+                            }, function (e) {
+                                console.log(Error(e));
+                            }).then(async function () {
+                                window.onbeforeunload = Confirmed;
+                                await refreshAll(repo);
+                                updateModalText("Push successful");
+                            });
+                        }, function (e) {
+                            console.log(Error(e));
+                        });
+                    });
+                }
             });
-          });
         }
-      });
-    }
-  });
+    });
 }
 
 function commitModal() {
@@ -1054,16 +1081,19 @@ function commitModal() {
   displayModal("Commit inside a modal yet to be implemented");
 }
 
-function openBranchModal() {
-  $('#branch-modal').modal('show');
+async function openBranchModal() {
+    $('#branch-modal').modal('show');
 
-  // Shows current branch inside the branch mdoal
-  let currentBranch = getBranchName();
-  if (currentBranch === undefined || currentBranch == 'branch') {
-    document.getElementById("currentBranchText").innerText = "Current Branch: ";
-  } else {
-    document.getElementById("currentBranchText").innerText = "Current Branch: " + currentBranch;
-  }
+    // Shows current branch inside the branch mdoal
+    let branch = "";
+    await getBranchName().then((branchName) => {
+        branch = branchName;
+    });
+    if (currentBranch === undefined || currentBranch == 'branch') {
+        document.getElementById("currentBranchText").innerText = "Current Branch: ";
+    } else {
+        document.getElementById("currentBranchText").innerText = "Current Branch: " + currentBranch;
+    }
 }
 
 function createBranch() {
