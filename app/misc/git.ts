@@ -1191,6 +1191,12 @@ function commitModal() {
   displayModal("Commit inside a modal yet to be implemented");
 }
 
+function fetchModal() {
+  displayModal("fetch yet to be implemented");
+}
+
+function openBranchModal() {
+  $('#branch-modal').modal('show');
 async function openBranchModal() {
     $('#branch-modal').modal('show');
 
