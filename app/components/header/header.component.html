@@ -76,21 +76,10 @@
         </li>
 
         <!--Stash-->
-        <li class="toolbar-Icons" onclick="refreshStashHistory()">
+        <li class="toolbar-Icons" onclick="refreshStashHistory(0);testAddCommand('rename.txt', 'hello.txt')">
           <a href="#"><img src="./assets/Stash.svg" height="40" width="48" class="add-repository-button"
-              title="Stash"></a>
-         <div class="popup" onclick="Popup_function()">Stash
-		<span class="popuptext" id="myPopup">
-		<button type = button>git stash show </button> <br />
-		<button class="popup" type = button>git stash drop </button> <br />
-		<button class="popup" type = button>git stash apply</button> <br />
-		<button class="popup" type = button>git stash pop </button> <br />
-		<button class="popup" type = button>git stash branch </button> <br />
-		<button class="popup" type = button>git stash </button> <br />	
-			
-		</span>
-		
-		</div>
+              title="Stash" data-toggle="modal" data-target="#stash-modal"></a>
+          <span class="toolbar-Text">Stash</span>
         </li>
       </ul>
 
@@ -341,6 +330,24 @@
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
+</div>
+
+<div id="stash-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" id="repo-list-modal">
+      <ul>
+	  <h2>STASH</h2>
+		<button onclick = "addAndStash(0)">stash</button> <br/>
+		<button onclick = "addAndStash(1)">stash and keep index</button> <br/>
+		<button onclick = "addAndStash(2)">stash untracked</button> <br/>
+		<br />
+		<button onclick = "DisplayStashHistory(0)">Click To Refresh Stashes</button> <br/>
+		<br />
+		<div id="stashHistory">
+		</div>
+      </ul>
+    </div>
+  </div>
 </div>
 
 <div id="fetch-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"

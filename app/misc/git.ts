@@ -26,7 +26,13 @@ let commitID = 0;
   - Gathers the current stashes kept in refs/stash and places their names in an array for git stash list
   - Function entered onclick from the Stash button on the NavBar
 */
-function refreshStashHistory(){
+
+function testAddCommand(oldName, newName){
+	addCommand("git mv " + oldName + " " + newName);
+	console.log("performing git mv...");
+}
+
+function refreshStashHistory(number){
   console.log("initializing stash history...");
   if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
     let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
@@ -38,7 +44,10 @@ function refreshStashHistory(){
       stashHistory.unshift(line);
     });
   }
-
+	if (number == 0){
+          addCommand('git stash list');
+		  console.log("displaying stash list...");
+      }
 }
 
 function passReferenceCommits(){
@@ -1693,4 +1702,36 @@ function Popup_function() {
   var popup = document.getElementById("myPopup");
   popup.classList.toggle("show");
   alert("STASH CLICKED");
+}
+
+function DisplayAll(){
+	for (let i = 0; i < stashHistory.length; i++) {
+		DisplayStashHistory(i);
+	}
+}
+
+function DisplayStashHistory(index) { //ERIK working on stashing
+  //var para = document.createElement("p");
+  stashHistory[index].toString();
+  console.log("stash history : " + stashHistory[index]);
+  document.getElementById("stashHistory").innerHTML = "Stash" + "{" + index + "}:" + stashHistory[index];
+  var POPbtn = document.createElement('input');
+  POPbtn.setAttribute('type', 'button'); // input element of pop button
+  POPbtn.setAttribute('value', 'POP');
+  POPbtn.setAttribute('onclick', 'popStash(0)');
+  //POPbtn.setAttribute('data-dismiss', 'modal');
+  document.getElementById("stashHistory").appendChild(POPbtn);
+  var APPLYbtn = document.createElement('input');
+  APPLYbtn.setAttribute('type', 'button'); // input element of pop button
+  APPLYbtn.setAttribute('value', 'APPLY');
+  APPLYbtn.setAttribute('onclick', 'applyStash(0)');
+  //APPLYbtn.setAttribute('data-dismiss', 'modal');
+  document.getElementById("stashHistory").appendChild(APPLYbtn);
+  var DROPbtn = document.createElement('input');
+  DROPbtn.setAttribute('type', 'button'); // input element of pop button
+  DROPbtn.setAttribute('value', 'DROP');
+  DROPbtn.setAttribute('onclick', 'dropStash(0)');
+  //DROPbtn.setAttribute('data-dismiss', 'modal');
+  document.getElementById("stashHistory").appendChild(DROPbtn);
+   console.log("Displaying stash history its index is " + index);
 }
