@@ -1121,6 +1121,7 @@ function checkIfExistOrigin(branchName) {
     });
 }
 
+
 //calls getAheadBedhindCommits to display status of local repo to user
 function displayAheadBehind() {
   let branch = document.getElementById("branch-name").innerText;
@@ -1158,18 +1159,14 @@ function getBranchName() {
     });
 }
 
-async function pushToRemote() {
-    let branch = "";
-    await getBranchName().then((branchName) => {
-        branch = branchName;
-    });
+function pushToRemote() {
+    // checking status of remote repository and only push if you are ahead of remote
+    let branch = document.getElementById("branch-name").innerText;
     //checks if the remote version of your current branch exist
-    checkIfExistOrigin(branch).then(function (remoteBranchExist) {
+    checkIfExistOrigin(branch).then(function(remoteBranchExist){
         if (!remoteBranchExist) {
-            window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
-                "To push the current branch and set the remote as upstream, use\n" +
-                "\n" +
-                "    git push --set-upstream origin test-branch");
+            displayPushToRemoteModal(); //remote branch does not exist. Modal asks user if they would like to create one
+
             return;
         } else {
             // tells the user if their branch is up to date or behind the remote branch
@@ -1177,7 +1174,6 @@ async function pushToRemote() {
                 if (aheadBehind.behind !== 0) {
                     window.alert("your branch is behind remote by " + aheadBehind.behind);
                     return;
-
                 } else if (aheadBehind.ahead === 0) {
                     window.alert("Your branch is already up to date");
                     return;
