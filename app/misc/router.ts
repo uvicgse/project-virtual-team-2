@@ -81,6 +81,7 @@ function switchToAddRepositoryPanel() {
   hideFilePanel();
   hidePullRequestPanel();
   hideGraphPanel();
+  hideStatusPanel();
   displayAddRepositoryPanel();
 
   if(showUsername){
@@ -242,6 +243,19 @@ function hideAddRepositoryPanel() {
   let addRepositoryPanel = document.getElementById("add-repository-panel");
   if (addRepositoryPanel != null) {
     addRepositoryPanel.style.zIndex = "-10";
+  }
+}
+
+function hideStatusPanel() {
+  let statusPanel = document.getElementById("status-panel");
+  console.log(statusPanel);
+  if(statusPanel != null){
+    statusPanel.style.zIndex = "-10";
+  }
+
+  let fetchButton = document.getElementById("fetch-button");
+  if(fetchButton != null){
+    fetchButton.style.visibility = "hidden";
   }
 }
 

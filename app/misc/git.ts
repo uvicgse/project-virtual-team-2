@@ -1069,29 +1069,26 @@ function checkIfExistOrigin(branchName) {
     });
 }
 
+//calls getAheadBedhindCommits to display status of local repo to user
 function displayAheadBehind() {
   let branch = document.getElementById("branch-name").innerText;
-
   let display = document.getElementById("ahead-behind-display");
 
-  console.log(display);
-
   checkIfExistOrigin(branch).then(function(remoteBranchExist){
+    //check if the remote exists
     if (!remoteBranchExist) {
       display.innerHTML = "remote does not exist";
     } else {
-      // tells the user if their branch is up to date or behind the remote branch
+      //check if ahead, behind, or up to date
       getAheadBehindCommits(branch).then(function (aheadBehind) {
-        console.log(aheadBehind);
         if (aheadBehind.behind !== 0) {
-          console.log("behind");
           display.innerHTML = "your branch is behind remote " + aheadBehind.behind;
           return;
         } else if (aheadBehind.ahead === 0) {
           display.innerHTML = "Up to Date";
           return;
         } else {
-          display.innerHTML = "your branch is ahead remote " + aheadBehind.ahead;
+          display.innerHTML = "your branch is ahead of remote " + aheadBehind.ahead ;
         }
       });
     }
