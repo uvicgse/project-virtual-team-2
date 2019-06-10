@@ -1,9 +1,4 @@
-import * as nodegit from "git";
-import NodeGit, {Graph, Status} from "nodegit";
-import { resolve } from "path";
-
-
-
+import {Graph} from "nodegit";
 
 
 let opn = require('opn');
@@ -20,7 +15,6 @@ let filesToAdd = [];
 let theirCommit = null;
 let modifiedFiles;
 let warnbool;
-let CommitButNoPush = 0;
 let stagedFiles: any;
 let vis = require("vis");
 let commitHistory = [];
@@ -404,7 +398,6 @@ function addAndCommit() {
       theirCommit = null;
       console.log("Committing");
       changes = 0;
-      CommitButNoPush = 1;
       console.log("Commit successful: " + oid.tostrS());
       stagedFiles = null;
       console.log(oid.tostrS());
@@ -533,7 +526,7 @@ function addAndStash(options) {
       theirCommit = null;
       changes = 0;
 
-      let branch = document.getElementById("branch-name").innerText;
+      let branch = getBranchName();
       console.log("Current branch: " + branch);
 
       //The next 6 lines are somewhat unnecessary but useful for logging
@@ -622,7 +615,7 @@ function deleteTag(tagName) {
 function popStash(index) {
 
   let repository;
-  let branch = document.getElementById("branch-name").innerText;
+  let branch = getBranchName();
   if (modifiedFiles.length > 0) {
     updateModalText("Please commit before popping stash!");
   }
@@ -694,7 +687,7 @@ function popStash(index) {
 function applyStash(index) {
 
   let repository;
-  let branch = document.getElementById("branch-name").innerText;
+  let branch = getBranchName();
   if (modifiedFiles.length > 0) {
     updateModalText("Please commit before applying stash!");
   }
@@ -766,7 +759,7 @@ function applyStash(index) {
 function dropStash(index) {
 
   let repository;
-  let branch = document.getElementById("branch-name").innerText;
+  let branch = getBranchName();
 
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
@@ -894,18 +887,10 @@ function getAllCommits(callback) {
     });
 }
 
-function PullBuffer() {
-  if ((changes == 1) || (CommitButNoPush == 1)) {
-    $("#modalW3").modal();
-  }
-  else {
-    pullFromRemote();
-  }
-}
 
 function pullFromRemote() {
   let repository;
-  let branch = document.getElementById("branch-name").innerText;
+  let branch = getBranchName();
   if (modifiedFiles.length > 0) {
     updateModalText("Please commit before pulling from remote!");
   }
@@ -1001,9 +986,14 @@ function checkIfExistOrigin(branchName) {
     });
 }
 
+//returns the name of the current branch
+function getBranchName() {
+    return document.getElementById("branch-name").innerText;
+}
+
 function pushToRemote() {
   // checking status of remote repository and only push if you are ahead of remote
-  let branch = document.getElementById("branch-name").innerText;
+  let branch = getBranchName();
   //checks if the remote version of your current branch exist
   checkIfExistOrigin(branch).then(function(remoteBranchExist){
     if (!remoteBranchExist) {
@@ -1045,7 +1035,6 @@ function pushToRemote() {
               }, function(e){
                 console.log(Error(e));
               }).then(async function () {
-                CommitButNoPush = 0;
                 window.onbeforeunload = Confirmed;
                 await refreshAll(repo);
                 updateModalText("Push successful");
@@ -1069,7 +1058,7 @@ function openBranchModal() {
   $('#branch-modal').modal('show');
 
   // Shows current branch inside the branch mdoal
-  let currentBranch = document.getElementById("branch-name").innerText;
+  let currentBranch = getBranchName();
   if (currentBranch === undefined || currentBranch == 'branch') {
     document.getElementById("currentBranchText").innerText = "Current Branch: ";
   } else {

@@ -25,13 +25,8 @@ let loginScopes = [
   "user"
 ];
 
-//Called then user pushes to sign out even if they have commited changes but not pushed; prompts a confirmation modal
 
-function CommitNoPush() {
-        if (CommitButNoPush == 1) {
-                $("#modalW2").modal();
-        }
-}
+
 //constructor method to create a new copy of cred every time
 function createCredentials(username, password) {
   this.username = username;
@@ -44,7 +39,7 @@ function signInHead(callback) {
   continuedWithoutSignIn = false;
   signedAfter = true;
   if (signed == 1){
-    if ((changes == 1) || (CommitButNoPush == 1)){
+    if ((changes == 1)){
       $("#modalW2").modal();
     }
     else {
@@ -332,7 +327,7 @@ function signInOrOut() {
   if (doc.innerHTML === "Sign out") {
     $("#avatar").removeAttr("data-toggle");
 
-    if (changes == 1 || CommitButNoPush == 1) {
+    if (changes == 1) {
       $("#modalW2").modal();
     } else {
       redirectToHomePage();
@@ -345,7 +340,6 @@ function redirectToHomePage() {
   window.location.href = "index.html";
   signed = 0;
   changes = 0;
-  CommitButNoPush = 0;
   //LogInAfterConfirm();
 }
 
