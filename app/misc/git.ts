@@ -1121,6 +1121,44 @@ function checkIfExistOrigin(branchName) {
     });
 }
 
+//push function to remote branch
+function createUpstreamPush() {
+  //todo update getting the branch with new function to get branch.
+  let branch = document.getElementById("branch-name").innerText;
+  Git.Repository.open(repoFullPath).then(function (repo) {
+    displayModal("Pushing changes to remote...");
+    addCommand("git push -u origin " + branch);
+    repo.getRemotes().then(function (remotes) {
+      repo.getRemote(remotes[0]).then(function (remote) {
+        return remote.push(
+            ["refs/heads/" + branch + ":refs/heads/" + branch],
+            {
+              callbacks: {
+                // obtain a new copy of cred every time when user push.
+                credentials: function () {
+                  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                  cred = user.credentials;
+                  return cred;
+                }
+              }
+            }
+        );
+      }, function(e){
+        console.log(Error(e));
+      }).then(function () {
+        //todo remove CommitButNoPush variable
+        CommitButNoPush = 0;
+        window.onbeforeunload = Confirmed;
+        //todo refresh the repo before updating modal text
+        updateModalText("Push successful");
+        refreshAll(repo);
+      });
+    }, function(e){
+      console.log(Error(e));
+    });
+  });
+}
+
 
 //calls getAheadBedhindCommits to display status of local repo to user
 function displayAheadBehind() {
