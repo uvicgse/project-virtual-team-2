@@ -249,7 +249,6 @@ function hideAddRepositoryPanel() {
 
 function displayStatusPanel() {
   let statusPanel = document.getElementById("status-panel");
-  console.log(statusPanel);
   if(statusPanel != null){
     statusPanel.style.border = "solid";
   }

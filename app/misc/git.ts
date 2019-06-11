@@ -968,6 +968,40 @@ function getAllCommits(callback) {
 }
 
 
+function fetchStatus() {
+  let repository;
+  Git.Repository.open(repoFullPath)
+      .then(function (repo) {
+        repository = repo;
+        addCommand("git fetch");
+        displayModal("Local status is up to date");
+        return repository.fetchAll({
+          callbacks: {
+            credentials: function () {
+              let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+              cred = user.credentials;
+              return cred;
+            },
+            certificateCheck: function () {
+              return 1;
+            }
+          }
+        });
+      });
+}
+
+function pullFromRemote() {
+  let repository;
+  let branch = document.getElementById("branch-name").innerText;
+  if (modifiedFiles.length > 0) {
+    updateModalText("Please commit before pulling from remote!");
+  }
+  Git.Repository.open(repoFullPath)
+    .then(function (repo) {
+      repository = repo;
+      console.log("Pulling new changes from the remote repository");
+      addCommand("git pull");
+      displayModal("Pulling new changes from the remote repository");
 async function pullFromRemote() {
     let repository;
     let branch = "";
@@ -1186,10 +1220,6 @@ async function pushToRemote() {
 function commitModal() {
   // TODO: implement commit modal
   displayModal("Commit inside a modal yet to be implemented");
-}
-
-function fetchModal() {
-  displayModal("fetch yet to be implemented");
 }
 
 function openBranchModal() {
