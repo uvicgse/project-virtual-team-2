@@ -934,7 +934,7 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 }
 #graphNodeClickModal table td{
   padding:2px;
-  margin 2px;
+  margin: 2px;
 }
 #graphNodeClickModal table td:first-child{
   width:40%;
