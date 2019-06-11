@@ -30,17 +30,21 @@ let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
-export class TagItem {
+export class CommitItem {
   public tagName: string;
+  public oldTagName: string;
   public commitMsg: string;
   public tagMsg: string;
-  public commitSha: string
+  public commitSha: string;
+  public hasTag: boolean;
   
-  constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string){
+  constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string, hasTag:boolean){
     this.tagName = tagName;
+    this.oldTagName = tagName;
     this.commitMsg = commitMsg;
     this.tagMsg = tagMsg;
     this.commitSha = commitSha;
+    this.hasTag = hasTag;
   }
 }
 
@@ -80,24 +84,27 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of tagItems based on size of commitList
+// Returns an array of CommitItems based on size of commitList
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
   let tItems;
   let found = false;
   let tags;
+  let temp;
   // Create array of tags
   tItems = await Promise.all(sharedRefs.map(async (ref) => {
     if (ref.isTag()) {
-      tag = await getRefObject(repo, ref);
-      commit = await getCommit(repo, ref);
-      return new TagItem(tag.name(), commit.message(), tag.message(), commit.sha());
+      console.log(ref);
+      temp = await getRefObject(repo, ref);
+      tag = temp.tag;
+      commit = temp.commit;
+      return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
     }
   }));
-
-  // Check to see if commits match with any tags, if so, include tag name and message in TagItem. 
-  // If unable to match a tag with a commit, return TagItem without tag name and message
+  
+  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem. 
+  // If unable to match a tag with a commit, return CommitItem without tag name and message
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
       if (tItems[j]) {
@@ -106,10 +113,13 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
         }
       }
     }
-    return new TagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
+    return new CommitItem("", commit.message(), "", commit.sha(), false);
   }));
 
-  return tags;
+  // return tags;
+  return await new Promise(resolve=> {
+    resolve(tags);
+  })
 }
 
 // get each commit's sha for a graph node
@@ -167,19 +177,30 @@ async function getCommitShaFromNode(repo, beginningHash, numCommit) {
   }); 
 }
 
-// get commit from tag reference
-async function getCommit(repo, ref) {
-  let c = await ref.peel(Git.Object.TYPE.COMMIT);
-  let commit = await repo.getCommit(c);
-  return commit;
+// Get tag and commit object
+function getRefObject(repo, ref){
+  let returnTag;
+  return new Promise(resolve => {
+    Git.Reference.nameToId(repo, ref.name())
+      .then(function(oid){
+        return Git.Tag.lookup(repo, oid);
+      })
+      .then(function(tag){
+        returnTag = tag;
+        return ref.peel(Git.Object.TYPE.COMMIT);
+      })
+      .then(function(c) {
+        return repo.getCommit(c);
+      })
+      .then(function(returnCommit) {
+        resolve({
+          tag: returnTag, 
+          commit: returnCommit
+        });
+      })
+  });
 }
 
-// Get tag object based on tag name
-async function getRefObject(repo, ref){
-  let oid = await Git.Reference.nameToId(repo, ref.name())
-  let tag = await Git.Tag.lookup(repo, oid);
-  return tag;
-}
 
 
 
@@ -588,26 +609,69 @@ function addAndStash(options) {
     });
 }
 
+// Add or modify tag
+async function addOrModifyTag(commit) {
+  // A new tag must include a tag name and tag message or tag cannot be created
+  if (commit.tagName == "" && commit.tagMsg != "") {
+    window.alert("Cannot create tag without a tag name. Please add a tag name before committing");
+    return;
+  }
+
+  let repository;
+  Git.Repository.open(repoFullPath)
+  .then((repo)=>{
+    repository = repo;
+    if(commit.hasTag) {
+      console.log("MODIFY - Deleting Tag");
+      return deleteTag(commit.oldTagName);
+    }
+  })
+  .then(()=>{
+    console.log("returned from delete tag");
+    console.log("ADDING Tag: " + commit.tagName + " to commit: " + commit.commitSha);
+    return repository.createTag(commit.commitSha, commit.tagName, commit.tagMsg)  
+  })
+  .then(function (tag: any) {
+      // Check that tag was created and whether tag message exists or not
+      if (tag && commit.tagName != '') {
+        addCommand('git tag -a '+ commit.tagName + ' -m ' + '"' + commit.tagMsg + '"');
+      } else if (tag && commit.tagMsg == '') {
+        addCommand('git tag -a '+ commit.tagName);
+      } else{
+        console.log('tag failed');
+      }
+      refreshAll(repository);
+  })
+  .catch ((err) => {
+    console.log("Could not add/modify tag, Error:" + err);
+  });
+}
+
 // Delete tag based on tag name and display corresponding git command to footer in VisualGit
-function deleteTag(tagName) {
+async function deleteTag(tagName) {
   let repository;
   console.log(repoFullPath);
   let name = tagName.split(path.sep);
   name = name[name.length-1];
   console.log(name);
-  Git.Repository.open(repoFullPath)
-    .then(function (repoResult) {
-      repository = repoResult;
-      repository.deleteTagByName(name)
-        .then(function() {
-          console.log(`${name} deleted`);
-          addCommand('git tag -d '+ name);
-          refreshAll(repository);
-        })
-        .catch((err) => console.log(err));
-    })
-    .catch((err) => console.log(err));
-  
+  return new Promise((resolve) => {
+    Git.Repository.open(repoFullPath)
+      .then((repoResult) => {
+        repository = repoResult;
+        repository.deleteTagByName(name)
+          .then(() => {
+            console.log(`${name} deleted`);
+            addCommand('git tag -d '+ name);
+            
+          })
+          .then((res) =>{
+            resolve(res);
+          })
+          .catch((err) => console.log(err));
+      })
+      .catch((err) => console.log(err));
+      
+  });
 }
 
 
