@@ -392,16 +392,17 @@ function openRepository() {
       .then(function () {
         console.log("Updating the graph and the labels");
         drawGraph();
+        var newRepoLocalPath = "";
         let breakStringFrom;
         if (repoLocalPath.length > 20) {
           for (var i = 0; i < repoLocalPath.length; i++) {
-            if (repoLocalPath[i] == "/") {
+            if (repoLocalPath[i] == "/" || repoLocalPath[i] == "\\") {
               breakStringFrom = i;
             }
           }
-          repoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
+          newRepoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
         }
-        document.getElementById("repo-name").value = repoLocalPath; //TODO: not displaying properly
+        document.getElementById("repo-name").innerHTML = newRepoLocalPath;
         document.getElementById("branch-name").value = branch + '<span class="caret"></span>';
       }, function (err) {
         //If the repository has no commits, getCurrentBranch will throw an error.
