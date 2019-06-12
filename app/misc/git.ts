@@ -1121,42 +1121,56 @@ function checkIfExistOrigin(branchName) {
     });
 }
 
-//push function to remote branch
+//push function to remote branch, we need to push to remote and then link that to the local branch
 function createUpstreamPush() {
+    //todo add loading until its successfull
+    displayModal("Pushing changes to remote... and setting upstream branch");
   //todo update getting the branch with new function to get branch.
   let branch = document.getElementById("branch-name").innerText;
-  Git.Repository.open(repoFullPath).then(function (repo) {
-    displayModal("Pushing changes to remote...");
-    addCommand("git push -u origin " + branch);
-    repo.getRemotes().then(function (remotes) {
-      repo.getRemote(remotes[0]).then(function (remote) {
-        return remote.push(
-            ["refs/heads/" + branch + ":refs/heads/" + branch],
-            {
-              callbacks: {
-                // obtain a new copy of cred every time when user push.
-                credentials: function () {
-                  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                  cred = user.credentials;
-                  return cred;
-                }
+  let remoteBranch = "refs/heads/";
+  let remoteName = "origin";
+  let originBranchName = "origin";
+
+  originBranchName = path.join(originBranchName,branch);
+  remoteBranch = path.join(remoteBranch, branch);
+
+  addCommand("git push -u origin " + branch);
+  Git.Repository.open(repoFullPath).then((repo) => {
+      repo.getCurrentBranch().then((ref) => {
+        repo.getRemote(remoteName).then((remote) => {
+          remote.push([remoteBranch+":"+remoteBranch], {
+            callbacks: {
+              // obtain a new copy of cred every time when user push.
+              credentials: function () {
+                let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                cred = user.credentials;
+                return cred;
               }
             }
-        );
-      }, function(e){
+          }).then((result) => {
+              //link to local branch
+            Branch.setUpstream(ref, originBranchName).then((setRemoteResult) => {
+                updateModalText("Set upstream success");
+            }), function(e) {
+                updateModalText("Something went wrong");
+              console.log(Error(e));
+            }
+          }), function(e) {
+              updateModalText("Something went wrong");
+            console.log(Error(e));
+          }
+        }), function(e) {
+            updateModalText("Something went wrong");
+          console.log(Error(e));
+        }
+      }), function(e) {
+          updateModalText("Something went wrong");
         console.log(Error(e));
-      }).then(function () {
-        //todo remove CommitButNoPush variable
-        CommitButNoPush = 0;
-        window.onbeforeunload = Confirmed;
-        //todo refresh the repo before updating modal text
-        updateModalText("Push successful");
-        refreshAll(repo);
-      });
-    }, function(e){
-      console.log(Error(e));
-    });
-  });
+      }
+  })
+
+
+
 }
 
 
@@ -1198,20 +1212,20 @@ function getBranchName() {
 }
 
 function pushToRemote() {
-    // checking status of remote repository and only push if you are ahead of remote
-    let branch = document.getElementById("branch-name").innerText;
-    //checks if the remote version of your current branch exist
-    checkIfExistOrigin(branch).then(function(remoteBranchExist){
-        if (!remoteBranchExist) {
-            displayPushToRemoteModal(); //remote branch does not exist. Modal asks user if they would like to create one
-
-            return;
-        } else {
-            // tells the user if their branch is up to date or behind the remote branch
-            getAheadBehindCommits(branch).then(function (aheadBehind) {
-                if (aheadBehind.behind !== 0) {
-                    window.alert("your branch is behind remote by " + aheadBehind.behind);
-                    return;
+  // checking status of remote repository and only push if you are ahead of remote
+  let branch = document.getElementById("branch-name").innerText;
+  //checks if the remote version of your current branch exist
+  checkIfExistOrigin(branch).then(function(remoteBranchExist){
+    if (!remoteBranchExist) {
+      //remote branch does not exist. Modal asks user if they would like to create one
+      displayPushToRemoteModal();
+      return;
+    } else {
+      // tells the user if their branch is up to date or behind the remote branch
+      getAheadBehindCommits(branch).then(function (aheadBehind) {
+        if (aheadBehind.behind !== 0) {
+          window.alert("your branch is behind remote by " + aheadBehind.behind);
+          return;
                 } else if (aheadBehind.ahead === 0) {
                     window.alert("Your branch is already up to date");
                     return;
