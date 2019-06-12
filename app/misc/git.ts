@@ -26,6 +26,7 @@ let vis = require("vis");
 let commitHistory = [];
 let commitList: [any];
 let stashHistory = [""];
+let stashIds = [""];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
@@ -190,14 +191,19 @@ async function getRefObject(repo, ref){
 */
 function refreshStashHistory(){
     stashHistory = [""];
+    stashIds = [""];
+    let stashId;
     console.log("initializing stash history...");
     if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
       let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
       txt.pop();
       txt.forEach(function(line) {
+        stashId = line.split(" ")[1];
         line = line.split(" ").slice(6, line.length).join(" ");
-        console.log("Adding " + line + " to Stash history");
+        console.log("Adding " + stashId +": "+ line + " to Stash history");
         stashHistory.unshift(line);
+        stashIds.unshift(stashId);
+
       });
     }
     stashHistory.pop();
@@ -221,6 +227,8 @@ function refreshStashHistory(){
                   '<a onclick="popStash(' + i + ')">Pop</a>' +
                   '<a onclick="applyStash(' + i + ')">Apply</a>' +
                   '<a onclick="dropStash(' + i + ')">Drop</a>' +
+                  '<a onclick="showStash(' + i + ')">Show</a>' +
+                  '<a onclick="openBranchModal('+i+')">Branch<\a>' +
               '</div>' +
           '</div>' +
         '</div>';
@@ -228,6 +236,41 @@ function refreshStashHistory(){
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
+function protoShowStash(){
+  displayModal("test.txt | 5 ++++-\n1 file changed, 4 insertions(+), 1 deletions(-)");
+}
+/* Issue 84: further implement stashing
+    - git stash show stash{index} shows the deltas of the files
+    - function entered onclick from stash dropdown menu
+*/
+async function showStash(index){
+
+  let repository;
+  let stashOid = stashIds[index];
+  let diff;
+  await Git.Repository.open(repoFullPath).then(function(repoResult){
+    repository = repoResult;
+    console.log("found a repository");
+  })
+  .then(function (){
+    return repository.getCommit(stashOid);
+  })
+  .then(function(stash){
+    console.log("found id of stash");
+    return stash.getDiff();
+  })
+  .then(function(diffArray){
+    console.log(diffArray);
+    diffArray.forEach((diff, i) => {
+      //console.log(diff.getStats());
+      //console.log(diff.getDelta(0));
+    });
+    protoShowStash();
+  }, function (err) {
+    console.log("git.ts, func showStash(): getCommit, " + err);
+  });
+
+}
 
 function passReferenceCommits(){
   Git.Repository.open(repoFullPath)
@@ -610,6 +653,8 @@ function addAndStash(options) {
 
      updateModalText("Stash successful!");
      stashHistory.unshift(stashName);
+     stashIds.unshift(stashOID);
+     refreshStashHistory();
      refreshAll(repository);
 
     }, function (err) { //catch any known or unknown errors that may have occured since beginning of function
@@ -623,7 +668,7 @@ function addAndStash(options) {
     });
 }
 
-/* Issue 35: Add applying functionality
+/* Issue 35: Add popping functionality
    Skeleton copied from pullFromRemote()
     - Function entered from onclick of the given stash in Stashing options window
     - pops stash from given index and merges into working directory. Fails if conflicts found.
@@ -682,14 +727,7 @@ function popStash(index) {
         ret2 = await Git.Merge.merge(repository, annotated, {fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
          flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
           checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
-        });/*.then( (res) => {
-          console.log("Merge resolved: " + res);
-          return res;
-        }, function(err) {
-         console.log("git.ts, func popStash(): merge, could not pop stash, " + err);
-         updateModalText(err.message);
-          return err;
-        });*/
+        });
        console.log("Merge returned: " + ret2);
       }
       theirCommit = annotated;
@@ -703,6 +741,8 @@ function popStash(index) {
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
       stashHistory.splice(index, 1);
+      stashIds.splice(index, 1);
+      refreshStashHistory();
       refreshAll(repository);
      }, function(err) { //catch all errors thrown since beginning of function
          console.log("git.ts, func popStash(): update, could not pop stash, " + err);
@@ -711,7 +751,7 @@ function popStash(index) {
 
 }
 
-/* Issue 35+: Add applying functionality
+/* Issue 35: Add applying functionality
    copied from popStash()
     - Function entered from onclick of the given stash in Stashing options window
     - applies stash from given index and merges into working directory.
@@ -769,14 +809,7 @@ function applyStash(index) {
         ret2 = await Git.Merge.merge(repository, annotated, {fileFlags: Git.Merge.FILE_FLAG.FILE_IGNORE_WHITESPACE_CHANGE,
          flags: Git.Merge.FLAG.FAIL_ON_CONFLICT}, {
           checkoutStrategy: Git.Checkout.STRATEGY.SAFE,
-        });/*.then( (res) => {
-          console.log("Merge resolved: " + res);
-          return res;
-        }, function(err) {
-         console.log("git.ts, func applyStash(): merge, could not apply stash, " + err);
-         updateModalText(err.message);
-          return err;
-        });*/
+        });
        console.log("Merge returned: " + ret2);
       }
       theirCommit = annotated;
@@ -789,6 +822,7 @@ function applyStash(index) {
       } else {
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
+      refreshStashHistory();
       refreshAll(repository);
      }, function(err) { //catch all errors thrown since beginning of function
          console.log("git.ts, func applyStash(): update, could not apply stash, " + err);
@@ -796,12 +830,10 @@ function applyStash(index) {
      });
 
 }
-/* Issue 35+: Add dropping stash functionality
+/* Issue 35/84: Add dropping stash functionality
    copied from popStash()
     - Function entered from onclick of the given stash in Stashing options window
     - drops stash from given index.
-
-    //TODO: DROP IS NOT FUNCTIONAL ATM
 */
 async function dropStash(index) {
   if (index == null) index = 0;
@@ -814,7 +846,7 @@ async function dropStash(index) {
       repository = repo;
       console.log("Dropping stash at index " + index);
       addCommand("git stash drop stash@{" + index +"}");
-      var stashName = stashHistory.splice(index, 1);
+      var stashName = stashHistory[index];
       updateModalText("Dropping stash: "+ stashName);
 
         //perform git stash drop
@@ -823,20 +855,100 @@ async function dropStash(index) {
             console.log("Drop resolved: " + res);
             //should return error code but isn't
               updateModalText("Success! Stash at index " + index + " dropped from list.");
-              refreshAll(repository);
             return res;
           }, (err) => {
-            console.log("Drop rejected: " + err); //callback required
+            console.log("Drop rejected: " + err);
             throw new Error(err.message);
           }
         );
-
+        stashHistory.splice(index, 1);
+        stashIds.splice(index, 1);
+        refreshStashHistory();
+        refreshAll(repository);
     }, function(err) {
         console.log("git.ts, func dropStash(), could not drop stash, " + err);
         updateModalText("Unexpected Error: " + err.message + "Please restart and try again.");
       }
     );
+}
 
+/* Issue 84: further implement stashing
+  Function copied from createBranch()
+    - git stash branch <branchname> <stash> will create and checkout a new branch
+      starting from the commit where the stash was pushed and then pop the stash onto the new branch
+    - Onclick of _branch_ in the stash dropdown, the branch modal will open up to allow the user to create the branch
+    - currently, only the most recent stash can be used to checkout a new branch
+*/
+function branchStash(index) {
+  if (index == null) index = 0;
+
+  let branchName = document.getElementById("branch-name-input").value;
+
+  if (typeof repoFullPath === "undefined") {
+    // repository not selected
+    document.getElementById("branchErrorText").innerText = "Warning: You are not within a Git repository. " +
+        "Open a repository to create a new branch. ";
+  }
+
+ // Check for empty branch name
+  // @ts-ignore
+  else if (branchName == '' || branchName == null) {
+    // repository not selected
+    document.getElementById("branchErrorText").innerText = "Warning: Please enter a branch name";
+  }
+
+  // Check for invalid branch name
+  // @ts-ignore
+  else if (isIllegalBranchName(branchName)) {
+    // repository not selected
+    // @ts-ignore
+    document.getElementById("branchErrorText").innerText = "Warning: Illegal branch name. ";
+  }
+
+  //check if local changes need to be stashed
+  else if (modifiedFiles > 0){
+    document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
+
+  }
+
+  // TODO: check for existing branch
+  // Check for existing branch
+  // else if ( <existing branch> ) {}
+
+  else {
+    let currentRepository;
+    console.log(branchName + " is being created");
+    Git.Repository.open(repoFullPath)
+      .then(function (repo) {
+        // Create a new branch on commit of stash
+        console.log("found a repository");
+        currentRepository = repo;
+        addCommand("git stash branch " + branchName + " stash{" + index + "}");
+        return repo.getCommit(stashIds[index])
+          .then(function (stash) {
+            console.log("Branching from stash: " + stash);
+            return stash.parent(0)
+              .then(function(commit){
+                console.log("Parent commit: "+ commit);
+                return repo.createBranch(
+                branchName,
+                commit,
+                0,
+                repo.defaultSignature(),
+                "Created new-branch on "+ commit.id());
+              });
+          });
+      }, function (err) {
+            console.log("git.ts, func branchStash(), error occurred while trying to create a new branch " + err);
+      })
+      .done(function () {
+        $('#branch-modal').modal('hide');
+        //refreshAll(currentRepository);
+        checkoutLocalBranch(branchName);
+        popStash(index);
+      });
+    clearBranchErrorText();
+  }
 }
 
 // Delete tag based on tag name and display corresponding git command to footer in VisualGit
@@ -860,10 +972,6 @@ function deleteTag(tagName) {
     .catch((err) => console.log(err));
 
 }
-
-
-
-
 
 function clearStagedFilesList() {
   let filePanel = document.getElementById("files-staged");
@@ -1131,10 +1239,11 @@ function pushToRemote() {
 
 function commitModal() {
   // TODO: implement commit modal
-  updateModalText("Commit inside a modal yet to be implemented");
+  //updateModalText("Commit inside a modal yet to be implemented");
+  addAndCommit();
 }
 
-function openBranchModal() {
+function openBranchModal(stashIndex) {
   $('#branch-modal').modal('show');
 
   // Shows current branch inside the branch mdoal
@@ -1172,6 +1281,10 @@ function createBranch() {
     // repository not selected
     // @ts-ignore
     document.getElementById("branchErrorText").innerText = "Warning: Illegal branch name. ";
+
+  } else if (modifiedFiles > 0){
+    document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
+
   }
 
   // TODO: check for existing branch
