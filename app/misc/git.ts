@@ -990,18 +990,6 @@ function fetchStatus() {
       });
 }
 
-function pullFromRemote() {
-  let repository;
-  let branch = document.getElementById("branch-name").innerText;
-  if (modifiedFiles.length > 0) {
-    updateModalText("Please commit before pulling from remote!");
-  }
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      repository = repo;
-      console.log("Pulling new changes from the remote repository");
-      addCommand("git pull");
-      displayModal("Pulling new changes from the remote repository");
 async function pullFromRemote() {
     let repository;
     let branch = "";
@@ -1129,23 +1117,6 @@ function displayAheadBehind() {
   });
 }
 
-function pushToRemote() {
-  // checking status of remote repository and only push if you are ahead of remote
-  let branch = document.getElementById("branch-name").innerText;
-  //checks if the remote version of your current branch exist
-  checkIfExistOrigin(branch).then(function(remoteBranchExist){
-    if (!remoteBranchExist) {
-      window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
-          "To push the current branch and set the remote as upstream, use\n" +
-          "\n" +
-          "    git push --set-upstream origin test-branch");
-      return;
-    } else {
-      // tells the user if their branch is up to date or behind the remote branch
-      getAheadBehindCommits(branch).then(function (aheadBehind) {
-        if (aheadBehind.behind !== 0) {
-          window.alert("your branch is behind remote by " + aheadBehind.behind);
-          return;
 //returns the name of the current branch
 function getBranchName() {
     return Git.Repository.open(repoFullPath).then((repo) => {
@@ -1222,8 +1193,6 @@ function commitModal() {
   displayModal("Commit inside a modal yet to be implemented");
 }
 
-function openBranchModal() {
-  $('#branch-modal').modal('show');
 async function openBranchModal() {
     $('#branch-modal').modal('show');
 
