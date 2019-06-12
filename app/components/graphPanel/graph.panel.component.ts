@@ -1,4 +1,5 @@
 import { Component, HostListener, ViewChild, ElementRef} from "@angular/core";
+import { resolve } from "url";
 
 @Component({
   selector: "graph-panel",
@@ -7,11 +8,11 @@ import { Component, HostListener, ViewChild, ElementRef} from "@angular/core";
 })
 
 export class GraphPanelComponent {
-  commitList: any;
+  tagList: any;
   showCommitList: boolean;
   @ViewChild('graphNodeClickModal') modal: ElementRef;
-
-  // Listen for user click on graph and display if nodelclicked
+  //
+  // Listen for user click on graph and display if node clicked
   @HostListener('click', ['$event']) 
   async onClick() {
     // Check if modal has show class
@@ -20,7 +21,7 @@ export class GraphPanelComponent {
     if(modal){
       let beginnningHash = document.getElementById('commitHash').innerHTML;
       let numCommit = document.getElementById('numCommit').innerHTML;
-      await this.asyncGetCommits(beginnningHash, numCommit);
+      await this.asyncCall(beginnningHash, numCommit);
       this.showCommitList = true;
     }
     // remove if show class
@@ -28,8 +29,8 @@ export class GraphPanelComponent {
   }
   
   // get all tags and commits information
-  async asyncGetCommits(beginnningHash, endingHash) {
-    this.commitList = await getTags(beginnningHash, endingHash);
+  async asyncCall(beginnningHash, endingHash) {
+    this.tagList = await getTags(beginnningHash, endingHash);
   }
 
   mergeBranches(): void {
@@ -44,22 +45,13 @@ export class GraphPanelComponent {
   }
 
   // Delete tag when delete tag button is clicked. Method will reload list of commits after tag has been deleted
-  async deleteTag(tagName): void {
-    await deleteTag(tagName);
-    document.getElementById("onExit").click();
+  deleteTag(tagName): void {
+    deleteTag(tagName);
+    let beginnningHash = document.getElementById('commitHash').innerHTML;
+    let numCommit = document.getElementById('numCommit').innerHTML;
+    this.asyncCall(beginnningHash, numCommit);
     //this.modal.nativeElement.contentWindow.location.reload(true);
   }
-
-  async addOrModifyTag(commit): void {
-    await addOrModifyTag(commit);
-    document.getElementById("onExit").click();
-  }
-
-  // reloadTaglist(): void {
-  //   let beginnningHash = document.getElementById('commitHash').innerHTML;
-  //   let numCommit = document.getElementById('numCommit').innerHTML;
-  //   this.asyncGetCommits(beginnningHash, numCommit);
-  // }
 
 
   
