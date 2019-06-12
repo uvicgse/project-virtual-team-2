@@ -933,7 +933,8 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
   color: black;
 }
 #graphNodeClickModal table td{
-  padding:5px;
+  padding:2px;
+  margin: 2px;
 }
 #graphNodeClickModal table td:first-child{
   width:40%;
@@ -958,12 +959,17 @@ in the model that pops-up when you click on a node */
 
 #tagDiv input{
   border-radius: 3px;
-  padding: 2px;
+  padding: 1px;
+  margin:1px;
 }
 
 #tagDiv table {
  margin:2px;
 } 
+#tagDiv button {
+  width: 65px;
+  margin: 0 10px;
+}
 .error {
   background-color: #fce4e4;
   border: 1px solid #cc0033;
