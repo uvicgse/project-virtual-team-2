@@ -974,7 +974,7 @@ function fetchStatus() {
       .then(function (repo) {
         repository = repo;
         addCommand("git fetch");
-        displayModal("Local status is up to date");
+        displayModal("fetching from remote...");
         return repository.fetchAll({
           callbacks: {
             credentials: function () {
@@ -987,6 +987,9 @@ function fetchStatus() {
             }
           }
         });
+      }).then(function () {
+        displayAheadBehind();
+        updateModalText("Local status is up to date");
       });
 }
 

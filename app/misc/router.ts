@@ -271,7 +271,6 @@ function displayStatusPanel() {
 
 function hideStatusPanel() {
   let statusPanel = document.getElementById("status-panel");
-  console.log(statusPanel);
   if(statusPanel != null){
     statusPanel.style.border = "0";
   }
