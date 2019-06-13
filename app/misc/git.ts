@@ -959,6 +959,7 @@ function addAndStash(options) {
         updateModalText("Unexpected Error: " + err.message + "\nPlease restart and try again.");
       }
     });
+  }
 }
 
 // Add or modify tag
