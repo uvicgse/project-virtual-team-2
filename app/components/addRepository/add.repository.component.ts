@@ -96,8 +96,7 @@ export class AddRepositoryComponent {
   }
 
 
-  prepareDontMissDND :  function() {
-
+  prepareDontMissDND():  void {
       $(document.body).bind("dragover", function(e) {
           e.preventDefault();
           return false;
@@ -108,9 +107,6 @@ export class AddRepositoryComponent {
           fileUpload(e);
           return false;
       });
-
-
-  
 }
 
 function fileUpload(ev){

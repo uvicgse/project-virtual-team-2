@@ -279,19 +279,27 @@ function refreshMoveModal(){
 	let repoDirectoryHTML = '';
 
 	// For each stash create a unique element with unique pop, drop, and apply functionality.
-	directories.forEach((directory, i) => {
+	directories.forEach((directoryItem, i) => {
 		// Parse path name and replace all \ with \\
 		let parsedPath = (repoFullPath + '\\' + directories[i]).replace(/\\/g, '\\\\');
-		console.log("Path: " + path);
-		console.log("Parsed Path: " + parsedPath);
 		repoDirectoryHTML +=
 			'<div id="directory-item" onclick="listDirectoryItems(\'' + parsedPath + '\')">' +
 			  '<div id="directory-id">' +
-			      'Directory[' + i + ']: ' + directory +
+			      directoryItem +
 			  '</div>' +
 			'</div>';
 	});
 	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
+
+  var newPath = "";
+  let breakStringFrom;
+  for (var i = 0; i < repoFullPath.length; i++) {
+    if (repoFullPath[i] == "/" || repoFullPath[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+  newPath = repoFullPath.slice(breakStringFrom, repoFullPath.length);
+  document.getElementById('move-current-directory').innerHTML = newPath;
 	$('#move-modal').modal('show');
 }
 
@@ -308,18 +316,46 @@ function listDirectoryItems(path) {
 	let repoDirectoryHTML = '';
 
 	// For each stash create a unique element with unique pop, drop, and apply functionality.
-	directories.forEach((directory, i) => {
+	directories.forEach((directoryItem, i) => {
 		let parsedPath = (path + '\\' + directories[i]).replace(/\\/g, '\\\\');
-		console.log("Path: " + path);
-		console.log("Parsed Path: " + parsedPath);
 		repoDirectoryHTML +=
-			'<div id="directory-item" onclick="listDirectoryItems("' + parsedPath + '")">' +
+			'<div id="directory-item" onclick="listDirectoryItems(\'' + parsedPath + '\')">' +
 			  '<div id="directory-id">' +
-			      'Directory[' + i + ']: ' + directory +
+			      directoryItem +
 			  '</div>' +
 			'</div>';
 	});
 	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
+
+  // Get last directory name in path
+  var newPath = "";
+  var prevPath = "";
+  let breakStringFrom;
+
+  // Used to get second last slash
+  let slashPosArr = [];
+  for (var i = 0; i < path.length; i++) {
+    if (path[i] == "/" || path[i] == "\\") {
+      slashPosArr.push(i);
+      breakStringFrom = i;
+    }
+  }
+
+  newPath = path.slice(breakStringFrom, path.length);
+  prevPath = path.slice(0, breakStringFrom);
+
+  // If the previous path is equal to a path outside of the repo directory, don't
+  // display the previous path button (...)
+  console.log(repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]));
+  if(prevPath == repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]) || path == repoFullPath){
+    document.getElementById('move-current-directory').innerHTML = newPath;
+  } else {
+    let parsedPrevPath = (prevPath).replace(/\\/g, '\\\\');
+    document.getElementById('move-current-directory').innerHTML = 
+    '<div>' + 
+      '<a id="move-last-directory" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
+    '</div>';
+  }
 }
 
 function passReferenceCommits(){
