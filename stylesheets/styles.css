@@ -1263,3 +1263,18 @@ body .pull-request-panel {
   text-align: center;
 }
 /* Stash-functions END */
+
+/* Move-modal START */
+#directory-item {
+  display: inline-flex;
+  align-items: center;
+  background: #efefef;
+  padding: 5px;
+  margin: 3px;
+  width: 100%;
+}
+
+#directory-id {
+  width: 100%;
+}
+/* Move-modal END */

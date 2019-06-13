@@ -81,6 +81,13 @@
               data-toggle="modal" data-target="#stash-modal"></a>
           <span class="toolbar-Text">Stash</span>
         </li>
+
+        <!--Move-->
+        <li class="toolbar-Icons" onclick="refreshMoveModal()">
+          <a href="#"><img src="./assets/Stash.svg" height="40" width="48" class="add-repository-button" title="Move"
+              data-toggle="modal" data-target="#Move-modal"></a>
+          <span class="toolbar-Text">Move</span>
+        </li>
       </ul>
 
       <div class="collapse nav navbar-nav nav-collapse" id="nav-collapse1">
@@ -338,6 +345,29 @@
         <div>
           <h3><u>Stash List</u></h3>
           <div id="stash-list"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Modal for moving and renaming files and directories-->
+<div id="move-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Move</h4>
+      </div>
+      <div class="modal-body">
+        <div>
+          <h3><u>Repo Directory</u></h3>
+          <div id="move-list"></div>
         </div>
       </div>
       <div class="modal-footer">

@@ -272,6 +272,30 @@ async function showStash(index){
 
 }
 
+function refreshMoveModal(){
+	let directories = getDirectories(repoFullPath);
+	console.log("Getting repo directory...");
+	let repoDirectoryHTML = '';
+
+	// For each stash create a unique element with unique pop, drop, and apply functionality.
+	directories.forEach((directory, i) => {
+	  repoDirectoryHTML +=
+	    '<div id="directory-item">' +
+	      '<div id="directory-id">' +
+	          'Directory[' + i + ']: ' + directory +
+	      '</div>' +
+	    '</div>';
+	});
+	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
+	$('#move-modal').modal('show');
+}
+
+function getDirectories(path) {
+  return fs.readdirSync(path).filter(function (file) {
+    return fs.statSync(path + '\\' + file).isDirectory();
+  });
+}
+
 function passReferenceCommits(){
   Git.Repository.open(repoFullPath)
   .then(function(commits){
