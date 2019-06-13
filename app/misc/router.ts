@@ -164,6 +164,22 @@ function displayFilePanel() {
   if (fileEditButton != null){
     fileEditButton.style.visibility = "visible";
   }
+  let amendCommitButton = document.getElementById("amend-commit-button");
+  // checkIfExistLocalCommit().then(function (ahead: boolean) {
+  //   console.log(ahead);
+  //   if (amendCommitButton != null){
+  //     amendCommitButton.style.visibility = "visible";
+  //     if (!ahead) {
+  //       amendCommitButton.style.cursor = "not-allowed";
+  //       amendCommitButton.style['pointer-events'] = "none";
+  //     } else {
+  //       amendCommitButton.style.cursor = "pointer";
+  //       amendCommitButton.style['pointer-events'] = "auto";
+  //     }
+  //   }
+  // });
+  
+  
   document.getElementById("Issues-button").style="visiblity: visible";
 }
 
@@ -225,6 +241,11 @@ function hideFilePanel() {
   let fileEditButton = document.getElementById("fileEdit-button");
   if (fileEditButton != null){
     fileEditButton.style.visibility = "hidden";
+  }
+
+  let amendCommitButton = document.getElementById("amend-commit-button");
+  if (amendCommitButton != null){
+    amendCommitButton.style.visibility = "hidden";
   }
 
   document.getElementById("Issues-button").style="visibility: hidden";
