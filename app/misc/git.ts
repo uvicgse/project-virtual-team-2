@@ -252,6 +252,9 @@ function refreshStashHistory(){
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
+function amendCommit() {
+
+}
 
 /* Issue 84: further implement stashing
     - git stash show stash{index} shows the deltas of
@@ -1444,6 +1447,25 @@ function getBranchName() {
         });
     });
 }
+//returns the name of the current branch
+async function clonegetBranchName() {
+  let repo;
+  let currentBranch;
+  let branchName;
+  
+  repo = await Git.Repository.open(repoFullPath);
+  console.log('test1');
+  console.log(repo);
+  currentBranch = await repo.getCurrentBranch();
+  console.log('test2');
+  console.log(currentBranch);
+  branchName = await Branch.name(currentBranch);
+  console.log(branchName);
+  console.log('test3');
+  return new Promise(resolve=> {
+    resolve(branchName);
+  });
+}
 
 
 async function pushToRemote() {
@@ -1838,6 +1860,29 @@ function resetCommit(name: string) {
     });
 }
 
+// Method will return true/false if current branch has one or more local commits
+async function checkIfExistLocalCommit() {
+  let branch;
+  let remoteBranchExist;
+  let aheadBehind;
+  await clonegetBranchName().then((branchName) => {
+    branch = branchName;
+  });
+  
+  remoteBranchExist = await checkIfExistOrigin(branch);
+  // Check if the remote version of current branch exists
+  if (!remoteBranchExist) {
+      return;
+  } 
+
+  aheadBehind = await getAheadBehindCommits(branch);
+  console.log(aheadBehind);
+  // Return true if local branch is ahead
+  if (aheadBehind.ahead > 0) {
+    return true;
+  }
+  
+}
 function revertCommit() {
 
   let repos;
