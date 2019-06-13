@@ -280,12 +280,16 @@ function refreshMoveModal(){
 
 	// For each stash create a unique element with unique pop, drop, and apply functionality.
 	directories.forEach((directory, i) => {
-	  repoDirectoryHTML +=
-	    '<div id="directory-item">' +
-	      '<div id="directory-id">' +
-	          'Directory[' + i + ']: ' + directory +
-	      '</div>' +
-	    '</div>';
+		// Parse path name and replace all \ with \\
+		let parsedPath = (repoFullPath + '\\' + directories[i]).replace(/\\/g, '\\\\');
+		console.log("Path: " + path);
+		console.log("Parsed Path: " + parsedPath);
+		repoDirectoryHTML +=
+			'<div id="directory-item" onclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+			  '<div id="directory-id">' +
+			      'Directory[' + i + ']: ' + directory +
+			  '</div>' +
+			'</div>';
 	});
 	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
 	$('#move-modal').modal('show');
@@ -295,6 +299,27 @@ function getDirectories(path) {
   return fs.readdirSync(path).filter(function (file) {
     return fs.statSync(path + '\\' || '/' + file).isDirectory();
   });
+}
+
+function listDirectoryItems(path) {
+	let directories = getDirectories(path);
+	console.log("Getting repo directory...");
+	console.log("Displaying the files and directories at: " + path);
+	let repoDirectoryHTML = '';
+
+	// For each stash create a unique element with unique pop, drop, and apply functionality.
+	directories.forEach((directory, i) => {
+		let parsedPath = (path + '\\' + directories[i]).replace(/\\/g, '\\\\');
+		console.log("Path: " + path);
+		console.log("Parsed Path: " + parsedPath);
+		repoDirectoryHTML +=
+			'<div id="directory-item" onclick="listDirectoryItems("' + parsedPath + '")">' +
+			  '<div id="directory-id">' +
+			      'Directory[' + i + ']: ' + directory +
+			  '</div>' +
+			'</div>';
+	});
+	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
 }
 
 function passReferenceCommits(){
