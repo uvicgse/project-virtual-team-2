@@ -252,9 +252,6 @@ function refreshStashHistory(){
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
-function amendCommit() {
-
-}
 
 /* Issue 84: further implement stashing
     - git stash show stash{index} shows the deltas of
@@ -1438,30 +1435,42 @@ function displayAheadBehind() {
 }
 
 //returns the name of the current branch
-function getBranchName() {
-    return Git.Repository.open(repoFullPath).then((repo) => {
-        return repo.getCurrentBranch().then((currBranch) => {
-            return Branch.name(currBranch).then((branchName) => {
-                return branchName;
-            });
-        });
-    });
-}
+// function getBranchName() {
+//     return Git.Repository.open(repoFullPath).then((repo) => {
+//         return repo.getCurrentBranch().then((currBranch) => {
+//             return Branch.name(currBranch).then((branchName) => {
+//                 return branchName;
+//             });
+//         });
+//     });
+// }
 //returns the name of the current branch
-async function clonegetBranchName() {
+async function getBranchName() {
   let repo;
   let currentBranch;
   let branchName;
-  
-  repo = await Git.Repository.open(repoFullPath);
-  console.log('test1');
-  console.log(repo);
+  let tempPath;
+
+  // When repository is initially opened, repoFullPath is not set, 
+  // therefore method can get repo path from element repoOpen.
+  // No need to use repoOpen if repoFullPath is set.
+  if (!repoFullPath) {
+    if (document.getElementById("repoOpen").value == null) {
+      return
+    } else {
+      console.log(document.getElementById("repoOpen").value);
+      tempPath = document.getElementById("repoOpen").value;
+    }
+  } else {
+    tempPath = repoFullPath;
+  }
+
+  repo = await Git.Repository.open(tempPath);
+
   currentBranch = await repo.getCurrentBranch();
-  console.log('test2');
-  console.log(currentBranch);
+
   branchName = await Branch.name(currentBranch);
-  console.log(branchName);
-  console.log('test3');
+
   return new Promise(resolve=> {
     resolve(branchName);
   });
@@ -1865,23 +1874,39 @@ async function checkIfExistLocalCommit() {
   let branch;
   let remoteBranchExist;
   let aheadBehind;
-  await clonegetBranchName().then((branchName) => {
-    branch = branchName;
-  });
-  
-  remoteBranchExist = await checkIfExistOrigin(branch);
-  // Check if the remote version of current branch exists
-  if (!remoteBranchExist) {
-      return;
-  } 
+  let ret;
 
-  aheadBehind = await getAheadBehindCommits(branch);
-  console.log(aheadBehind);
-  // Return true if local branch is ahead
-  if (aheadBehind.ahead > 0) {
-    return true;
+  try {
+    // Get branch name 
+    branch = await getBranchName();
+  } catch (error) {
+    console.log(error);
   }
   
+  try {
+    remoteBranchExist = await checkIfExistOrigin(branch);
+  } catch (error) {
+    console.log(error);
+  }
+
+  // Check if the remote version of current branch exists
+  if (!remoteBranchExist) {
+    return false;
+  } 
+
+  try {
+    aheadBehind = await getAheadBehindCommits(branch);
+  } catch (error) {
+    console.log(error);
+  }
+  
+  // Return true if local branch is ahead. Else, local branch is not ahead so return false.
+  if (aheadBehind.ahead > 0) {
+    return true;
+  } else {
+    return false
+  }
+
 }
 function revertCommit() {
 
