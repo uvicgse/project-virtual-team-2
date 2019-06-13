@@ -360,11 +360,7 @@ function getDirectories(directoryPath) {
 function listDirectoryItems(directoryPath) {
 	let directories = getDirectories(directoryPath);
 	console.log("Getting repo directory...");
-<<<<<<< HEAD
 	console.log("Displaying the files and directories at: " + directoryPath);
-=======
-	console.log("Displaying the files and directories at: " + repoFullPath);
->>>>>>> The move modal can now display all of the files and directories in the current repo.
 	let repoDirectoryHTML = '';
 
 	// For each stash create a unique element with unique pop, drop, and apply functionality.
@@ -484,7 +480,6 @@ function hideDirNameError(){
   dirNameErrorElement.style.display = "none";
 }
 
-<<<<<<< HEAD
 function isValidFileName(fileName){
   return /^[a-z0-9_.@()-]+\.[^.]+$/i.test(fileName);
 }
