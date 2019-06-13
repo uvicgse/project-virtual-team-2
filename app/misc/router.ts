@@ -3,7 +3,6 @@ let blue = "#39c0ba";
 let gray = "#5b6969";
 let continuedWithoutSignIn = false;
 let inTheApp = false;
-
 let showUsername = true;
 let previousWindow = "repoPanel";
 
@@ -135,7 +134,7 @@ function displayClonePanel() {
   $("#open-local-repository").hide();
 }
 
-function displayFilePanel() {
+async function displayFilePanel() {
   let filePanel = document.getElementById("file-panel");
   if (filePanel != null){
     filePanel.style.zIndex = "10";
@@ -165,19 +164,22 @@ function displayFilePanel() {
     fileEditButton.style.visibility = "visible";
   }
   let amendCommitButton = document.getElementById("amend-commit-button");
-  // checkIfExistLocalCommit().then(function (ahead: boolean) {
-  //   console.log(ahead);
-  //   if (amendCommitButton != null){
-  //     amendCommitButton.style.visibility = "visible";
-  //     if (!ahead) {
-  //       amendCommitButton.style.cursor = "not-allowed";
-  //       amendCommitButton.style['pointer-events'] = "none";
-  //     } else {
-  //       amendCommitButton.style.cursor = "pointer";
-  //       amendCommitButton.style['pointer-events'] = "auto";
-  //     }
-  //   }
-  // });
+  let ahead;
+  console.log('test');
+  
+  ahead = await checkIfExistLocalCommit();
+  console.log('AHEAD', ahead);
+  if (amendCommitButton != null){
+    amendCommitButton.style.visibility = "visible";
+    if (!ahead) {
+      amendCommitButton.style.cursor = "not-allowed";
+      amendCommitButton.style['pointer-events'] = "none";
+    } else {
+      amendCommitButton.style.cursor = "pointer";
+      amendCommitButton.style['pointer-events'] = "auto";
+    }
+  }
+
   
   
   document.getElementById("Issues-button").style="visiblity: visible";
