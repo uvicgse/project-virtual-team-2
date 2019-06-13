@@ -1338,18 +1338,52 @@ body .pull-request-panel {
 
 #stash-show-modal-body {
   display: flex;
-  flex-direction: column;
-  padding: 14px;
+  align-items: center;
 }
 
-.plus {
-  color: green;
+#stash-id {
+  width: 100%;
 }
 
-.minus {
-  color: red;
+/* stash-item dropdown menu styles START */
+.icons li {
+    background: none repeat scroll 0 0 #828282;
+    height: 3px;
+    width: 3px;
+    line-height: 0;
+    list-style: none outside none;
+    margin-top: 3px;
+    border-radius:50%;
+    pointer-events: none;
 }
 
+.dropbtn {
+    color: white;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    text-align: right;
+    margin-top: auto;
+    margin-right: auto;
+    margin-bottom: auto;
+}
+
+.dropdown {
+    position: absolute;
+    display: inline-block;
+    right: 0.4em;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+<<<<<<< HEAD
 /* Stash-functions END */
 
 #stash-id {
@@ -1394,6 +1428,8 @@ body .pull-request-panel {
     z-index: 1;
 }
 
+=======
+>>>>>>> Got a modal displaying for move as well as some of the files in the current working repo's directory. git.ts -- 275:298, header.component.html -- 84:90, styles.css -- 1266:1280
 .dropdown-content a {
     color: black;
     padding: 12px 16px;
@@ -1426,7 +1462,7 @@ body .pull-request-panel {
 /* Stash-functions END */
 
 /* Move-modal START */
-.directory-item {
+#directory-item {
   display: inline-flex;
   align-items: center;
   background: #efefef;
@@ -1465,3 +1501,5 @@ body .pull-request-panel {
 .move-last-directory{
   font-size: 20px;
 }
+=======
+/* Move-modal END */
