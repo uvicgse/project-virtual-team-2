@@ -236,6 +236,7 @@ function refreshStashHistory(){
 function refreshMoveModal(){
 	let directories = getDirectories(repoFullPath);
 	console.log("Getting repo directory...");
+	console.log("Displaying the files and directories at: " + repoFullPath);
 	let repoDirectoryHTML = '';
 
 	// For each stash create a unique element with unique pop, drop, and apply functionality.
@@ -253,7 +254,7 @@ function refreshMoveModal(){
 
 function getDirectories(path) {
   return fs.readdirSync(path).filter(function (file) {
-    return fs.statSync(path + '\\' + file).isDirectory();
+    return fs.statSync(path + '\\' || '/' + file).isDirectory();
   });
 }
 
