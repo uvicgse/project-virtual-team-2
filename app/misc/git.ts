@@ -262,7 +262,8 @@ function protoShowStash(){
     - function entered onclick from stash dropdown menu
 */
 async function showStash(index){
-
+  updateModalText("Show functionality not yet fully implemented.");
+/*
   let repository;
   let stashOid = stashIds[index];
   let diff;
@@ -287,7 +288,7 @@ async function showStash(index){
   }, function (err) {
     console.log("git.ts, func showStash(): getCommit, " + err);
   });
-
+*/
 }
 
 function passReferenceCommits(){
@@ -784,14 +785,14 @@ async function deleteTag(tagName) {
     - pops stash from given index and merges into working directory. Fails if conflicts found.
     - If the file is tracked by the working tree, Merge will return conflict error but safely merge.
 */
-function popStash(index) {
+async function popStash(index) {
   if (index == null) index = 0; //default option pops most recent stash
 
   let repository;
   let branch = "";
-      await getBranchName().then((branchName) => {
-          branch = branchName;
-      });
+  await getBranchName().then((branchName) => {
+      branch = branchName;
+  });
   if (modifiedFiles.length > 0) {
     updateModalText("Please commit before popping stash!");
   }
@@ -996,7 +997,13 @@ async function dropStash(index) {
     - Onclick of _branch_ in the stash dropdown, the branch modal will open up to allow the user to create the branch
     - currently, only the most recent stash can be used to checkout a new branch
 */
+
+
+
 function branchStash(index) {
+  updateModalText("Stash branch functionality not yet fully implemented.");
+
+  /*
   if (index == null) index = 0;
 
   let branchName = document.getElementById("branch-name-input").value;
@@ -1066,29 +1073,9 @@ function branchStash(index) {
       });
     clearBranchErrorText();
   }
+  */
 }
 
-// Delete tag based on tag name and display corresponding git command to footer in VisualGit
-function deleteTag(tagName) {
-  let repository;
-  console.log(repoFullPath);
-  let name = tagName.split(path.sep);
-  name = name[name.length-1];
-  console.log(name);
-  Git.Repository.open(repoFullPath)
-    .then(function (repoResult) {
-      repository = repoResult;
-      repository.deleteTagByName(name)
-        .then(function() {
-          console.log(`${name} deleted`);
-          addCommand('git tag -d '+ name);
-          refreshAll(repository);
-        })
-        .catch((err) => console.log(err));
-    })
-    .catch((err) => console.log(err));
-
-}
 
 function clearStagedFilesList() {
   let filePanel = document.getElementById("files-staged");
@@ -1365,7 +1352,7 @@ function commitModal() {
   addAndCommit();
 }
 
-function openBranchModal(stashIndex) {
+async function openBranchModal(stashIndex) {
   $('#branch-modal').modal('show');
 
     // Shows current branch inside the branch mdoal
