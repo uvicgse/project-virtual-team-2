@@ -24,9 +24,8 @@ let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
-export class CommitItem {
+export class TagItem {
   public tagName: string;
-  public oldTagName: string;
   public commitMsg: string;
   public tagMsg: string;
   public commitSha: string;
@@ -77,7 +76,7 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of CommitItems based on size of commitList
+// Returns an array of tagItems based on size of commitList
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
@@ -98,6 +97,7 @@ tItems = await Promise.all(sharedRefs.map(async (ref) => {
 
   // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
   // If unable to match a tag with a commit, return CommitItem without tag name and message
+
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
       if (tItems[j]) {
@@ -106,7 +106,7 @@ tItems = await Promise.all(sharedRefs.map(async (ref) => {
         }
       }
     }
-    return new CommitItem("", commit.message(), "", commit.sha(), false);
+    return new TagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
   }));
 
   // return tags;
@@ -222,7 +222,6 @@ function refreshStashHistory(){
       txt.forEach(function(line) {
         stashId = line.split(" ")[1];
         line = line.split(" ").slice(6, line.length).join(" ");
-        //console.log("Adding " + stashId +": "+ line + " to Stash history");
         stashHistory.unshift(line);
         stashIds.unshift(stashId);
 
@@ -258,6 +257,39 @@ function refreshStashHistory(){
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
+/* Issue 84: further implement stashing
+    - git stash show stash{index} shows the deltas of the files
+    - function entered onclick from stash dropdown menu
+*/
+async function showStash(index){
+  updateModalText("Show functionality not yet fully implemented.");
+/*
+  let repository;
+  let stashOid = stashIds[index];
+  let diff;
+  await Git.Repository.open(repoFullPath).then(function(repoResult){
+    repository = repoResult;
+    console.log("found a repository");
+  })
+  .then(function (){
+    return repository.getCommit(stashOid);
+  })
+  .then(function(stash){
+    console.log("found id of stash");
+    return stash.getDiff();
+  })
+  .then(function(diffArray){
+    console.log(diffArray);
+    diffArray.forEach((diff, i) => {
+      //console.log(diff.getStats());
+      //console.log(diff.getDelta(0));
+    });
+    protoShowStash();
+  }, function (err) {
+    console.log("git.ts, func showStash(): getCommit, " + err);
+  });
+*/
+}
 
 /* Issue 84: further implement stashing
     - git stash show stash{index} shows the deltas of
@@ -570,7 +602,6 @@ function addAndStash(options) {
 
   if(options == null) options = 0;
 
-
   var command = "git stash "; //default command for console
   var stashName = ""; //default stash name for stashHistory
 
@@ -782,7 +813,7 @@ async function deleteTag(tagName, refresh = true) {
           .then((res) =>{
             resolve(res);
           })
-          .catch((err) => console.log(err));      
+          .catch((err) => console.log(err));
       }).then(() => {
         if(refresh)
           refreshAll(repository);
@@ -877,7 +908,6 @@ async function popStash(index) {
            updateModalText("Unexpected Error: " + err.message);
          }
      });
-
 }
 
 /* Issue 35: Add applying functionality
@@ -956,8 +986,8 @@ async function applyStash(index) {
          console.log("git.ts, func applyStash(): update, could not apply stash, " + err);
          updateModalText(err.message);
      });
-
 }
+
 /* Issue 35/84: Add dropping stash functionality
    copied from popStash()
     - Function entered from onclick of the given stash in Stashing options window
@@ -1088,6 +1118,71 @@ async function branchStash(index) {
     clearBranchErrorText();
   }
 
+  if (typeof repoFullPath === "undefined") {
+    // repository not selected
+    document.getElementById("branchErrorText").innerText = "Warning: You are not within a Git repository. " +
+        "Open a repository to create a new branch. ";
+  }
+
+ // Check for empty branch name
+  // @ts-ignore
+  else if (branchName == '' || branchName == null) {
+    // repository not selected
+    document.getElementById("branchErrorText").innerText = "Warning: Please enter a branch name";
+  }
+
+  // Check for invalid branch name
+  // @ts-ignore
+  else if (isIllegalBranchName(branchName)) {
+    // repository not selected
+    // @ts-ignore
+    document.getElementById("branchErrorText").innerText = "Warning: Illegal branch name. ";
+  }
+
+  //check if local changes need to be stashed
+  else if (modifiedFiles > 0){
+    document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
+
+  }
+
+  // TODO: check for existing branch
+  // Check for existing branch
+  // else if ( <existing branch> ) {}
+
+  else {
+    let currentRepository;
+    console.log(branchName + " is being created");
+    Git.Repository.open(repoFullPath)
+      .then(function (repo) {
+        // Create a new branch on commit of stash
+        console.log("found a repository");
+        currentRepository = repo;
+        addCommand("git stash branch " + branchName + " stash{" + index + "}");
+        return repo.getCommit(stashIds[index])
+          .then(function (stash) {
+            console.log("Branching from stash: " + stash);
+            return stash.parent(0)
+              .then(function(commit){
+                console.log("Parent commit: "+ commit);
+                return repo.createBranch(
+                branchName,
+                commit,
+                0,
+                repo.defaultSignature(),
+                "Created new-branch on "+ commit.id());
+              });
+          });
+      }, function (err) {
+            console.log("git.ts, func branchStash(), error occurred while trying to create a new branch " + err);
+      })
+      .done(function () {
+        $('#branch-modal').modal('hide');
+        //refreshAll(currentRepository);
+        checkoutLocalBranch(branchName);
+        popStash(index);
+      });
+    clearBranchErrorText();
+  }
 }
 
 
@@ -1500,8 +1595,6 @@ async function pushToRemote() {
 
 
 function commitModal() {
-  // TODO: implement commit modal
-  //updateModalText("Commit inside a modal yet to be implemented");
   addAndCommit();
 }
 

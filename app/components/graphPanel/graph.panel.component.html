@@ -51,8 +51,8 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" id="onExit"class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
         </div>
         <div class="modal-body">
           <div class="row">
@@ -68,6 +68,7 @@
                   <tbody id="commitTagList" *ngIf="showCommitList">
                     <tr *ngFor="let commit of commitList">
                       <td><h4>{{commit.commitMsg}}</h4></td>
+
                       <td id="tagDiv">
                         <table>
                           <tr>
@@ -85,18 +86,18 @@
                             <td>
                                 <button *ngIf="commit.hasTag" class="btn-sm btn-danger" (click)="deleteTag(commit.oldTagName)">Delete</button>
                             </td>
-                              
+
                           </tr>
 
                         </table>
-                        
+
                         <td>
-                        
-                        
+
+
                     </tr>
                   </tbody>
                 </table>
-                
+
           </div>
         </div>
         <div class="modal-footer">
