@@ -211,7 +211,6 @@ function refreshStashHistory(){
     if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
       let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
       txt.pop();
-      console.log("/.git/logs/refs/stash/\n" + txt);
       txt.forEach(function(line) {
         line = line.split(" ").slice(6, line.length).join(" ");
         console.log("Adding " + line + " to Stash history");
@@ -432,6 +431,7 @@ function addAndCommit() {
     // will update user interface after new commit and tag has been handled
     .then(function (tag: any) {
       console.log(oid.tostrS());
+
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
@@ -466,12 +466,12 @@ function addAndCommit() {
     - Must have a stash message where text is input in commit-message-input
 */
 function addAndStash(options) {
-  stashMessage = document.getElementById("commit-message-input").value;
-  if(stashMessage == null || stashMessage == ""){
-    window.alert("Cannot stash without a stash message. Please add a stash message before stashing");
-  return;
-  }
+
   if(options == null) options = 0;
+
+  var command = "git stash ";
+  var stashName = "";
+
   let repository;
   Git.Repository.open(repoFullPath)
     .then(function (repoResult) {
@@ -531,6 +531,28 @@ function addAndStash(options) {
 
       console.log("Signature to be put on stash: " + sign.toString());
 
+      let branch = document.getElementById("branch-name").innerText;
+      console.log("Current branch: " + branch);
+
+      stashMessage = document.getElementById("commit-message-input").value;
+
+      /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head */
+      if(stashMessage == null || stashMessage == ""){
+        //window.alert("Cannot stash without a stash message. Please add a stash message before stashing"); return;
+        var comMessage;
+        Git.Commit.lookup(repository, oid)
+        .then(function(commit){ //TODO: commit currently returning undefined
+          console.log(commit);
+          comMessage = commit.message();
+        });
+        stashMessage = oid.tostrS().substring(0,8); //+ " " + comMessage;
+        stashName = "WIP ";
+      } else {
+        command += "push -m \"" + stashMessage + "\" ";
+      }
+      stashName += "On " + branch + ": " + stashMessage;
+
+      console.log("Stashing: " + stashName );
 
       // First branch of this If might be unecessary or replaceable by .git/refs/stash to check something else
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
@@ -994,11 +1016,16 @@ function fetchStatus() {
 }
 
 async function pullFromRemote() {
-    let repository;
     let branch = "";
     await getBranchName().then((branchName) => {
-        branch = branchName;
+      branch = branchName;
     });
+    if(checkIfExistOrigin(branch)){
+      updateModalText("Cannot pull. No remote repositories exist.");
+      return;
+    }
+    let repository;
+
     if (modifiedFiles.length > 0) {
         updateModalText("Please commit before pulling from remote!");
     }
@@ -1080,6 +1107,7 @@ function getAheadBehindCommits(branchName) {
         });
     });
 }
+
 
 //checks if the remote version of your current branch exist
 function checkIfExistOrigin(branchName) {
