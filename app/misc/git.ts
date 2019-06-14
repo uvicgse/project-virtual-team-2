@@ -382,6 +382,7 @@ function sortedListOfCommits(commits){
   }
 
 }
+//test
 
 function cloneFromRemote() {
   switchToClonePanel();
