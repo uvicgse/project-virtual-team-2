@@ -491,6 +491,7 @@ function addAndCommit() {
     // will update user interface after new commit and tag has been handled
     .then(function (tag: any) {
       console.log(oid.tostrS());
+
       hideDiffPanel();
       clearStagedFilesList();
       clearCommitMessage();
@@ -530,6 +531,7 @@ function addAndStash(options) {
 
   var command = "git stash "; //default command for console
   var stashName = ""; //default stash name for stashHistory
+
 
   let repository;
   Git.Repository.open(repoFullPath)
@@ -597,8 +599,7 @@ function addAndStash(options) {
       });      console.log("Current branch: " + branch);
 
       stashMessage = document.getElementById("stash-message-input").value;
-
-
+    
       /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head and message */
       if(stashMessage == null || stashMessage == "") {
 
@@ -1173,12 +1174,42 @@ function getAllCommits(callback) {
 }
 
 
+function fetchStatus() {
+  let repository;
+  Git.Repository.open(repoFullPath)
+      .then(function (repo) {
+        repository = repo;
+        addCommand("git fetch");
+        displayModal("fetching from remote...");
+        return repository.fetchAll({
+          callbacks: {
+            credentials: function () {
+              let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+              cred = user.credentials;
+              return cred;
+            },
+            certificateCheck: function () {
+              return 1;
+            }
+          }
+        });
+      }).then(function () {
+        displayAheadBehind();
+        updateModalText("Local status is up to date");
+      });
+}
+
 async function pullFromRemote() {
-    let repository;
     let branch = "";
     await getBranchName().then((branchName) => {
-        branch = branchName;
+      branch = branchName;
     });
+    if(checkIfExistOrigin(branch)){
+      updateModalText("Cannot pull. No remote repositories exist.");
+      return;
+    }
+    let repository;
+
     if (modifiedFiles.length > 0) {
         updateModalText("Please commit before pulling from remote!");
     }
@@ -1261,6 +1292,7 @@ function getAheadBehindCommits(branchName) {
     });
 }
 
+
 //checks if the remote version of your current branch exist
 function checkIfExistOrigin(branchName) {
     let origin = "origin";
@@ -1272,6 +1304,32 @@ function checkIfExistOrigin(branchName) {
             return false
         });
     });
+}
+
+//calls getAheadBedhindCommits to display status of local repo to user
+function displayAheadBehind() {
+  let branch = document.getElementById("branch-name").innerText;
+  let display = document.getElementById("ahead-behind-display");
+
+  checkIfExistOrigin(branch).then(function(remoteBranchExist){
+    //check if the remote exists
+    if (!remoteBranchExist) {
+      display.innerHTML = "remote does not exist";
+    } else {
+      //check if ahead, behind, or up to date
+      getAheadBehindCommits(branch).then(function (aheadBehind) {
+        if (aheadBehind.behind !== 0) {
+          display.innerHTML = "your branch is " + aheadBehind.behind + " behind remote";
+          return;
+        } else if (aheadBehind.ahead === 0) {
+          display.innerHTML = "Up to Date";
+          return;
+        } else {
+          display.innerHTML = "your branch is " + aheadBehind.ahead + " ahead of remote" ;
+        }
+      });
+    }
+  });
 }
 
 //returns the name of the current branch
@@ -1735,6 +1793,7 @@ function Reload() {
   window.onbeforeunload = Confirmed;
   location.reload();
 }
+
 
 function displayModifiedFiles() {
   modifiedFiles = [];

@@ -26,6 +26,7 @@ function switchToMainPanel() {
   displayFilePanel();
   displayPullRequestPanel();
   displayGraphPanel();
+  displayStatusPanel();
 
   openDisabled = false;
 
@@ -81,6 +82,7 @@ function switchToAddRepositoryPanel() {
   hideFilePanel();
   hidePullRequestPanel();
   hideGraphPanel();
+  hideStatusPanel();
   displayAddRepositoryPanel();
 
   if(showUsername){
@@ -243,6 +245,54 @@ function hideAddRepositoryPanel() {
   if (addRepositoryPanel != null) {
     addRepositoryPanel.style.zIndex = "-10";
   }
+}
+
+function displayStatusPanel() {
+  let statusPanel = document.getElementById("status-panel");
+  if(statusPanel != null){
+    statusPanel.style.border = "solid";
+  }
+
+  let statusHeading = document.getElementById("status-heading");
+  if(statusHeading != null){
+    statusHeading.style.visibility = "visible";
+  }
+
+  let aheadBehindDisplay = document.getElementById("ahead-behind-display");
+  if(aheadBehindDisplay != null){
+    aheadBehindDisplay.style.visibility = "visible";
+  }
+
+  let fetchButton = document.getElementById("fetch-button");
+  if(fetchButton != null){
+    fetchButton.style.visibility = "visible";
+  }
+}
+
+function hideStatusPanel() {
+  let statusPanel = document.getElementById("status-panel");
+  if(statusPanel != null){
+    statusPanel.style.border = "0";
+  }
+
+  let statusHeading = document.getElementById("status-heading");
+  if(statusHeading != null){
+    statusHeading.style.visibility = "hidden";
+  }
+
+  let aheadBehindDisplay = document.getElementById("ahead-behind-display");
+  if(aheadBehindDisplay != null){
+    aheadBehindDisplay.style.visibility = "hidden";
+  }
+
+  let fetchButton = document.getElementById("fetch-button");
+  if(fetchButton != null){
+    fetchButton.style.visibility = "hidden";
+  }
+
+
+
+
 }
 
 function displayDiffPanel() {
