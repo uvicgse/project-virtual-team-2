@@ -1935,6 +1935,7 @@ async function amendLastCommit(newMessage: string) {
     lastCommitOid = lastCommit.id();
 
     await lastCommit.amend("HEAD", signature, signature, newMessage, newMessage, treeOid, lastCommitOid);
+    addCommand("git commit --amend -m " + '"' + newMessage + '"');
   } catch (error) {
     console.log(error);
     window.alert('Unable to amend last commit');

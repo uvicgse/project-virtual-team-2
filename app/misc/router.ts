@@ -136,7 +136,7 @@ function displayClonePanel() {
   $("#open-local-repository").hide();
 }
 
-async function displayFilePanel() {
+function displayFilePanel() {
   let filePanel = document.getElementById("file-panel");
   if (filePanel != null){
     filePanel.style.zIndex = "10";
@@ -165,26 +165,47 @@ async function displayFilePanel() {
   if (fileEditButton != null){
     fileEditButton.style.visibility = "visible";
   }
-  let amendCommitButton = document.getElementById("amend-commit-button");
-  let ahead;
-  console.log('test');
+  checkAmendButton();
+  // let amendCommitButton = document.getElementById("amend-commit-button");
+  // let ahead;
+  // console.log('test');
   
-  ahead = await checkIfExistLocalCommit();
-  console.log('AHEAD', ahead);
-  if (amendCommitButton != null){
-    amendCommitButton.style.visibility = "visible";
-    if (!ahead) {
-      amendCommitButton.style.cursor = "not-allowed";
-      amendCommitButton.style['pointer-events'] = "none";
-    } else {
-      amendCommitButton.style.cursor = "pointer";
-      amendCommitButton.style['pointer-events'] = "auto";
-    }
-  }
+  // ahead = await checkIfExistLocalCommit();
+  // console.log('AHEAD', ahead);
+  // if (amendCommitButton != null){
+  //   amendCommitButton.style.visibility = "visible";
+  //   if (!ahead) {
+  //     amendCommitButton.style.cursor = "not-allowed";
+  //     amendCommitButton.style['pointer-events'] = "none";
+  //   } else {
+  //     amendCommitButton.style.cursor = "pointer";
+  //     amendCommitButton.style['pointer-events'] = "auto";
+  //   }
+  // }
 
   
   
   document.getElementById("Issues-button").style="visiblity: visible";
+}
+
+function checkAmendButton() {
+  // Method checking whether to make amend button clickable. Button will be clickable if there is more than 
+  // one unpushed commit
+  let amendCommitButton = document.getElementById("amend-commit-button");
+  let ahead;
+  checkIfExistLocalCommit().then((ahead) => {
+    console.log('AHEAD', ahead);
+    if (amendCommitButton != null){
+      amendCommitButton.style.visibility = "visible";
+      if (!ahead) {
+        amendCommitButton.style.cursor = "not-allowed";
+        amendCommitButton.style['pointer-events'] = "none";
+      } else {
+        amendCommitButton.style.cursor = "pointer";
+        amendCommitButton.style['pointer-events'] = "auto";
+      }
+    }
+  });
 }
 
 function displayPullRequestPanel() {
