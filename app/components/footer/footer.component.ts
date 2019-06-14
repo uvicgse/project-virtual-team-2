@@ -6,6 +6,7 @@ import { Component } from "@angular/core";
 })
 
 export class FooterComponent {
+
   displayFileEditor(): void {
     let editor = document.getElementById("editor-panel");
 
@@ -23,5 +24,9 @@ export class FooterComponent {
       issue.style.width = "100vw"
       issue.style.zIndex = "10";
     } 
+  }
+
+  async amendLastCommit(): void {
+    await amendLastCommit('TESTING12313');
   }
 }

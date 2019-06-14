@@ -10,7 +10,8 @@
             <button class="commit-button" id="commit-button">Commit</button>
             <button class="commit-button" id="fileEdit-button" (click)="displayFileEditor()">File Editor</button>
             <button class="commit-button" id="Issues-button" (click)="displayIssuePanel()">Issues</button>
-            <button class="commit-button" id="amend-commit-button" (click)="amendLastCommit()" >Amend Commit</button>
+            <!-- Maybe style this better -->
+            <button class="commit-button" id="amend-commit-button" data-toggle="modal" data-target="#amend-commit-modal">Amend Commit</button>
 
         </div>
     </div>
@@ -18,3 +19,25 @@
     <div class="terminal" id="terminal">
     </div>
 </div>
+<!-- TODO: Modify style of modal and add ability to handle user input-->
+<!--Modal for amending the last commit-->
+<div id="amend-commit-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">Amend Last Local Commit</h4>
+        </div>
+        <div class="modal-body">
+          <div>
+            <button type="button" class="btn btn-primary" (click)="amendLastCommit()" data-dismiss="modal">Amend</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>

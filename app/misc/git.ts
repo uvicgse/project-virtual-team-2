@@ -1527,6 +1527,39 @@ async function checkIfExistLocalCommit() {
   }
 
 }
+
+// Method takes the new commit message and amends the last commit in the current branch
+async function amendLastCommit(newMessage: string) {
+  let repo;
+  let revwalk;
+  let commitArray;
+  let lastCommit;
+  let lastCommitOid;
+  let signature;
+  let tree;
+  let treeOid;
+
+  repo = await Git.Repository.open(repoFullPath);
+  revwalk = Git.Revwalk.create(repo);
+  // Points revwalk to last commit
+  revwalk.pushHead();
+  // Get the last commit
+  commitArray = await revwalk.getCommits(1);
+  lastCommit = commitArray[0];
+
+  try {
+    signature = repo.defaultSignature();
+    tree = await lastCommit.getTree();
+    treeOid = tree.id();
+    lastCommitOid = lastCommit.id();
+
+    await lastCommit.amend("HEAD", signature, signature, newMessage, newMessage, treeOid, lastCommitOid);
+  } catch (error) {
+    console.log(error);
+    window.alert('Unable to amend last commit');
+  }
+}
+
 function revertCommit() {
 
   let repos;
