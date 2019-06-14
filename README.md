@@ -34,7 +34,7 @@ then... You need to have to find the directory where python 2.7 is. On mac you c
 cd project-seed
 npm config set python {path to python2.7}
 npm install
-<<<<<<< HEAD
+
 then if you get install errors and you have windows you may need to do some troubleshooting if you get an error for nodegyp
 
 ````
