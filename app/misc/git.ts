@@ -369,7 +369,7 @@ function passReferenceCommits(){
   })
 }
 
-/* 
+/*
 Function takes array of commits and stores the commits in sorted order in variable commitHistory
 */
 function sortedListOfCommits(commits){
@@ -459,7 +459,7 @@ function stage() {
 }
 
 // Function performs corresponding 'git add' and 'git commit' commands
-// If creating a commit is successful and tag name also exists, a tag is added to the commit that is created 
+// If creating a commit is successful and tag name also exists, a tag is added to the commit that is created
 // After creating a commit, clear staged files list, commit, and tag dialog boxes, and refresh VisualGit GUI
 function addAndCommit() {
   commitMessage = document.getElementById('commit-message-input').value;
@@ -588,7 +588,6 @@ function addAndCommit() {
 function addAndStash(options) {
 
   if(options == null) options = 0;
-
 
   var command = "git stash "; //default command for console
   var stashName = ""; //default stash name for stashHistory
@@ -1529,7 +1528,7 @@ function commitModal() {
   addAndCommit();
 }
 
-// Function opens a modal that displays current branch information 
+// Function opens a modal that displays current branch information
 async function openBranchModal(stashIndex) {
 
   if (stashIndex == null) stashIndex = 0;
@@ -1745,7 +1744,7 @@ function mergeLocalBranches(element) {
 }
 
 // Function attempts to merge commits. If merge conflict exist, function will display an merge conflict error.
-// If merge conflict does not exist, function will display success. 
+// If merge conflict does not exist, function will display success.
 // Finally, function will refresh VisualGit's GUI
 function mergeCommits(from) {
   let repos;
@@ -1779,7 +1778,7 @@ function mergeCommits(from) {
     });
 }
 
-// Function attemps to rebase commits 
+// Function attemps to rebase commits
 // Note: Function does not appear to be properly working
 function rebaseCommits(from: string, to: string) {
   let repos;
@@ -2013,7 +2012,7 @@ function Reload() {
   location.reload();
 }
 
-// Function is very complex. Note: do not think this function is ever called 
+// Function is very complex. Note: do not think this function is ever called
 function displayModifiedFiles() {
   modifiedFiles = [];
   let selectedFile = "";

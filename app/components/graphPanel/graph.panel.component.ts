@@ -8,12 +8,12 @@ import { resolve } from "url";
 })
 
 export class GraphPanelComponent {
-  commitList: any;
+  tagList: any;
   showCommitList: boolean;
   @ViewChild('graphNodeClickModal') modal: ElementRef;
-  //
-  // Listen for user click on graph and display if nodelclicked
-  @HostListener('click', ['$event']) 
+
+  // Listen for user click on graph and display if node clicked
+  @HostListener('click', ['$event'])
   async onClick() {
     // Check if modal has show class
     let modal = document.getElementById("graphNodeClickModal").classList.contains('loadTags');
@@ -21,17 +21,17 @@ export class GraphPanelComponent {
     if(modal){
       let beginnningHash = document.getElementById('commitHash').innerHTML;
       let numCommit = document.getElementById('numCommit').innerHTML;
-      await this.asyncGetCommits(beginnningHash, numCommit);
+      await this.asyncCall(beginnningHash, numCommit);
       this.showCommitList = true;
     }
     // remove if show class
     document.getElementById("graphNodeClickModal").classList.remove('loadTags');
   }
 
-  
+
   // get all tags and commits information
-  async asyncGetCommits(beginnningHash, endingHash) {
-    this.commitList = await getTags(beginnningHash, endingHash);
+  async asyncCall(beginnningHash, endingHash) {
+    this.tagList = await getTags(beginnningHash, endingHash);
   }
 
 
@@ -47,9 +47,11 @@ export class GraphPanelComponent {
   }
 
   // Delete tag when delete tag button is clicked. Method will reload list of commits after tag has been deleted
-  async deleteTag(tagName): void {
-    await deleteTag(tagName);
-    document.getElementById("onExit").click();
+  deleteTag(tagName): void {
+    deleteTag(tagName);
+    let beginnningHash = document.getElementById('commitHash').innerHTML;
+    let numCommit = document.getElementById('numCommit').innerHTML;
+    this.asyncCall(beginnningHash, numCommit);
     //this.modal.nativeElement.contentWindow.location.reload(true);
   }
 
@@ -58,6 +60,4 @@ export class GraphPanelComponent {
     document.getElementById("onExit").click();
   }
 
-
-  
 }
