@@ -1027,7 +1027,7 @@ in the model that pops-up when you click on a node */
 
 #tagDiv table {
  margin:2px;
-} 
+}
 .error {
   background-color: #fce4e4;
   border: 1px solid #cc0033;
@@ -1246,11 +1246,8 @@ body .pull-request-panel {
   margin-left: 10px;
 }
 
-<<<<<<< HEAD
+
 .stash-item {
-=======
-#stash-item {
->>>>>>> 686f798... rebased master, squashed merge commits and added stashing functionality: stash drop functional, stash branch and stash show prototyped, stashing modal updated, repoPath length overload fixed, modal text now updates properly
   display: inline-flex;
   align-items: center;
   background: #efefef;
@@ -1259,11 +1256,7 @@ body .pull-request-panel {
   width: 100%;
 }
 
-<<<<<<< HEAD
 .stash-name {
-=======
-#stash-id {
->>>>>>> 686f798... rebased master, squashed merge commits and added stashing functionality: stash drop functional, stash branch and stash show prototyped, stashing modal updated, repoPath length overload fixed, modal text now updates properly
   width: 100%;
 }
 
@@ -1288,10 +1281,7 @@ body .pull-request-panel {
     margin-top: auto;
     margin-right: auto;
     margin-bottom: auto;
-<<<<<<< HEAD
     padding: 8px;
-=======
->>>>>>> 686f798... rebased master, squashed merge commits and added stashing functionality: stash drop functional, stash branch and stash show prototyped, stashing modal updated, repoPath length overload fixed, modal text now updates properly
 }
 
 .dropdown {
@@ -1316,14 +1306,10 @@ body .pull-request-panel {
     display: block;
 }
 
-<<<<<<< HEAD
 .dropdown-content a:hover {
   background-color: #efefef;
   cursor: pointer;
 }
-=======
-.dropdown a:hover {background-color: #f1f1f1}
->>>>>>> 686f798... rebased master, squashed merge commits and added stashing functionality: stash drop functional, stash branch and stash show prototyped, stashing modal updated, repoPath length overload fixed, modal text now updates properly
 
 .show {display:block;}
 /* stash-item dropdown menu styles END */
