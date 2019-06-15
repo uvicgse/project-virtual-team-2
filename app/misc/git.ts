@@ -785,7 +785,7 @@ async function deleteTag(tagName) {
     - pops stash from given index and merges into working directory. Fails if conflicts found.
     - If the file is tracked by the working tree, Merge will return conflict error but safely merge.
 */
-function popStash(index) {
+async function popStash(index) {
   if (index == null) index = 0; //default option pops most recent stash
 
   let repository;
@@ -1423,7 +1423,7 @@ function commitModal() {
   addAndCommit();
 }
 
-function openBranchModal(stashIndex) {
+async function openBranchModal(stashIndex) {
   $('#branch-modal').modal('show');
 
     // Shows current branch inside the branch mdoal
