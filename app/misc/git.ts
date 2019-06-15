@@ -229,11 +229,10 @@ function refreshStashHistory(){
     // For each stash create a unique element with unique pop, drop, and apply functionality.
     stashHistory.forEach((stash, i) => {
       stashListHTML +=
-        '<div id="stash-item">' +
-          '<div id="stash-id">' +
-
+        '<div class="stash-item">' +
+          '<span class="stash-name">' +
               'Stash{' + i + '}: ' + stash +
-          '</div>' +
+          '</span>' +
           '<div class="stash-actions">' +
               '<ul class="dropbtn icons" onclick="showDropdown(' + i + ')">' +
                   '<li></li>' +
@@ -242,11 +241,11 @@ function refreshStashHistory(){
               '</ul>' +
 
               '<div id="stash-item-' + i + '-dropdown" class="dropdown-content">' +
-                  '<a onclick="popStash(' + i + ')">Pop</a>' +
-                  '<a onclick="applyStash(' + i + ')">Apply</a>' +
-                  '<a onclick="dropStash(' + i + ')">Drop</a>' +
-                  '<a onclick="showStash(' + i + ')">Show</a>' +
-                  '<a onclick="openBranchModal('+i+')">Branch<\a>' +
+                  '<a data-dismiss="modal" onclick="popStash(' + i + ')">Pop</a>' +
+                  '<a data-dismiss="modal" onclick="applyStash(' + i + ')">Apply</a>' +
+                  '<a data-dismiss="modal" onclick="dropStash(' + i + ')">Drop</a>' +
+                  '<a data-dismiss="modal" onclick="showStash(' + i + ')">Show</a>' +
+                  '<a data-dismiss="modal" onclick="openBranchModal('+i+')">Branch</a>' +
               '</div>' +
           '</div>' +
         '</div>';
