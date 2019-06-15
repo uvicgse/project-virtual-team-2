@@ -253,9 +253,8 @@ function listDirectoryItems(directoryPath) {
 	// For each stash create a unique element with unique pop, drop, and apply functionality.
 	directories.forEach((directoryItem, i) => {
 		let parsedPath = (path.join(directoryPath,directories[i])).replace(/\\/g, '\\\\');
-    console.log(directoryItem);
 		repoDirectoryHTML +=
-			'<div id="directory-item-' + i + '" ondrop="drop(event)" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+			'<div id="directory-item-' + i + '" ondrop="drop(event,\'' + parsedPath + '\')" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
 			  '<input id="directory-id-' + i +'" style="outline:none; background-color:#efefef; border:none;" type="text" value="' + directoryItem + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
 			'</div>';
 	});
@@ -322,13 +321,39 @@ function allowDrop(event) {
 }
 
 function drag(event) {
-  event.dataTransfer.setData("text", event.target.id);
+  event.dataTransfer.setData("directory-item-id", event.target.id);
+  console.log("Dragging: " + event.target.id);
 }
 
-function drop(event) {
+function drop(event, directoryPath) {
   event.preventDefault();
-  var data = event.dataTransfer.getData("text");
+  var data = event.dataTransfer.getData("directory-item-id");
+  var directoryItemName = document.getElementById(data).childNodes[0].value;
+  console.log(directoryItemName);
+
   event.target.appendChild(document.getElementById(data));
+
+  // Get last directory name in path
+  var newDropItemPath = "";
+  var dropItemPath = "";
+  let breakStringFrom;
+
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+
+  newDropItemPath = path.join(directoryPath.slice(0, breakStringFrom),event.target.value);
+  dropItemPath = path.join(directoryPath.slice(0, breakStringFrom),directoryItemName);
+
+  console.log("Dropped: " + data + " at " + event.target.id);
+  fs.rename(dropItemPath, path.join(newDropItemPath, directoryItemName), function(err) {
+      if (err){
+        console.log('Renaming Error: ' + err);
+        listDirectoryItems(directoryPath.slice(0, breakStringFrom));
+      }
+  });
 }
 
 function passReferenceCommits(){
