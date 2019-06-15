@@ -181,8 +181,7 @@ function searchRepoName() {
   // Gets users name and password
   encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
   //obtain a new copy of cred every time by calling constructor method.
-  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-  cred = user.credentials;
+  cred = createCredentials();
 
   var ghme = client.me();
   ghme.repos(function (err, data, head) {
@@ -220,8 +219,7 @@ function getUserInfo(callback) {
     encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
   }
   //calling constructor method
-  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-  cred = user.credentials;
+  cred = createCredentials();
 
   client = github.client(getOauthToken());
   var ghme = client.me();
@@ -260,39 +258,8 @@ function processLogin(ghme, callback) {
     if (err) {
       displayModal(err);
     } else {
-     // assigning the check box to a variable to check the value
-    let rememberLogin: any = (<HTMLInputElement>document.getElementById("rememberLogin"));
-
-    // username and password values taken to be stored.
-    let username: any = (<HTMLInputElement>document.getElementById("username")).value;
-    let password: any = (<HTMLInputElement>document.getElementById("password")).value;
-
-    // If password needs remembering encrypt it within data.json
-    if (rememberLogin.checked == true) {
-        encrypt(username, password);
-    }
-    // Else remove the file
-    else {
-      let credentialFile = './data.json';
-      if (fs.existsSync(credentialFile)){
-        fs.unlinkSync(credentialFile);
-      }}
       avaterImg = Object.values(data)[2]
-      // let doc = document.getElementById("avater");
-      // doc.innerHTML = "";
-      // var elem = document.createElement("img");
-      // elem.width = 40;
-      // elem.height = 40;
-      // elem.src = avaterImg;
-      // doc.appendChild(elem);
-      // doc = document.getElementById("log");
-      // doc.innerHTML = 'sign out';
       document.getElementById("githubname").innerHTML = data["login"]
-      var docGitUser = document.getElementById("githubname");
-      //docGitUser.innerHTML = Object.values(data)[0];
-
-      let doc = document.getElementById("avatar");
-      //doc.innerHTML = 'Sign out'; //HAD TO REMOVE THIS LINE OR THE PROGRAM BROKE.
           signed = 1;
 
       callback();
@@ -380,24 +347,9 @@ function cloneRepo() {
   switchToMainPanel();
 }
 
+//TODO: implement signout
 function signInOrOut() {
-  let doc = document.getElementById("avatar");
-  if(doc.innerHTML === "Sign In"){
-    doc.innerHTML = "";
-  }
-  else if(doc.innerHTML === ""){
-      doc.innerHTML = "Sign In";
-  }
-
-  if (doc.innerHTML === "Sign out") {
-    $("#avatar").removeAttr("data-toggle");
-
-    if (changes == 1) {
-      $("#modalW2").modal();
-    } else {
       redirectToHomePage();
-    }
-  }
 }
 
 function redirectToHomePage() {
@@ -508,12 +460,8 @@ function createIssue() {
   repoName = document.getElementById("repo-name").innerHTML
   githubName = document.getElementById("githubname").innerHTML
   if (repoName != "repository" && theArray != null) {
-      encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
-      cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
-      client = github.client({
-          username: getUsernameTemp(),
-          password: getPasswordTemp()
-      });
+      cred = createCredentials();
+      client = github.client(getOauthToken());
       var ghme = client.me();
       var ghrepo = client.repo(githubName + '/' + repoName);
       ghrepo.issue({
@@ -545,15 +493,9 @@ function displayIssues() {
 
           ul.innerHTML = ''; // clears the dropdown menu which shows all the issues
 
-          // Gets users name and password
-          encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
+          cred = createCredentials();
 
-          cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
-
-          client = github.client({
-              username: getUsernameTemp(),
-              password: getPasswordTemp()
-          });
+          client = github.client(getOauthToken());
 
           var ghme = client.me();
           var ghrepo = client.repo(githubName + '/' + repoName);
