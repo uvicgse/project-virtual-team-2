@@ -258,40 +258,6 @@ function refreshStashHistory(){
   }
 
 /* Issue 84: further implement stashing
-    - git stash show stash{index} shows the deltas of the files
-    - function entered onclick from stash dropdown menu
-*/
-async function showStash(index){
-  updateModalText("Show functionality not yet fully implemented.");
-/*
-  let repository;
-  let stashOid = stashIds[index];
-  let diff;
-  await Git.Repository.open(repoFullPath).then(function(repoResult){
-    repository = repoResult;
-    console.log("found a repository");
-  })
-  .then(function (){
-    return repository.getCommit(stashOid);
-  })
-  .then(function(stash){
-    console.log("found id of stash");
-    return stash.getDiff();
-  })
-  .then(function(diffArray){
-    console.log(diffArray);
-    diffArray.forEach((diff, i) => {
-      //console.log(diff.getStats());
-      //console.log(diff.getDelta(0));
-    });
-    protoShowStash();
-  }, function (err) {
-    console.log("git.ts, func showStash(): getCommit, " + err);
-  });
-*/
-}
-
-/* Issue 84: further implement stashing
     - git stash show stash{index} shows the deltas of
     the files between the stash and the commit it is stashed at.
     - function entered onclick from stash dropdown menu
