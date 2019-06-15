@@ -285,7 +285,7 @@ function listDirectoryItems(directoryPath) {
     let parsedPrevPath = (prevPath).replace(/\\/g, '\\\\');
     document.getElementById('move-current-directory').innerHTML = 
     '<div>' + 
-      '<a id="move-last-directory" ondragover="allowDrop(event)" ondrop="dropPreviousDir(event,\'' + directoryPath.replace(/\\/g, '\\\\') + '\')" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
+      '<a id="move-last-directory" ondragover="allowDrop(event)" ondrop="dropInPreviousDir(event,\'' + directoryPath.replace(/\\/g, '\\\\') + '\')" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
     '</div>';
   }
 }
@@ -312,7 +312,24 @@ function renameDirectoryItem(event,directoryPath,pos){
   if (event.keyCode == 13) {
     fs.rename(directoryPath, path.join(prevPath, newName), function(err) {
         if (err) console.log('Renaming Error: ' + err);
+
     });
+    // Wait for files to appear in unstaged
+    setTimeout(function(){stageFile(newName)},1200);
+  }
+}
+
+function stageFile(filename){
+  let unstagedFileElements = document.getElementById('files-changed').children;
+  for (var i = 0; i < unstagedFileElements.length; i++) {
+    if(unstagedFileElements[i].id == filename){
+      let checkbox = unstagedFileElements[i].getElementsByTagName("input")[0];
+      try {
+        checkbox.click();
+      } catch (err) {
+        break;
+      }
+    }
   }
 }
 
@@ -329,7 +346,6 @@ function drop(event, directoryPath) {
   event.preventDefault();
   var data = event.dataTransfer.getData("directory-item-id");
   var directoryItemName = document.getElementById(data).childNodes[0].value;
-  console.log(directoryItemName);
 
   // Get last directory name in path
   var newDropItemPath = "";
@@ -348,21 +364,17 @@ function drop(event, directoryPath) {
 
   console.log("Dropped: " + data + " at " + event.target.id);
   fs.rename(dropItemPath, path.join(newDropItemPath, directoryItemName), function(err) {
-      if (err){
-        console.log('Renaming Error: ' + err);
-
-        // User tried to move a folder into a file. Refresh the directory so they can still see 
-        // the folder!
-        listDirectoryItems(prevDirectoryPath);
-      }
+      if (err) console.log('Renaming Error: ' + err);
+      listDirectoryItems(prevDirectoryPath);
   });
+  // Wait for files to appear in unstaged
+  setTimeout(function(){stageFile(directoryItemName)},1750);
 }
 
-function dropPreviousDir(event, directoryPath) {
+function dropInPreviousDir(event, directoryPath) {
   event.preventDefault();
   var data = event.dataTransfer.getData("directory-item-id");
   var directoryItemName = document.getElementById(data).childNodes[0].value;
-  console.log(directoryItemName);
 
   // Get last directory name in path
   let breakStringFrom;
@@ -381,7 +393,10 @@ function dropPreviousDir(event, directoryPath) {
         console.log('Renaming Error: ' + err);
       }
       listDirectoryItems(directoryPath);
+
   });
+  // Wait for files to appear in unstaged
+  setTimeout(function(){stageFile(directoryItemName)},1750);
 }
 
 function passReferenceCommits(){
