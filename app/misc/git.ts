@@ -277,23 +277,24 @@ function showMoveModal(){
   $('#move-modal').modal('show');
 }
 
-function getDirectories(path) {
-  return fs.readdirSync(path).filter(function (file) {
-    return fs.statSync(path + '\\' || '/' + file).isDirectory();
+function getDirectories(directoryPath) {
+  return fs.readdirSync(directoryPath).filter(function (file) {
+    return fs.statSync(path.join(directoryPath,file)).isDirectory() || fs.statSync(path.join(directoryPath,file)).isFile();
   });
 }
 
-function listDirectoryItems(path) {
-	let directories = getDirectories(path);
+function listDirectoryItems(directoryPath) {
+	let directories = getDirectories(directoryPath);
 	console.log("Getting repo directory...");
-	console.log("Displaying the files and directories at: " + path);
+	console.log("Displaying the files and directories at: " + directoryPath);
 	let repoDirectoryHTML = '';
 
 	// For each stash create a unique element with unique pop, drop, and apply functionality.
 	directories.forEach((directoryItem, i) => {
-		let parsedPath = (path + '\\' + directories[i]).replace(/\\/g, '\\\\');
+		let parsedPath = (path.join(directoryPath,directories[i])).replace(/\\/g, '\\\\');
+    console.log(directoryItem);
 		repoDirectoryHTML +=
-			'<div id="directory-item" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+			'<div id="directory-item-' + i + '" ondrop="drop(event)" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
 			  '<input id="directory-id-' + i +'" style="outline:none; background-color:#efefef; border:none;" type="text" value="' + directoryItem + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
 			'</div>';
 	});
@@ -306,19 +307,19 @@ function listDirectoryItems(path) {
 
   // Used to get second last slash
   let slashPosArr = [];
-  for (var i = 0; i < path.length; i++) {
-    if (path[i] == "/" || path[i] == "\\") {
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
       slashPosArr.push(i);
       breakStringFrom = i;
     }
   }
 
-  newPath = path.slice(breakStringFrom, path.length);
-  prevPath = path.slice(0, breakStringFrom);
+  newPath = directoryPath.slice(breakStringFrom, directoryPath.length);
+  prevPath = directoryPath.slice(0, breakStringFrom);
 
   // If the previous path is equal to a path outside of the repo directory, don't
   // display the previous path button (...)
-  if(prevPath == repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]) || path == repoFullPath){
+  if(prevPath == repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]) || directoryPath == repoFullPath){
     document.getElementById('move-current-directory').innerHTML = newPath;
   } else {
     let parsedPrevPath = (prevPath).replace(/\\/g, '\\\\');
@@ -330,29 +331,43 @@ function listDirectoryItems(path) {
 }
 
 // Used to handle file or directory name changes
-function renameDirectoryItem(event,path,pos){
+function renameDirectoryItem(event,directoryPath,pos){
   // TODO: Figure out how to disable new line but not enter
   // Get last directory name in path
   var prevPath = "";
   let breakStringFrom;
 
   // Used to get second last slash
-  for (var i = 0; i < path.length; i++) {
-    if (path[i] == "/" || path[i] == "\\") {
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
       breakStringFrom = i;
     }
   }
 
-  prevPath = path.slice(0, breakStringFrom);
+  prevPath = directoryPath.slice(0, breakStringFrom);
   var id = "directory-id-" + pos;
   var element = document.getElementById(id);
   var newName = element.value;
   
   if (event.keyCode == 13) {
-    fs.rename(path, prevPath + "\\" + newName, function(err) {
+    fs.rename(directoryPath, path.join(prevPath, newName), function(err) {
         if (err) console.log('Renaming Error: ' + err);
     });
   }
+}
+
+function allowDrop(event) {
+  event.preventDefault();
+}
+
+function drag(event) {
+  event.dataTransfer.setData("text", event.target.id);
+}
+
+function drop(event) {
+  event.preventDefault();
+  var data = event.dataTransfer.getData("text");
+  event.target.appendChild(document.getElementById(data));
 }
 
 function passReferenceCommits(){
