@@ -22,7 +22,6 @@ let stashHistory = [""];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
-let GITHUB_TOKEN = getOauthToken();
 
 export class CommitItem {
   public tagName: string;
@@ -1030,44 +1029,42 @@ async function pullFromRemote() {
             addCommand("git pull");
             displayModal("Pulling new changes from the remote repository");
 
-            return repository.fetchAll({
-                callbacks: {
-                    credentials: function () {
-                        let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                        cred = user.credentials;
-                        return cred;
-                    },
-                    certificateCheck: function () {
-                        return 1;
-                    }
-                }
-            });
-        })
-        // Now that we're finished fetching, go ahead and merge our local branch
-        // with the new one
-        .then(function () {
-            return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
-        })
-        .then(function (oid) {
-            console.log("Looking up commit with id " + oid + " in all repositories");
-            return Git.AnnotatedCommit.lookup(repository, oid);
-        }, function (err) {
-            console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
-        })
-        .then(function (annotated) {
-            console.log("merging " + annotated + "with local forcefully");
-            Git.Merge.merge(repository, annotated, null, {
-                checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
-            });
-            theirCommit = annotated;
-        })
-        .then(function () {
-            let conflicsExist = false;
-            let tid = "";
-            if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
-                tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
-                conflicsExist = tid.indexOf("Conflicts") !== -1;
-            }
+      return repository.fetchAll({
+        callbacks: {
+          credentials: function () {
+            return createCredentials();
+          },
+          certificateCheck: function () {
+            return 1;
+          }
+        }
+      });
+    })
+    // Now that we're finished fetching, go ahead and merge our local branch
+    // with the new one
+    .then(function () {
+      return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
+    })
+    .then(function (oid) {
+      console.log("Looking up commit with id " + oid + " in all repositories");
+      return Git.AnnotatedCommit.lookup(repository, oid);
+    }, function (err) {
+      console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
+    })
+    .then(function (annotated) {
+      console.log("merging " + annotated + "with local forcefully");
+      Git.Merge.merge(repository, annotated, null, {
+        checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
+      });
+      theirCommit = annotated;
+    })
+    .then(function () {
+      let conflicsExist = false;
+      let tid = "";
+      if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
+        tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
+        conflicsExist = tid.indexOf("Conflicts") !== -1;
+      }
 
             if (conflicsExist) {
                 let conflictedFiles = tid.split("Conflicts:")[1];
@@ -1195,6 +1192,35 @@ function displayAheadBehind() {
         }
       });
     }
+  let branch = document.getElementById("branch-name").innerText;
+  Git.Repository.open(repoFullPath)
+    .then(function (repo) {
+      console.log("Pushing changes to remote")
+      displayModal("Pushing changes to remote...");
+      addCommand("git push -u origin " + branch);
+      repo.getRemotes()
+        .then(function (remotes) {
+          repo.getRemote(remotes[0])
+            .then(function (remote) {
+              return remote.push(
+                ["refs/heads/" + branch + ":refs/heads/" + branch],
+                {
+                  callbacks: {
+                    credentials: function () {
+                      return createCredentials();
+                    }
+                  }
+                }
+              );
+            })
+            .then(function () {
+              CommitButNoPush = 0;
+              window.onbeforeunload = Confirmed;
+              console.log("Push successful");
+              updateModalText("Push successful");
+              refreshAll(repo);
+            });
+        });
   });
 }
 
@@ -1422,9 +1448,7 @@ function deleteRemoteBranch() {
               {
                 callbacks: { // pass in user credentials as a parameter
                   credentials: function () {
-                    let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                    cred = user.credentials;
-                    return cred;
+                    return createCredentials();
                   }
                 }
               }).then(function () {

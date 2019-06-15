@@ -24,6 +24,7 @@ let loginScopes = [
   "repo",
   "user"
 ];
+let oauthpass = 'x-oauth-basic';
 
 /* // Code for requesting Oauth token using https and then storing using storeOauthToken()
    // Possibly works possibly not, might just use the electron-oauth2 library to do same thing instead
@@ -133,13 +134,9 @@ function CommitNoPush() {
                 $("#modalW2").modal();
         }
 }
-
-
-//constructor method to create a new copy of cred every time
-function createCredentials(username, password) {
-  this.username = username;
-  this.password = password;
-  this.credentials = Git.Cred.userpassPlaintextNew(username,password);
+//create credential using oauth
+function createCredentials() {
+  Git.Cred.userpassPlaintextNew(getOauthToken(), oauthpass);
 }
 
 function signInHead(callback) {
