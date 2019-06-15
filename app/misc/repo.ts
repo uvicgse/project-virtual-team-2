@@ -601,6 +601,9 @@ function openRepository() {
     let searchVal = document.getElementById('branchName').value;
     console.log(searchVal)
     
+    // TODO : when an object is a remote and local it is added twice. May be easiest to deal with in displayBranch()
+
+
     let branchesTab = document.getElementById('branchesTab')
     let tagsTab = document.getElementById('tagsTab')
     branchesTab.innerHTML = ""
