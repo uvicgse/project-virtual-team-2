@@ -609,7 +609,7 @@ function openRepository() {
     branchesTab.innerHTML = ""
     tagsTab.innerHTML = ""
     this.quickBranchTagReload.forEach(function(BT){
-      if(BT.name.indexOf(searchVal) >= 0 && searchVal != ""){
+      if(BT.name.indexOf(searchVal) >= 0){
           let li = document.createElement("li");
           let a = document.createElement("a");
           a.setAttribute("href", "#");
