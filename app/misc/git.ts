@@ -272,35 +272,9 @@ async function showStash(index){
 
 }
 
-function refreshMoveModal(){
-	let directories = getDirectories(repoFullPath);
-	console.log("Getting repo directory...");
-	console.log("Displaying the files and directories at: " + repoFullPath);
-	let repoDirectoryHTML = '';
-
-	// For each stash create a unique element with unique pop, drop, and apply functionality.
-	directories.forEach((directoryItem, i) => {
-		// Parse path name and replace all \ with \\
-		let parsedPath = (repoFullPath + '\\' + directories[i]).replace(/\\/g, '\\\\');
-		repoDirectoryHTML +=
-			'<div id="directory-item" onclick="listDirectoryItems(\'' + parsedPath + '\')">' +
-			  '<div id="directory-id">' +
-			      directoryItem +
-			  '</div>' +
-			'</div>';
-	});
-	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
-
-  var newPath = "";
-  let breakStringFrom;
-  for (var i = 0; i < repoFullPath.length; i++) {
-    if (repoFullPath[i] == "/" || repoFullPath[i] == "\\") {
-      breakStringFrom = i;
-    }
-  }
-  newPath = repoFullPath.slice(breakStringFrom, repoFullPath.length);
-  document.getElementById('move-current-directory').innerHTML = newPath;
-	$('#move-modal').modal('show');
+function showMoveModal(){
+  listDirectoryItems(repoFullPath);
+  $('#move-modal').modal('show');
 }
 
 function getDirectories(path) {
@@ -319,10 +293,8 @@ function listDirectoryItems(path) {
 	directories.forEach((directoryItem, i) => {
 		let parsedPath = (path + '\\' + directories[i]).replace(/\\/g, '\\\\');
 		repoDirectoryHTML +=
-			'<div id="directory-item" onclick="listDirectoryItems(\'' + parsedPath + '\')">' +
-			  '<div id="directory-id">' +
-			      directoryItem +
-			  '</div>' +
+			'<div id="directory-item" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+			  '<input id="directory-id-' + i +'" style="outline:none; background-color:#efefef; border:none;" type="text" value="' + directoryItem + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
 			'</div>';
 	});
 	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
@@ -346,7 +318,6 @@ function listDirectoryItems(path) {
 
   // If the previous path is equal to a path outside of the repo directory, don't
   // display the previous path button (...)
-  console.log(repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]));
   if(prevPath == repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]) || path == repoFullPath){
     document.getElementById('move-current-directory').innerHTML = newPath;
   } else {
@@ -355,6 +326,32 @@ function listDirectoryItems(path) {
     '<div>' + 
       '<a id="move-last-directory" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
     '</div>';
+  }
+}
+
+// Used to handle file or directory name changes
+function renameDirectoryItem(event,path,pos){
+  // TODO: Figure out how to disable new line but not enter
+  // Get last directory name in path
+  var prevPath = "";
+  let breakStringFrom;
+
+  // Used to get second last slash
+  for (var i = 0; i < path.length; i++) {
+    if (path[i] == "/" || path[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+
+  prevPath = path.slice(0, breakStringFrom);
+  var id = "directory-id-" + pos;
+  var element = document.getElementById(id);
+  var newName = element.value;
+  
+  if (event.keyCode == 13) {
+    fs.rename(path, prevPath + "\\" + newName, function(err) {
+        if (err) console.log('Renaming Error: ' + err);
+    });
   }
 }
 
