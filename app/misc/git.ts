@@ -1409,6 +1409,14 @@ function commitModal() {
 }
 
 async function openBranchModal(stashIndex) {
+
+  let stashBranchFooter = 
+    '<button type="button" class="btn btn-primary" id="createBranchButton" onclick="createBranch()">Create</button>' +
+    '<button type="button" class="btn btn-primary" id="branchFromStashButton" onclick="branchStash(' + stashIndex + ')">Create from Stash{' + stashIndex + '}</button>'
+    ;
+  
+  document.getElementById('stash-branch-modal-footer').innerHTML = stashBranchFooter;
+
   $('#branch-modal').modal('show');
 
     // Shows current branch inside the branch mdoal
