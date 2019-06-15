@@ -805,7 +805,7 @@ async function deleteTag(tagName, refresh = true) {
           .then((res) =>{
             resolve(res);
           })
-          .catch((err) => console.log(err));      
+          .catch((err) => console.log(err));
       }).then(() => {
         if(refresh)
           refreshAll(repository);
