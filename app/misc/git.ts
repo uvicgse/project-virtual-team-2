@@ -285,7 +285,7 @@ function listDirectoryItems(directoryPath) {
     let parsedPrevPath = (prevPath).replace(/\\/g, '\\\\');
     document.getElementById('move-current-directory').innerHTML = 
     '<div>' + 
-      '<a id="move-last-directory" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
+      '<a id="move-last-directory" ondragover="allowDrop(event)" ondrop="dropPreviousDir(event,\'' + directoryPath.replace(/\\/g, '\\\\') + '\')" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
     '</div>';
   }
 }
@@ -331,8 +331,6 @@ function drop(event, directoryPath) {
   var directoryItemName = document.getElementById(data).childNodes[0].value;
   console.log(directoryItemName);
 
-  event.target.appendChild(document.getElementById(data));
-
   // Get last directory name in path
   var newDropItemPath = "";
   var dropItemPath = "";
@@ -344,15 +342,45 @@ function drop(event, directoryPath) {
     }
   }
 
-  newDropItemPath = path.join(directoryPath.slice(0, breakStringFrom),event.target.value);
-  dropItemPath = path.join(directoryPath.slice(0, breakStringFrom),directoryItemName);
+  var prevDirectoryPath = directoryPath.slice(0, breakStringFrom);
+  newDropItemPath = path.join(prevDirectoryPath,event.target.value);
+  dropItemPath = path.join(prevDirectoryPath,directoryItemName);
 
   console.log("Dropped: " + data + " at " + event.target.id);
   fs.rename(dropItemPath, path.join(newDropItemPath, directoryItemName), function(err) {
       if (err){
         console.log('Renaming Error: ' + err);
-        listDirectoryItems(directoryPath.slice(0, breakStringFrom));
+
+        // User tried to move a folder into a file. Refresh the directory so they can still see 
+        // the folder!
+        listDirectoryItems(prevDirectoryPath);
       }
+  });
+}
+
+function dropPreviousDir(event, directoryPath) {
+  event.preventDefault();
+  var data = event.dataTransfer.getData("directory-item-id");
+  var directoryItemName = document.getElementById(data).childNodes[0].value;
+  console.log(directoryItemName);
+
+  // Get last directory name in path
+  let breakStringFrom;
+
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+
+  var prevDirectoryPath = directoryPath.slice(0, breakStringFrom);
+
+  console.log("Dropped: " + data + " at " + event.target.id);
+  fs.rename(path.join(directoryPath, directoryItemName), path.join(prevDirectoryPath, directoryItemName), function(err) {
+      if (err){
+        console.log('Renaming Error: ' + err);
+      }
+      listDirectoryItems(directoryPath);
   });
 }
 
