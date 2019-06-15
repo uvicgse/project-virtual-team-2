@@ -400,7 +400,7 @@ function listDirectoryItems(directoryPath) {
 
   // If the previous path is equal to a path outside of the repo directory, don't
   // display the previous path button (...)
-  if(prevPath == repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]) || path == repoFullPath){
+  if(prevPath == repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]) || directoryPath == repoFullPath){
     document.getElementById('move-current-directory').innerHTML = newPath;
   } else {
     let parsedPrevPath = (prevPath).replace(/\\/g, '\\\\');
