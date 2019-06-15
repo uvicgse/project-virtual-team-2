@@ -1246,7 +1246,7 @@ body .pull-request-panel {
   margin-left: 10px;
 }
 
-#stash-item {
+.stash-item {
   display: inline-flex;
   align-items: center;
   background: #efefef;
@@ -1255,7 +1255,7 @@ body .pull-request-panel {
   width: 100%;
 }
 
-#stash-id {
+.stash-name {
   width: 100%;
 }
 
@@ -1280,6 +1280,7 @@ body .pull-request-panel {
     margin-top: auto;
     margin-right: auto;
     margin-bottom: auto;
+    padding: 8px;
 }
 
 .dropdown {
@@ -1304,7 +1305,10 @@ body .pull-request-panel {
     display: block;
 }
 
-.dropdown a:hover {background-color: #f1f1f1}
+.dropdown-content a:hover {
+  background-color: #efefef;
+  cursor: pointer;
+}
 
 .show {display:block;}
 /* stash-item dropdown menu styles END */

@@ -228,11 +228,10 @@ function refreshStashHistory(){
     // For each stash create a unique element with unique pop, drop, and apply functionality.
     stashHistory.forEach((stash, i) => {
       stashListHTML +=
-        '<div id="stash-item">' +
-          '<div id="stash-id">' +
-
+        '<div class="stash-item">' +
+          '<span class="stash-name">' +
               'Stash{' + i + '}: ' + stash +
-          '</div>' +
+          '</span>' +
           '<div class="stash-actions">' +
               '<ul class="dropbtn icons" onclick="showDropdown(' + i + ')">' +
                   '<li></li>' +
@@ -241,11 +240,11 @@ function refreshStashHistory(){
               '</ul>' +
 
               '<div id="stash-item-' + i + '-dropdown" class="dropdown-content">' +
-                  '<a onclick="popStash(' + i + ')">Pop</a>' +
-                  '<a onclick="applyStash(' + i + ')">Apply</a>' +
-                  '<a onclick="dropStash(' + i + ')">Drop</a>' +
-                  '<a onclick="showStash(' + i + ')">Show</a>' +
-                  '<a onclick="openBranchModal('+i+')">Branch<\a>' +
+                  '<a data-dismiss="modal" onclick="popStash(' + i + ')">Pop</a>' +
+                  '<a data-dismiss="modal" onclick="applyStash(' + i + ')">Apply</a>' +
+                  '<a data-dismiss="modal" onclick="dropStash(' + i + ')">Drop</a>' +
+                  '<a data-dismiss="modal" onclick="showStash(' + i + ')">Show</a>' +
+                  '<a data-dismiss="modal" onclick="openBranchModal('+i+')">Branch</a>' +
               '</div>' +
           '</div>' +
         '</div>';
@@ -253,16 +252,13 @@ function refreshStashHistory(){
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
-function protoShowStash(){
-  displayModal("test.txt | 5 ++++-\n1 file changed, 4 insertions(+), 1 deletions(-)");
-}
+
 /* Issue 84: further implement stashing
     - git stash show stash{index} shows the deltas of the files
     - function entered onclick from stash dropdown menu
 */
 async function showStash(index){
-  updateModalText("Show functionality not yet fully implemented.");
-/*
+
   let repository;
   let stashOid = stashIds[index];
   let diff;
@@ -276,18 +272,21 @@ async function showStash(index){
   .then(function(stash){
     console.log("found id of stash");
     return stash.getDiff();
+    //return stash.getDiffWithOptions({options: Diff.OPTION.FORCE_TEXT});
   })
   .then(function(diffArray){
     console.log(diffArray);
+    console.log(diffArray.toString());
+    console.log(diffArray[0].getDelta());
+    console.log(diffArray[0].toString());
     diffArray.forEach((diff, i) => {
       //console.log(diff.getStats());
-      //console.log(diff.getDelta(0));
+      console.log(diff.getDelta());
     });
-    protoShowStash();
   }, function (err) {
     console.log("git.ts, func showStash(): getCommit, " + err);
   });
-*/
+
 }
 
 function passReferenceCommits(){
@@ -1455,10 +1454,10 @@ async function openBranchModal(stashIndex) {
     await getBranchName().then((branchName) => {
         branch = branchName;
     });
-    if (currentBranch === undefined || currentBranch == 'branch') {
+    if (branch === undefined || branch == 'branch') {
         document.getElementById("currentBranchText").innerText = "Current Branch: ";
     } else {
-        document.getElementById("currentBranchText").innerText = "Current Branch: " + currentBranch;
+        document.getElementById("currentBranchText").innerText = "Current Branch: " + branch;
     }
 }
 
