@@ -1606,7 +1606,6 @@ function Reload() {
 
 function displayModifiedFiles() {
   modifiedFiles = [];
-
   let selectedFile = "";
 
   Git.Repository.open(repoFullPath)
