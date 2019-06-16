@@ -95,7 +95,7 @@ export class AddRepositoryComponent {
     switchToMainPanel();
   }
 
-
+/*
   prepareDontMissDND :  function() {
 
       $(document.body).bind("dragover", function(e) {
@@ -110,8 +110,8 @@ export class AddRepositoryComponent {
       });
 
 
-  
-}
+
+} */
 
 function fileUpload(ev){
   if(checkIfInTheApp()){
