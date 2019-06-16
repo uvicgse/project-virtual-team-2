@@ -2205,7 +2205,6 @@ function displayModifiedFiles() {
 
           document.getElementById("files-changed").appendChild(fileElement);
 
-
           fileElement.onclick = function () {
             let doc = document.getElementById("diff-panel");
             console.log("width of document: " + doc.style.width);
