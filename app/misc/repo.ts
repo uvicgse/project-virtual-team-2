@@ -490,13 +490,15 @@ function openRepository() {
     let searchVal = document.getElementById('branchName').innerHTML
     console.log(searchVal)
     */
+    this.quickBranchTagReload = [];
     $(document).on('click', '.dropdown-menu', function (e) {
       e.stopPropagation();
     });
     
     let branchesTab = document.getElementById('branchesTab')
     let tagsTab = document.getElementById('tagsTab')
-
+    branchesTab.innerHTML = ""
+    tagsTab.innerHTML = ""
     let ul = document.getElementById(id);
     let li = document.createElement("li");
     let a = document.createElement("a");
