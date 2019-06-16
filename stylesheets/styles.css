@@ -178,6 +178,10 @@ body .navbar .dropdown-toggle {
   margin-top: 10px;
 }*/
 
+#file-panel {
+  padding: 0px 6px;
+}
+
 body .file-panel {
   width: 20%;
   height: 70vh;
@@ -202,12 +206,32 @@ body .file-panel .files-staged .modified-files-message {
     padding: 20px;
 }
 
+/*Changed files*/
 body .file-panel .files-changed .file {
   width: 99%;
   height: 10%;
   position: relative;
   overflow: hidden;
   border: 1px solid #fff;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2px;
+  padding-left: 2px;
+  padding-right: 6px;
+}
+
+/*Staged files*/
+body .file-panel .files-staged .file {
+  width: 99%;
+  height: 10%;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #fff;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2px;
+  padding-left: 2px;
+  padding-right: 6px;
 }
 
 body .file-panel .files-changed .files-staged .file p {
@@ -219,6 +243,11 @@ body .file-panel .files-changed .files-staged .file p {
   text-overflow: ellipsis;
   overflow: hidden;
   width: 80%;
+}
+
+body .file-panel .files-staged .file input,
+body .file-panel .files-changed .file input {
+  cursor: pointer;
 }
 
 body .file-panel .files-changed .files-staged .file input {
