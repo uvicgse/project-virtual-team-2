@@ -1,7 +1,6 @@
 import {Graph, Branch} from "nodegit";
 
 
-let opn = require('opn');
 let $ = require("jquery");
 let Git = require("nodegit");
 let fs = require("fs");
@@ -1607,7 +1606,6 @@ function Reload() {
 
 function displayModifiedFiles() {
   modifiedFiles = [];
-
   let selectedFile = "";
 
   Git.Repository.open(repoFullPath)
