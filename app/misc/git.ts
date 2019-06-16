@@ -354,6 +354,9 @@ function getDirectories(directoryPath) {
   });
 }
 
+// Description: Used to list the files and folders in a certain directory.
+// 
+// @param directoryPath: The path of the directory to be shown.
 function listDirectoryItems(directoryPath) {
 	let directories = getDirectories(directoryPath);
 	console.log("Getting repo directory...");
@@ -400,7 +403,12 @@ function listDirectoryItems(directoryPath) {
   }
 }
 
-// Used to handle file or directory name changes
+// Description: Used to handle file or directory name changes.
+// 
+// @param event: Used to listen for the ENTER button.
+// @param directoryPath: The path of that directory item.
+// @param pos: The position of the directory item in the 
+// directory list.
 function renameDirectoryItem(event,directoryPath,pos){
   // TODO: Figure out how to disable new line but not enter
   // Get last directory name in path
@@ -456,6 +464,12 @@ function renameDirectoryItem(event,directoryPath,pos){
   }
 }
 
+// Description: Used to show errors regarding actions taken in the
+// Move modal.
+// 
+// @param message: Used to provide the user with a thorough
+// description of the error, plus what possible steps they can
+// take to prevent this error from happening.
 function showDirNameError(message){
   let dirNameErrorElement = document.getElementById("dir-item-name-error");
   dirNameErrorElement.innerHTML = message;
@@ -475,6 +489,9 @@ function isValidFolderName(folderName){
   return /^[a-zA-Z].*/.test(folderName);
 }
 
+/* Allows you to stage specific files. Assumes these files are in the 
+   unstaged file section. 
+   @param filename: The literal name of the file */
 function stageFile(filename){
   let unstagedFileElements = document.getElementById('files-changed').children;
   for (var i = 0; i < unstagedFileElements.length; i++) {
@@ -520,8 +537,11 @@ function drop(event, directoryPath) {
   dropItemPath = path.join(prevDirectoryPath,directoryItemName);
 
   console.log("Dropped: " + data + " at " + event.target.id);
+
+  // Rename the original path to the new path plus the directory item's name.
   fs.rename(dropItemPath, path.join(newDropItemPath, directoryItemName), function(err) {
       if (err) console.log('Renaming Error: ' + err);
+
       listDirectoryItems(prevDirectoryPath);
   });
   // Wait for files to appear in unstaged
@@ -545,12 +565,12 @@ function dropInPreviousDir(event, directoryPath) {
   var prevDirectoryPath = directoryPath.slice(0, breakStringFrom);
 
   console.log("Dropped: " + data + " at " + event.target.id);
-  fs.rename(path.join(directoryPath, directoryItemName), path.join(prevDirectoryPath, directoryItemName), function(err) {
-      if (err){
-        console.log('Renaming Error: ' + err);
-      }
-      listDirectoryItems(directoryPath);
 
+  // Rename the original path to the previous path plus the directory item's name.
+  fs.rename(path.join(directoryPath, directoryItemName), path.join(prevDirectoryPath, directoryItemName), function(err) {
+      if (err) console.log('Renaming Error: ' + err);
+
+      listDirectoryItems(directoryPath);
   });
   // Wait for files to appear in unstaged
   setTimeout(function(){stageFile(directoryItemName)},1750);
