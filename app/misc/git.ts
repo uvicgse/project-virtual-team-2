@@ -1744,6 +1744,11 @@ function displayModifiedFiles() {
           fileElement.id = file.filePath;
           fileElement.draggable="true";
 
+          fileElement.addEventListener('dragend', function handleDrop(e) {
+            event.preventDefault()
+            checkbox.click();
+          }, false);
+
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
           checkbox.className = "checkbox";
@@ -1759,7 +1764,6 @@ function displayModifiedFiles() {
           fileElement.appendChild(checkbox);
 
           document.getElementById("files-changed").appendChild(fileElement);
-
 
           fileElement.onclick = function () {
             let doc = document.getElementById("diff-panel");
@@ -1833,6 +1837,11 @@ function displayModifiedFiles() {
           fileElement.id = fileId;
           fileElement.draggable="true";
           fileElement.appendChild(filePath);
+
+          fileElement.addEventListener('dragend', function handleDrop(e) {
+            event.preventDefault()
+            checkbox.click();
+          }, false);
 
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
