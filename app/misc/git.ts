@@ -307,10 +307,18 @@ function listDirectoryItems(directoryPath) {
 	// For each stash create a unique element with unique pop, drop, and apply functionality.
 	directories.forEach((directoryItem, i) => {
 		let parsedPath = (path.join(directoryPath,directories[i])).replace(/\\/g, '\\\\');
-		repoDirectoryHTML +=
-			'<div id="directory-item-' + i + '" class="directory-item" ondrop="drop(event,\'' + parsedPath + '\')" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
-			  '<input id="directory-id-' + i +'" style="outline:none; background-color:#efefef; border:none;" type="text" value="' + directoryItem + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
-			'</div>';
+
+		if(fs.statSync(parsedPath).isDirectory()){
+			repoDirectoryHTML +=
+				'<div id="directory-item-' + i + '" class="directory-item" ondrop="drop(event,\'' + parsedPath + '\')" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+				  '<input id="directory-id-' + i +'" style="outline:none; background-color:#efefef; border:none;" type="text" value="' + directoryItem + "\\" + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
+				'</div>';
+		} else if (fs.statSync(parsedPath).isFile()) {
+			repoDirectoryHTML +=
+				'<div id="directory-item-' + i + '" class="directory-item" ondrop="drop(event,\'' + parsedPath + '\')" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+				  '<input id="directory-id-' + i +'" style="outline:none; background-color:#efefef; border:none;" type="text" value="' + directoryItem + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
+				'</div>';
+		}
 	});
 	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
 
@@ -339,7 +347,7 @@ function listDirectoryItems(directoryPath) {
     let parsedPrevPath = (prevPath).replace(/\\/g, '\\\\');
     document.getElementById('move-current-directory').innerHTML = 
     '<div>' + 
-      '<a id="move-last-directory" ondragover="allowDrop(event)" ondrop="dropInPreviousDir(event,\'' + directoryPath.replace(/\\/g, '\\\\') + '\')" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
+      '<a id="move-last-directory" class="move-last-directory" ondragover="allowDrop(event)" ondrop="dropInPreviousDir(event,\'' + directoryPath.replace(/\\/g, '\\\\') + '\')" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
     '</div>';
   }
 }
@@ -355,15 +363,6 @@ function renameDirectoryItem(event,directoryPath,pos){
   // Get last directory name in path
   var prevPath = "";
   let breakStringFrom;
-
-  var isFolder = false;
-  var isFile = false;
-
-  if(fs.statSync(directoryPath).isDirectory()){
-    isFolder = true;
-  } else if (fs.statSync(directoryPath).isFile()) {
-    isFile = true;
-  }
 
   // Used to get second last slash
   for (var i = 0; i < directoryPath.length; i++) {
@@ -1002,7 +1001,6 @@ async function deleteTag(tagName) {
     - pops stash from given index and merges into working directory. Fails if conflicts found.
     - If the file is tracked by the working tree, Merge will return conflict error but safely merge.
 */
-<<<<<<< HEAD
 async function popStash(index) {
 
     let repository;
@@ -1079,7 +1077,6 @@ async function popStash(index) {
     - Function entered from onclick of the given stash in Stashing options window
     - applies stash from given index and merges into working directory.
 */
-<<<<<<< HEAD
 async function applyStash(index) {
 
     let repository;
