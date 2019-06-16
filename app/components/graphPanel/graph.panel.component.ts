@@ -61,8 +61,3 @@ export class GraphPanelComponent {
 
   
 }
-
-
-
-
-
