@@ -424,6 +424,7 @@ function allowDrop(event) {
 
 function drag(event) {
   event.dataTransfer.setData("directory-item-id", event.target.id);
+  event.dataTransfer.setDragImage(document.getElementById(event.target.id), 0, 0);
   console.log("Dragging: " + event.target.id);
 }
 
