@@ -1738,7 +1738,7 @@ function displayModifiedFiles() {
             fileElement.className = "file file-modified";
           } else if (file.fileModification === "DELETED") {
             fileElement.className = "file file-deleted";
-          } else {
+          } else {circle.yml
             fileElement.className = "file";
           }
 
@@ -1746,10 +1746,32 @@ function displayModifiedFiles() {
           fileElement.id = file.filePath;
           fileElement.draggable="true";
 
-          fileElement.addEventListener('dragend', function handleDrop(e) {
-            event.preventDefault()
-            checkbox.click();
-          }, false);
+          function handleDragStart(e){
+            e.dataTransfer.setData("text", e.target.id);
+          }
+          function handleDragOver(e){
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          function handleDragEnd(e) {
+            e.preventDefault();
+            const box = document.querySelector("div.files-staged");
+            const boundary = box.getBoundingClientRect();
+            var x_axis = e.clientX;
+            var y_axis = e.clientY;
+            //console.log(boundary);
+            //console.log(x_axis);
+            //console.log(y_axis);
+            if((x_axis >= boundary.left && x_axis <= boundary.right) && (y_axis >= boundary.top && y_axis <= boundary.bottom)){
+              checkbox.click();
+              e.stopPropagation();
+            }
+          }
+
+          fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('dragover', handleDragOver, false);
+          fileElement.addEventListener('dragend',handleDragEnd, false);
+
 
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
@@ -1840,10 +1862,32 @@ function displayModifiedFiles() {
           fileElement.draggable="true";
           fileElement.appendChild(filePath);
 
-          fileElement.addEventListener('dragend', function handleDrop(e) {
-            event.preventDefault()
-            checkbox.click();
-          }, false);
+          /* Functions for Drag and Drop*/
+          function handleDragStart(e){
+            e.dataTransfer.setData("text", e.target.id);
+          }
+          function handleDragOver(e){
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          function handleDragEnd(e) {
+            e.preventDefault();
+            const box = document.querySelector("div.files-changed");
+            const boundary = box.getBoundingClientRect();
+            var x_axis = e.clientX;
+            var y_axis = e.clientY;
+            //console.log(boundary);
+            //console.log(x_axis);
+            //console.log(y_axis);
+            if((x_axis >= boundary.left && x_axis <= boundary.right) && (y_axis >= boundary.top && y_axis <= boundary.bottom)){
+              checkbox.click();
+              e.stopPropagation();
+            }
+          }
+
+          fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('dragover', handleDragOver, false);
+          fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
