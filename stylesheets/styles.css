@@ -1358,4 +1358,7 @@ body .pull-request-panel {
   margin: 3px;
   width: 100%;
 }
-/* Move-modal END */
+
+.move-last-directory{
+  font-size: 20px;
+}
