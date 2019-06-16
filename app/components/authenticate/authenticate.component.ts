@@ -39,11 +39,6 @@ export class AuthenticateComponent implements OnInit {
     }
   }
 
-  testing(): void {
-    console.log("testing: Authenticate.component.ts");
-    openOauthWindow();
-  }
-
   createNewAccount(): void {
     window.open("https://github.com/join?", "_blank");
   }
