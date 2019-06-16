@@ -97,7 +97,7 @@ tItems = await Promise.all(sharedRefs.map(async (ref) => {
   }
 }));
 
-  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem. 
+  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
   // If unable to match a tag with a commit, return CommitItem without tag name and message
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
@@ -1458,7 +1458,7 @@ async function getBranchName() {
   let branchName;
   let tempPath;
 
-  // When repository is initially opened, repoFullPath is not set, 
+  // When repository is initially opened, repoFullPath is not set,
   // therefore method can get repo path from element repoOpen.
   // No need to use repoOpen if repoFullPath is set.
   if (!repoFullPath) {
@@ -1884,12 +1884,12 @@ async function checkIfExistLocalCommit() {
   let ret;
 
   try {
-    // Get branch name 
+    // Get branch name
     branch = await getBranchName();
   } catch (error) {
     console.log(error);
   }
-  
+
   try {
     remoteBranchExist = await checkIfExistOrigin(branch);
   } catch (error) {
@@ -1899,14 +1899,14 @@ async function checkIfExistLocalCommit() {
   // Check if the remote version of current branch exists
   if (!remoteBranchExist) {
     return false;
-  } 
+  }
 
   try {
     aheadBehind = await getAheadBehindCommits(branch);
   } catch (error) {
     console.log(error);
   }
-  
+
   // Return true if local branch is ahead. Else, local branch is not ahead so return false.
   if (aheadBehind.ahead > 0) {
     return true;
@@ -1940,7 +1940,7 @@ async function amendLastCommit(newMessage: string) {
     tree = await lastCommit.getTree();
     treeOid = tree.id();
     lastCommitOid = lastCommit.id();
-    
+
     // Amend the last local commit with the new message
     await lastCommit.amend("HEAD", signature, signature, newMessage, newMessage, treeOid, lastCommitOid)
       .then(() => {
@@ -2386,85 +2386,86 @@ function displayModifiedFiles() {
         });
       }
 
-        function printFileDiff(filePath) {
-          repo.getHeadCommit().then(function (commit) {
-            getCurrentDiff(commit, filePath, function (line) {
-              formatLine(line);
-            });
+      function printFileDiff(filePath) {
+        repo.getHeadCommit().then(function (commit) {
+          getCurrentDiff(commit, filePath, function (line) {
+            formatLine(line);
           });
-        }
+        });
+      }
 
-        function getCurrentDiff(commit, filePath, callback) {
-          commit.getTree().then(function (tree) {
-            Git.Diff.treeToWorkdir(repo, tree, null).then(function (diff) {
-              diff.patches().then(function (patches) {
-                patches.forEach(function (patch) {
-                  patch.hunks().then(function (hunks) {
-                    hunks.forEach(function (hunk) {
-                      hunk.lines().then(function (lines) {
-                        let oldFilePath = patch.oldFile().path();
-                        let newFilePath = patch.newFile().path();
-                        if (newFilePath === filePath) {
-                          lines.forEach(function (line) {
-                            // Catch the "no newline at end of file" lines created by git
-                            if (line.origin() != 62) {
+      function getCurrentDiff(commit, filePath, callback) {
+        commit.getTree().then(function (tree) {
+          Git.Diff.treeToWorkdir(repo, tree, null).then(function (diff) {
+            diff.patches().then(function (patches) {
+              patches.forEach(function (patch) {
+                patch.hunks().then(function (hunks) {
+                  hunks.forEach(function (hunk) {
+                    hunk.lines().then(function (lines) {
+                      let oldFilePath = patch.oldFile().path();
+                      let newFilePath = patch.newFile().path();
+                      if (newFilePath === filePath) {
+                        lines.forEach(function (line) {
 
-                              // include linenumbers and change type
-                              callback(String.fromCharCode(line.origin())
-                                + (line.oldLineno() != -1 ? line.oldLineno() : "")
-                                + "\t" + (line.newLineno() != -1 ? line.newLineno() : "")
-                                + "\t" + String.fromCharCode(line.origin())
-                                + "\t" + line.content());
-                            }
-                          });
-                        }
-                      });
+                          // Catch the "no newline at end of file" lines created by git
+                          if (line.origin() != 62) {
+
+                            // include linenumbers and change type
+                            callback(String.fromCharCode(line.origin())
+                              + (line.oldLineno() != -1 ? line.oldLineno() : "")
+                              + "\t" + (line.newLineno() != -1 ? line.newLineno() : "")
+                              + "\t" + String.fromCharCode(line.origin())
+                              + "\t" + line.content());
+                          }
+                        });
+                      }
                     });
                   });
                 });
               });
             });
           });
+        });
+      }
+
+      function formatLine(line) {
+        let element = document.createElement("div");
+
+        if (line.charAt(0) === "+") {
+          element.style.backgroundColor = "#84db00";
+        } else if (line.charAt(0) === "-") {
+          element.style.backgroundColor = "#ff2448";
         }
 
-        function formatLine(line) {
-          let element = document.createElement("div");
+        // If not a changed line, origin will be a space character, so still need to slice
+        line = line.slice(1, line.length);
+        element.innerText = line;
 
-          if (line.charAt(0) === "+") {
-            element.style.backgroundColor = "#84db00";
-          } else if (line.charAt(0) === "-") {
-            element.style.backgroundColor = "#ff2448";
-          }
+        // The spacer is needed to pad out the line to highlight the whole row
+        let spacer = document.createElement("spacer");
+        spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
+        element.appendChild(spacer);
 
-          // If not a changed line, origin will be a space character, so still need to slice
-          line = line.slice(1, line.length);
-          element.innerText = line;
+        document.getElementById("diff-panel-body")!.appendChild(element);
+      }
 
-          // The spacer is needed to pad out the line to highlight the whole row
-          let spacer = document.createElement("spacer");
-          spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
-          element.appendChild(spacer);
+      function formatNewFileLine(text) {
+        let element = document.createElement("div");
+        element.style.backgroundColor = green;
+        element.innerHTML = text;
 
-          document.getElementById("diff-panel-body")!.appendChild(element);
-        }
+        // The spacer is needed to pad out the line to highlight the whole row
+        let spacer = document.createElement("spacer");
+        spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
+        element.appendChild(spacer);
 
-        function formatNewFileLine(text) {
-          let element = document.createElement("div");
-          element.style.backgroundColor = green;
-          element.innerHTML = text;
-
-          // The spacer is needed to pad out the line to highlight the whole row
-          let spacer = document.createElement("spacer");
-          spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
-          element.appendChild(spacer);
-
-          document.getElementById("diff-panel-body")!.appendChild(element);
-        }
-      });
-    },
-      function (err) {
-        console.log("waiting for repo to be initialised");
-      });
+        document.getElementById("diff-panel-body")!.appendChild(element);
+      }
+    });
+  },
+  function (err) {
+    console.log("waiting for repo to be initialised");
+  });
 }
 
 // Find HOW the file has been modified
