@@ -1433,6 +1433,18 @@ body .pull-request-panel {
   padding: 5px;
   margin: 3px;
   width: 100%;
+  cursor: pointer;
+}
+
+.directory-item:hover, .directory-item input {
+  background: #c9c9c9; 
+  cursor: pointer;
+}
+
+.directory-item input {
+  outline: none; 
+  border: none;
+  background: #efefef;
 }
 
 #directory-id {
