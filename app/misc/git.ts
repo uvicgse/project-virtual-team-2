@@ -423,6 +423,15 @@ function renameDirectoryItem(event,directoryPath,pos){
   var prevPath = "";
   let breakStringFrom;
 
+  var isFolder = false;
+  var isFile = false;
+
+  if(fs.statSync(directoryPath).isDirectory()){
+    isFolder = true;
+  } else if (fs.statSync(directoryPath).isFile()) {
+    isFile = true;
+  }
+
   // Used to get second last slash
   for (var i = 0; i < directoryPath.length; i++) {
     if (directoryPath[i] == "/" || directoryPath[i] == "\\") {

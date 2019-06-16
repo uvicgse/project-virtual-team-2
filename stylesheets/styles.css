@@ -1383,7 +1383,6 @@ body .pull-request-panel {
     z-index: 1;
 }
 
-<<<<<<< HEAD
 /* Stash-functions END */
 
 #stash-id {
@@ -1428,8 +1427,6 @@ body .pull-request-panel {
     z-index: 1;
 }
 
-=======
->>>>>>> Got a modal displaying for move as well as some of the files in the current working repo's directory. git.ts -- 275:298, header.component.html -- 84:90, styles.css -- 1266:1280
 .dropdown-content a {
     color: black;
     padding: 12px 16px;
@@ -1462,7 +1459,7 @@ body .pull-request-panel {
 /* Stash-functions END */
 
 /* Move-modal START */
-#directory-item {
+.directory-item {
   display: inline-flex;
   align-items: center;
   background: #efefef;
@@ -1501,5 +1498,4 @@ body .pull-request-panel {
 .move-last-directory{
   font-size: 20px;
 }
-=======
 /* Move-modal END */
