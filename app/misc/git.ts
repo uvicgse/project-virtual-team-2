@@ -549,6 +549,7 @@ function drop(event, directoryPath) {
   // Rename the original path to the new path plus the directory item's name.
   fs.rename(dropItemPath, path.join(newDropItemPath, directoryItemName), function(err) {
       if (err) console.log('Renaming Error: ' + err);
+
       listDirectoryItems(prevDirectoryPath);
   });
   // Wait for files to appear in unstaged
@@ -578,7 +579,6 @@ function dropInPreviousDir(event, directoryPath) {
       if (err) console.log('Renaming Error: ' + err);
 
       listDirectoryItems(directoryPath);
-
   });
   // Wait for files to appear in unstaged
   setTimeout(function(){stageFile(directoryItemName)},1750);
