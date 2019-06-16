@@ -29,7 +29,6 @@
     <link href="node_modules/vis/dist/vis.min.css" rel="stylesheet" type="text/css">
     <script src="node_modules/jquery/dist/jquery.js"></script>
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="node_modules/core-js/client/shim.min.js"></script>
     <script src="node_modules/zone.js/dist/zone.js"></script>
     <script src="node_modules/reflect-metadata/Reflect.js"></script>
     <script src="node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.js"></script>
@@ -109,87 +108,89 @@ $('#repo-modal').on('hidden.bs.modal', function (e) {
  });
 
 
- $.contextMenu({
-   selector: ".file",
-   build: function($trigger) {
-     let branch;
-     var options = {
-       items: {
-         "edit": {
-           name: "Edit",
-           icon: "edit",
-           callback: function(itemKey, opt) {
-             let content = $trigger.text();
-             console.log("path of local repository: " + repoFullPath + "/" + content);
-             let doc = document.getElementById("diff-panel-body");
-             doc.innerHTML = "";
-             doc.contentEditable = "true";
+</script>
+<script src="node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.js">
+  $.contextMenu({
+    selector: ".file",
+    build: function($trigger) {
+      let branch;
+      var options = {
+        items: {
+          "edit": {
+            name: "Edit",
+            icon: "edit",
+            callback: function(itemKey, opt) {
+              let content = $trigger.text();
+              console.log("path of local repository: " + repoFullPath + "/" + content);
+              let doc = document.getElementById("diff-panel-body");
+              doc.innerHTML = "";
+              doc.contentEditable = "true";
 
-             displayDiffPanel();
-             enableSaveCancelButton();
-             readFromFile(content);
-           }
-         }
-       }
-     }
-     return options;
-   }
- });
-
-$.contextMenu({
-  selector: ".network",
-
-  build: function($trigger) {
-    let branch;
-    var options = {
-      callback: function(key, options) {
-        var m = "clicked: " + key;
-        console.log(m);
-      },
-      items: {
-        "checkout this branch": {
-          name: "checkout this branch",
-          callback: function(itemKey, opt) {
-            checkoutLocalBranch(branch);
-            return true;
-          }
-        },
-
-        "merge to HEAD": {
-          name: "merge to HEAD"
-        },
-
-        "revert to previous": {
-          name: "revert to previous",
-          callback: function(itemKey, opt) {
-            revertCommit("refs/heads/" + branch);
-          }
-        },
-
-        "reset commit": {
-          name: "reset commit",
-          callback: function(itemKey, opt) {
-            resetCommit("refs/heads/" + branch);
+              displayDiffPanel();
+              enableSaveCancelButton();
+              readFromFile(content);
+            }
           }
         }
       }
-    };
-
-    if (toNode !== undefined) {
-      branch = toNode['label'];
-      if (branch.substring(0, 1) === '*') {
-        branch = branch.substring(1, branch.length);
-      }
-      options.items['merge to HEAD'].callback = function(itemKey, opt) {
-        console.log("merging to HEAD");
-        mergeInMenu(branch);
-      };
-    } else {
-      $('.network').data('contextMenuRoot').$('trigger').contextMenu('hide')
+      return options;
     }
-    toNode = undefined;
+  });
 
-    return options;
-  }
-});
+  $.contextMenu({
+    selector: ".network",
+
+    build: function($trigger) {
+      let branch;
+      var options = {
+        callback: function(key, options) {
+          var m = "clicked: " + key;
+          console.log(m);
+        },
+        items: {
+          "checkout this branch": {
+            name: "checkout this branch",
+            callback: function(itemKey, opt) {
+              checkoutLocalBranch(branch);
+              return true;
+            }
+          },
+
+          "merge to HEAD": {
+            name: "merge to HEAD"
+          },
+
+          "revert to previous": {
+            name: "revert to previous",
+            callback: function(itemKey, opt) {
+              revertCommit("refs/heads/" + branch);
+            }
+          },
+
+          "reset commit": {
+            name: "reset commit",
+            callback: function(itemKey, opt) {
+              resetCommit("refs/heads/" + branch);
+            }
+          }
+        }
+      };
+
+      if (toNode !== undefined) {
+        branch = toNode['label'];
+        if (branch.substring(0, 1) === '*') {
+          branch = branch.substring(1, branch.length);
+        }
+        options.items['merge to HEAD'].callback = function(itemKey, opt) {
+          console.log("merging to HEAD");
+          mergeInMenu(branch);
+        };
+      } else {
+        $('.network').data('contextMenuRoot').$('trigger').contextMenu('hide')
+      }
+      toNode = undefined;
+
+      return options;
+    }
+  });
 </script>
