@@ -51,7 +51,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" id="onExit"class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
           
         </div>
         <div class="modal-body">
@@ -66,25 +66,23 @@
                 <h4>Commit History</h4>
                 <table>
                   <tbody id="commitTagList" *ngIf="showCommitList">
-
-                    <!-- This is an *ngFor that populates the commits and tag names-->
-                    <tr *ngFor="let commit of commitList">
-                      <td><h4>{{commit.commitMsg}}</h4></td>
+                    <tr *ngFor="let tag of tagList">
+                      <td><h4>{{tag.commitMsg}}</h4></td>
                       <td id="tagDiv">
                         <table>
                           <tr>
                             <td>
-                                <button *ngIf="commit.hasTag" class="btn-sm btn-warning" (click)="addOrModifyTag(commit)">Modify</button>
-                                <button *ngIf="!commit.hasTag" class="btn-sm btn-success" (click)="addOrModifyTag(commit)">Add</button>
-                              </td>
-                            <td>
-                                <div>
-                                    <input type="text" [(ngModel)]="commit.tagName" placeholder="Add Tag Name" class="tag-div-name-input" id="tag-div-name-input"/>
-                                    <input type="text" [(ngModel)]="commit.tagMsg" placeholder="Add Tag Message" class="tag-div-message-input" id="tag-div-message-input"/>
-                                </div>
+                                <button class="btn-sm btn-success">Add</button>
                             </td>
                             <td>
-                                <button class="btn-sm btn-danger" (click)="deleteTag(commit.oldTagName)">Delete</button>
+                                <div>
+                                    <input placeholder="{{tag.tagName}}" class="tag-div-name-input" id="tag-div-name-input"/>
+                                    <input placeholder="{{tag.tagMsg}}" class="tag-div-message-input" id="tag-div-message-input"/>
+                                  </div>
+
+                            </td>
+                            <td>
+                                <button class="btn-sm btn-danger" (click)="deleteTag(tag.tagName)">Delete</button>
                             </td>
                               
                           </tr>

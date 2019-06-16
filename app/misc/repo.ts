@@ -64,10 +64,10 @@ function loadMostRecentRepos() {
   }
 }
 
-// Append opened repo path into recent_repos.json. If recent_repos.json does not exist, create it before appending repo path. 
-// Note: only the 5 most recently opened and distinct repos will be stored. 
+// Append opened repo path into recent_repos.json. If recent_repos.json does not exist, create it before appending repo path.
+// Note: only the 5 most recently opened and distinct repos will be stored.
 function saveMostRecentRepos(fullLocalPath) {
-  
+
   let now = new Date();
   let date = JSON.stringify(now);
   let recentRepos;
@@ -79,13 +79,13 @@ function saveMostRecentRepos(fullLocalPath) {
   } catch (e) {
     console.log(e);
   }
-  
-  let obj = { 
-    filePath: fullLocalPath, 
+
+  let obj = {
+    filePath: fullLocalPath,
     date: date
   }
-  // Find if current repo is among 5 most recently opened repos. If true, then replace current repo's previous timestamp with 
-  // current timestamp and push current repo to end of array. 
+  // Find if current repo is among 5 most recently opened repos. If true, then replace current repo's previous timestamp with
+  // current timestamp and push current repo to end of array.
   if (recentRepos === undefined) {
     recentRepos = {
       last5Repos: [obj]
@@ -99,9 +99,9 @@ function saveMostRecentRepos(fullLocalPath) {
     } else {
       if (recentRepos.last5Repos.length > 4) {
         recentRepos.last5Repos.splice(0, 1);
-      } 
+      }
       recentRepos.last5Repos.push(obj);
-      
+
     }
   }
 
@@ -109,8 +109,8 @@ function saveMostRecentRepos(fullLocalPath) {
     jsonfile.writeFileSync(recentFiles, recentRepos, { flag: 'w'});
   } catch (err) {
     console.log(err);
-  } 
-} 
+  }
+}
 
 function downloadFunc(cloneURL, fullLocalPath) {
   console.log("Path of cloning repo: " + fullLocalPath);
@@ -392,17 +392,18 @@ function openRepository() {
       .then(function () {
         console.log("Updating the graph and the labels");
         drawGraph();
+        var newRepoLocalPath = "";
         let breakStringFrom;
         if (repoLocalPath.length > 20) {
           for (var i = 0; i < repoLocalPath.length; i++) {
-            if (repoLocalPath[i] == "/") {
+            if (repoLocalPath[i] == "/" || repoLocalPath[i] == "\\") {
               breakStringFrom = i;
             }
           }
-          repoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
+          newRepoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
         }
-        document.getElementById("repo-name").innerHTML = repoLocalPath;
-        document.getElementById("branch-name").innerHTML = branch + '<span class="caret"></span>';
+        document.getElementById("repo-name").innerHTML = newRepoLocalPath;
+        document.getElementById("branch-name").value = branch + '<span class="caret"></span>';
       }, function (err) {
         //If the repository has no commits, getCurrentBranch will throw an error.
         //Default values will be set for the branch labels
@@ -607,7 +608,8 @@ function openRepository() {
           .then(function () {
             refreshAll(repo);
           }, function (err) {
-            console.log("repo.tx, line 271, cannot checkout local branch: " + err);
+            console.log("repo.ts, checkoutLocalBranch(), cannot checkout local branch: " + err);
+            updateModalText("Cannot checkout local branch: "+err+" Please restart VisualGit");
           });
       })
   }
@@ -692,7 +694,7 @@ function openRepository() {
       localPath = document.getElementById("dirPickerSaveNew").files[0].webkitRelativePath;
       fullLocalPath = document.getElementById("dirPickerSaveNew").files[0].path;
 
-      // display the new folder location on repoSave text field 
+      // display the new folder location on repoSave text field
       updateRepoSaveText(fullLocalPath);
     }
   }
@@ -749,8 +751,8 @@ function openRepository() {
       prPanel.style.width = "60px";
       prListContainer.style.display = "none";
 
-      /* 
-        Calulates space leftover for the body panel after 
+      /*
+        Calulates space leftover for the body panel after
         accounting for the space taken up by the side panel.
       */
       bodyPanel.style.width = "calc(80% - 60px)";

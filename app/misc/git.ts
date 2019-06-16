@@ -20,13 +20,13 @@ let vis = require("vis");
 let commitHistory = [];
 let commitList: [any];
 let stashHistory = [""];
+let stashIds = [""];
 let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
-export class CommitItem {
+export class TagItem {
   public tagName: string;
-  public oldTagName: string;
   public commitMsg: string;
   public tagMsg: string;
   public commitSha: string;
@@ -34,11 +34,9 @@ export class CommitItem {
 
   constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string, hasTag:boolean){
     this.tagName = tagName;
-    this.oldTagName = tagName;
     this.commitMsg = commitMsg;
     this.tagMsg = tagMsg;
     this.commitSha = commitSha;
-    this.hasTag = hasTag;
   }
 }
 
@@ -78,22 +76,19 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of CommitItems based on size of commitList
+// Returns an array of tagItems based on size of commitList
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
   let tItems;
   let found = false;
   let tags;
-  let temp;
   // Create array of tags
   tItems = await Promise.all(sharedRefs.map(async (ref) => {
     if (ref.isTag()) {
-      console.log(ref);
-      temp = await getRefObject(repo, ref);
-      tag = temp.tag;
-      commit = temp.commit;
-      return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
+      tag = await getRefObject(repo, ref);
+      commit = await getCommit(repo, ref);
+      return new TagItem(tag.name(), commit.message(), tag.message(), commit.sha());
     }
   }));
 
@@ -107,13 +102,10 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
         }
       }
     }
-    return new CommitItem("", commit.message(), "", commit.sha(), false);
+    return new TagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
   }));
 
-  // return tags;
-  return await new Promise(resolve=> {
-    resolve(tags);
-  })
+  return tags;
 }
 
 // get each commit's sha for a graph node
@@ -195,8 +187,12 @@ function getRefObject(repo, ref){
   });
 }
 
-
-
+// get commit from tag reference
+async function getCommit(repo, ref) {
+  let c = await ref.peel(Git.Object.TYPE.COMMIT);
+  let commit = await repo.getCommit(c);
+  return commit;
+}
 
 
 /*
@@ -207,32 +203,319 @@ function getRefObject(repo, ref){
 */
 function refreshStashHistory(){
     stashHistory = [""];
+    stashIds = [""];
+    let stashId;
     console.log("initializing stash history...");
     if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
       let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
       txt.pop();
       txt.forEach(function(line) {
+        stashId = line.split(" ")[1];
         line = line.split(" ").slice(6, line.length).join(" ");
-        console.log("Adding " + line + " to Stash history");
+        console.log("Adding " + stashId +": "+ line + " to Stash history");
         stashHistory.unshift(line);
+        stashIds.unshift(stashId);
+
       });
     }
     stashHistory.pop();
     let stashListHTML = '';
+
+    // For each stash create a unique element with unique pop, drop, and apply functionality.
     stashHistory.forEach((stash, i) => {
       stashListHTML +=
         '<div id="stash-item">' +
-        'Stash{' + i + '}: ' + stash +
-        '<div id="stash-actions">' +
-        '<button class="btn btn-primary" onclick="popStash(' + i + ')" data-dismiss="modal">Pop</button>' +
-        '<button class="btn btn-primary" onclick="applyStash(' + i + ')" data-dismiss="modal">Apply</button>' +
-        '<button class="btn btn-primary" onclick="dropStash(' + i + ')" data-dismiss="modal">Drop</button><div/>' +
-        '</div>'
-        ;
+          '<div id="stash-id">' +
+              'Stash{' + i + '}: ' + stash +
+          '</div>' +
+          '<div class="stash-actions">' +
+              '<ul class="dropbtn icons" onclick="showDropdown(' + i + ')">' +
+                  '<li></li>' +
+                  '<li></li>' +
+                  '<li></li>' +
+              '</ul>' +
+
+              '<div id="stash-item-' + i + '-dropdown" class="dropdown-content">' +
+                  '<a onclick="popStash(' + i + ')">Pop</a>' +
+                  '<a onclick="applyStash(' + i + ')">Apply</a>' +
+                  '<a onclick="dropStash(' + i + ')">Drop</a>' +
+                  '<a onclick="showStash(' + i + ')">Show</a>' +
+                  '<a onclick="openBranchModal('+i+')">Branch<\a>' +
+              '</div>' +
+          '</div>' +
+        '</div>';
     });
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
+function protoShowStash(){
+  displayModal("test.txt | 5 ++++-\n1 file changed, 4 insertions(+), 1 deletions(-)");
+}
+/* Issue 84: further implement stashing
+    - git stash show stash{index} shows the deltas of the files
+    - function entered onclick from stash dropdown menu
+*/
+async function showStash(index){
+
+  let repository;
+  let stashOid = stashIds[index];
+  let diff;
+  await Git.Repository.open(repoFullPath).then(function(repoResult){
+    repository = repoResult;
+    console.log("found a repository");
+  })
+  .then(function (){
+    return repository.getCommit(stashOid);
+  })
+  .then(function(stash){
+    console.log("found id of stash");
+    return stash.getDiff();
+  })
+  .then(function(diffArray){
+    console.log(diffArray);
+    diffArray.forEach((diff, i) => {
+      //console.log(diff.getStats());
+      //console.log(diff.getDelta(0));
+    });
+    protoShowStash();
+  }, function (err) {
+    console.log("git.ts, func showStash(): getCommit, " + err);
+  });
+
+}
+
+function showMoveModal(){
+  listDirectoryItems(repoFullPath);
+  $('#move-modal').modal('show');
+}
+
+function getDirectories(directoryPath) {
+  return fs.readdirSync(directoryPath).filter(function (file) {
+    return fs.statSync(path.join(directoryPath,file)).isDirectory() || fs.statSync(path.join(directoryPath,file)).isFile();
+  });
+}
+
+// Description: Used to list the files and folders in a certain directory.
+// 
+// @param directoryPath: The path of the directory to be shown.
+function listDirectoryItems(directoryPath) {
+	let directories = getDirectories(directoryPath);
+	console.log("Getting repo directory...");
+	console.log("Displaying the files and directories at: " + directoryPath);
+	let repoDirectoryHTML = '';
+
+	// For each stash create a unique element with unique pop, drop, and apply functionality.
+	directories.forEach((directoryItem, i) => {
+		let parsedPath = (path.join(directoryPath,directories[i])).replace(/\\/g, '\\\\');
+		repoDirectoryHTML +=
+			'<div id="directory-item-' + i + '" class="directory-item" ondrop="drop(event,\'' + parsedPath + '\')" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+			  '<input id="directory-id-' + i +'" style="outline:none; background-color:#efefef; border:none;" type="text" value="' + directoryItem + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
+			'</div>';
+	});
+	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
+
+  // Get last directory name in path
+  var newPath = "";
+  var prevPath = "";
+  let breakStringFrom;
+
+  // Used to get second last slash
+  let slashPosArr = [];
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      slashPosArr.push(i);
+      breakStringFrom = i;
+    }
+  }
+
+  newPath = directoryPath.slice(breakStringFrom, directoryPath.length);
+  prevPath = directoryPath.slice(0, breakStringFrom);
+
+  // If the previous path is equal to a path outside of the repo directory, don't
+  // display the previous path button (...)
+  if(prevPath == repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]) || directoryPath == repoFullPath){
+    document.getElementById('move-current-directory').innerHTML = newPath;
+  } else {
+    let parsedPrevPath = (prevPath).replace(/\\/g, '\\\\');
+    document.getElementById('move-current-directory').innerHTML = 
+    '<div>' + 
+      '<a id="move-last-directory" ondragover="allowDrop(event)" ondrop="dropInPreviousDir(event,\'' + directoryPath.replace(/\\/g, '\\\\') + '\')" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
+    '</div>';
+  }
+}
+
+// Description: Used to handle file or directory name changes.
+// 
+// @param event: Used to listen for the ENTER button.
+// @param directoryPath: The path of that directory item.
+// @param pos: The position of the directory item in the 
+// directory list.
+function renameDirectoryItem(event,directoryPath,pos){
+  // TODO: Figure out how to disable new line but not enter
+  // Get last directory name in path
+  var prevPath = "";
+  let breakStringFrom;
+
+  var isFolder = false;
+  var isFile = false;
+
+  if(fs.statSync(directoryPath).isDirectory()){
+    isFolder = true;
+  } else if (fs.statSync(directoryPath).isFile()) {
+    isFile = true;
+  }
+
+  // Used to get second last slash
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+
+  prevPath = directoryPath.slice(0, breakStringFrom);
+  var id = "directory-id-" + pos;
+  var element = document.getElementById(id);
+  var newName = element.value;
+  
+  if (event.keyCode == 13) {
+    // Check to see if the original directory item was a file or folder.
+    if(fs.statSync(directoryPath).isDirectory()){
+      // Check to see if the new name is a valid folder name.
+      if(isValidFolderName(newName)){
+        hideDirNameError();
+        fs.rename(directoryPath, path.join(prevPath, newName), function(err) {
+            if (err) console.log('Renaming Error: ' + err);
+        });
+      } else {
+        showDirNameError("Name Error: " + newName + " is not a valid folder name.\nNo special characters allowed. (< > : \" / \\ | ? * & % ^)");
+      }
+    } else if (fs.statSync(directoryPath).isFile()) {
+      // Check to see if the new name is a valid file name.
+      if(isValidFileName(newName)){
+        hideDirNameError();
+        fs.rename(directoryPath, path.join(prevPath, newName), function(err) {
+            if (err) console.log('Renaming Error: ' + err);
+        });
+      } else {
+        showDirNameError("Name Error: " + newName + " is not a valid file name.\n\nPlease make sure you have a valid extension.\nNo special characters allowed. (< > : \" / \\ | ? * & % ^)");
+      }
+    }
+    // Wait for files to appear in unstaged
+    setTimeout(function(){stageFile(newName)},1200);
+  }
+}
+
+// Description: Used to show errors regarding actions taken in the
+// Move modal.
+// 
+// @param message: Used to provide the user with a thorough
+// description of the error, plus what possible steps they can
+// take to prevent this error from happening.
+function showDirNameError(message){
+  let dirNameErrorElement = document.getElementById("dir-item-name-error");
+  dirNameErrorElement.innerHTML = message;
+  dirNameErrorElement.style.display = "inline-flex";
+}
+
+function hideDirNameError(){
+  let dirNameErrorElement = document.getElementById("dir-item-name-error");
+  dirNameErrorElement.style.display = "none";
+}
+
+function isValidFileName(fileName){
+  return /^[a-z0-9_.@()-]+\.[^.]+$/i.test(fileName);
+}
+
+function isValidFolderName(folderName){
+  return /^[a-zA-Z].*/.test(folderName);
+}
+
+/* Allows you to stage specific files. Assumes these files are in the 
+   unstaged file section. 
+   @param filename: The literal name of the file */
+function stageFile(filename){
+  let unstagedFileElements = document.getElementById('files-changed').children;
+  for (var i = 0; i < unstagedFileElements.length; i++) {
+    if(unstagedFileElements[i].id == filename){
+      let checkbox = unstagedFileElements[i].getElementsByTagName("input")[0];
+      try {
+        checkbox.click();
+      } catch (err) {
+        break;
+      }
+    }
+  }
+}
+
+function allowDrop(event) {
+  event.preventDefault();
+}
+
+function drag(event) {
+  event.dataTransfer.setData("directory-item-id", event.target.id);
+  event.dataTransfer.setDragImage(document.getElementById(event.target.id), 0, 0);
+  console.log("Dragging: " + event.target.id);
+}
+
+function drop(event, directoryPath) {
+  event.preventDefault();
+  var data = event.dataTransfer.getData("directory-item-id");
+  var directoryItemName = document.getElementById(data).childNodes[0].value;
+
+  // Get last directory name in path
+  var newDropItemPath = "";
+  var dropItemPath = "";
+  let breakStringFrom;
+
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+
+  var prevDirectoryPath = directoryPath.slice(0, breakStringFrom);
+  newDropItemPath = path.join(prevDirectoryPath,event.target.value);
+  dropItemPath = path.join(prevDirectoryPath,directoryItemName);
+
+  console.log("Dropped: " + data + " at " + event.target.id);
+
+  // Rename the original path to the new path plus the directory item's name.
+  fs.rename(dropItemPath, path.join(newDropItemPath, directoryItemName), function(err) {
+      if (err) console.log('Renaming Error: ' + err);
+
+      listDirectoryItems(prevDirectoryPath);
+  });
+  // Wait for files to appear in unstaged
+  setTimeout(function(){stageFile(directoryItemName)},1750);
+}
+
+function dropInPreviousDir(event, directoryPath) {
+  event.preventDefault();
+  var data = event.dataTransfer.getData("directory-item-id");
+  var directoryItemName = document.getElementById(data).childNodes[0].value;
+
+  // Get last directory name in path
+  let breakStringFrom;
+
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+
+  var prevDirectoryPath = directoryPath.slice(0, breakStringFrom);
+
+  console.log("Dropped: " + data + " at " + event.target.id);
+
+  // Rename the original path to the previous path plus the directory item's name.
+  fs.rename(path.join(directoryPath, directoryItemName), path.join(prevDirectoryPath, directoryItemName), function(err) {
+      if (err) console.log('Renaming Error: ' + err);
+
+      listDirectoryItems(directoryPath);
+  });
+  // Wait for files to appear in unstaged
+  setTimeout(function(){stageFile(directoryItemName)},1750);
+}
 
 function passReferenceCommits(){
   Git.Repository.open(repoFullPath)
@@ -337,6 +620,7 @@ function addAndCommit() {
     window.alert("Cannot commit without a commit message. Please add a commit message before committing");
     return;
   }
+  updateModalText("Committing changes...");
   // A new tag must include a tag name and tag message or tag cannot be created
   if (tagName == "" && tagMessage != "") {
     window.alert("Cannot create tag without a tag name. Please add a tag name before committing");
@@ -395,7 +679,7 @@ function addAndCommit() {
       return repository.getCommit(head);
     })
 
-    .then(function (parent) {
+    .then(async function (parent) {
       console.log("Verifying account");
       let sign;
 
@@ -408,19 +692,21 @@ function addAndCommit() {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
         console.log("head commit on remote: " + tid);
         console.log("head commit on local repository: " + parent.id.toString());
-        return repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent.id().toString(), tid.trim()]);
+        return await repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent.id().toString(), tid.trim()]);
       } else {
         console.log('no other commits');
-        return repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent]);
+        return await repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent]);
       }
     })
-    .then(function (oid) {
+    .then(async function (oid) {
       theirCommit = null;
       console.log("Committing");
       changes = 0;
       console.log("Commit successful: " + oid.tostrS());
       stagedFiles = null;
+
       console.log(oid.tostrS());
+
       // Create tag if tag name is not empty
       if (tagName != "") {
         return repository.createTag(oid.tostrS(), tagName, tagMessage);
@@ -453,7 +739,7 @@ function addAndCommit() {
       console.log("git.ts, func addAndCommit(), could not commit, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to commit.") {
-        displayModal(err.message);
+        updateModalText(err.message);
       } else {
         updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
       }
@@ -463,109 +749,122 @@ function addAndCommit() {
 /* Issue 35: Add stashing functionality
    Mostly copied from addAndCommit
     - Function entered from Stash button
-    - Must have a stash message where text is input in commit-message-input
+    - stages files and stashes them
 */
 function addAndStash(options) {
 
-  if(options == null) options = 0;
+	if(options == null) options = 0;
 
-  var command = "git stash ";
-  var stashName = "";
+	var command = "git stash ";
+	var stashName = "";
 
-  let repository;
-  Git.Repository.open(repoFullPath)
-    .then(function (repoResult) {
-      repository = repoResult;
-      console.log("found a repository");
-      return repository.refreshIndex();
-    })
+	let repository;
+	Git.Repository.open(repoFullPath)
+	.then(function (repoResult) {
+	  repository = repoResult;
+	  console.log("found a repository");
+	  return repository.refreshIndex();
+	})
 
-    .then(function (indexResult) {
-      console.log("found a file to stage");
-      index = indexResult;
-      let filesToStage = [];
-      filesToAdd = [];
-      let fileElements = document.getElementsByClassName('file');
-      for (let i = 0; i < fileElements.length; i++) {
-        let fileElementChildren = fileElements[i].childNodes;
-        if (fileElementChildren[1].checked === true) {
-          filesToStage.push(fileElementChildren[0].innerHTML);
-          filesToAdd.push(fileElementChildren[0].innerHTML);
-        }
-      }
-      if (filesToStage.length > 0) {
-        console.log("staging files");
-        return index.addAll(filesToStage);
-      } else if(options != 2){
-        //If no files checked, then throw error to stop empty commits
-        throw new Error("No files selected to stash.");
-      }
-    })
+	.then(function (indexResult) {
+	  console.log("found a file to stage");
+	  index = indexResult;
+	  let filesToStage = [];
+	  filesToAdd = [];
+	  let fileElements = document.getElementsByClassName('file');
+	  for (let i = 0; i < fileElements.length; i++) {
+	    let fileElementChildren = fileElements[i].childNodes;
+	    if (fileElementChildren[1].checked === true) {
+	      filesToStage.push(fileElementChildren[0].innerHTML);
+	      filesToAdd.push(fileElementChildren[0].innerHTML);
+	    }
+	  }
 
-    .then(function () {
-      console.log("found an index to write result to");
-      return index.write();
-    })
+	  if (filesToStage.length > 0) {
+	    console.log("staging files");
+	    return index.addAll(filesToStage);
+	  } else if(options != 2){
+	    //If no files checked, then throw error to stop empty commits unless untracked option used
+	    throw new Error("No files selected to stash.");
+	  }
+	})
 
-    .then(function () {
-      console.log("creating a tree object using current index");
-      return index.writeTree();
-    })
+	.then(function () {
+	  console.log("found an index to write result to");
+	  return index.write();
+	})
 
-    .then(function (oidResult) {
-      console.log("changing " + oid + " to " + oidResult);
-      oid = oidResult;
-      return Git.Reference.nameToId(repository, "HEAD");
-    })
+	.then(function () {
+	  console.log("creating a tree object using current index");
+	  return index.writeTree();
+	})
 
-    .then(function (head) {
-      console.log("found the current commit");
-      return repository.getCommit(head);
-    })
+	.then(function (oidResult) {
+	  console.log("changing " + oid + " to " + oidResult);
+	  oid = oidResult;
+	  return Git.Reference.nameToId(repository, "HEAD");
+	})
 
-    .then(function (parent) {
-      console.log("Verifying account");
-      let sign;
+	.then(function (head) {
+	  console.log("found the current commit");
+	  return repository.getCommit(head);
+	})
+	.then(async function (parent) {
+		console.log("Verifying account");
+		let sign;
 
-      sign = repository.defaultSignature();
+		sign = repository.defaultSignature();
 
-      console.log("Signature to be put on stash: " + sign.toString());
+		console.log("Signature to be put on stash: " + sign.toString());
 
-      let branch = document.getElementById("branch-name").innerText;
-      console.log("Current branch: " + branch);
+		let branch = document.getElementById("branch-name").innerText;
+		console.log("Current branch: " + branch);
 
-      stashMessage = document.getElementById("commit-message-input").value;
+		stashMessage = document.getElementById("commit-message-input").value;
 
-      /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head */
-      if(stashMessage == null || stashMessage == ""){
-        //window.alert("Cannot stash without a stash message. Please add a stash message before stashing"); return;
-        var comMessage;
-        Git.Commit.lookup(repository, oid)
-        .then(function(commit){ //TODO: commit currently returning undefined
-          console.log(commit);
-          comMessage = commit.message();
-        });
-        stashMessage = oid.tostrS().substring(0,8); //+ " " + comMessage;
-        stashName = "WIP ";
-      } else {
-        command += "push -m \"" + stashMessage + "\" ";
-      }
-      stashName += "On " + branch + ": " + stashMessage;
+		/* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head */
+		if(stashMessage == null || stashMessage == ""){
+		  //window.alert("Cannot stash without a stash message. Please add a stash message before stashing"); return;
+		  var comMessage;
+		  Git.Commit.lookup(repository, oid)
+		  .then(function(commit){ //TODO: commit currently returning undefined
+		    console.log(commit);
+		    comMessage = commit.message();
+		  });
+		  stashMessage = oid.tostrS().substring(0,8); //+ " " + comMessage;
+		  stashName = "WIP ";
+		} else {
+		  command += "push -m \"" + stashMessage + "\" ";
+		}
+		stashName += "On " + branch + ": " + stashMessage;
 
-      console.log("Stashing: " + stashName );
+		console.log("Stashing: " + stashName );
 
-      // First branch of this If might be unecessary or replaceable by .git/refs/stash to check something else
-      if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
-        let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
-        console.log("head commit on remote: " + tid);
-        console.log("head commit on local repository: " + parent.id.toString());
-        return Git.Stash.save(repository, sign, stashMessage, options);
-      } else {
-        console.log('no other commits');
-        return Git.Stash.save(repository, sign, stashMessage, options);
-      }
-    })
-    .then(async function (stashOID) {
+		//checks if current status of the branch is merging
+		if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
+			let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
+			console.log("head commit on remote: " + tid);
+			console.log("head commit on local repository: " + parent.id.toString());
+
+			//perform git stash
+			return await Git.Stash.save(repository, sign, stashMessage, options).then( (res) => {
+			  console.log("Stash resolved: " + res);
+			}, (rej) => {
+			  console.log("Stash rejected: " + rej);
+			});
+
+		} else {
+			console.log('no other commits');
+
+			//perform git stash
+			return await Git.Stash.save(repository, sign, stashMessage, options).then( (res) => {
+			console.log("Stash resolved: " + res);
+		}, (rej) => {
+			console.log("Stash rejected: " + rej);
+		});
+
+		}
+	}).then(async function (stashOID) {
         theirCommit = null;
         changes = 0;
 
@@ -620,7 +919,7 @@ function addAndStash(options) {
       console.log("git.ts, func addAndStash(), could not stash, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to stash.") {
-        displayModal(err.message);
+        updateModalText(err.message);
       } else {
         updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
       }
@@ -695,12 +994,15 @@ async function deleteTag(tagName) {
 
 
 /* Issue 35: Add applying functionality
+=======
+/* Issue 35: Add popping functionality
+>>>>>>> rhys-git-mv
    Skeleton copied from pullFromRemote()
     - Function entered from onclick of the given stash in Stashing options window
     - pops stash from given index and merges into working directory. Fails if conflicts found.
-
-    //TODO: Consider a revision in merging the pop/apply/drop functions. Easy to test with seperate functions for now.
+    - If the file is tracked by the working tree, Merge will return conflict error but safely merge.
 */
+<<<<<<< HEAD
 async function popStash(index) {
 
     let repository;
@@ -770,14 +1072,14 @@ async function popStash(index) {
             displayModal(err.message);
             //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
         });
-
 }
 
-/* Issue 35+: Add applying functionality
+/* Issue 35: Add applying functionality
    copied from popStash()
     - Function entered from onclick of the given stash in Stashing options window
     - applies stash from given index and merges into working directory.
 */
+<<<<<<< HEAD
 async function applyStash(index) {
 
     let repository;
@@ -846,14 +1148,11 @@ async function applyStash(index) {
             displayModal(err.message);
             //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
         });
-
 }
-/* Issue 35+: Add dropping stash functionality
+/* Issue 35/84: Add dropping stash functionality
    copied from popStash()
     - Function entered from onclick of the given stash in Stashing options window
     - drops stash from given index.
-
-    //TODO: DROP IS NOT FUNCTIONAL ATM
 */
 async function dropStash(index) {
 
@@ -890,9 +1189,107 @@ async function dropStash(index) {
             displayModal(err.message);
             //TODO: If ambiguous errors thrown, use err.message shown to display more useful message if necessary
         });
-
 }
 
+/* Issue 84: further implement stashing
+  Function copied from createBranch()
+    - git stash branch <branchname> <stash> will create and checkout a new branch
+      starting from the commit where the stash was pushed and then pop the stash onto the new branch
+    - Onclick of _branch_ in the stash dropdown, the branch modal will open up to allow the user to create the branch
+    - currently, only the most recent stash can be used to checkout a new branch
+*/
+function branchStash(index) {
+  if (index == null) index = 0;
+
+  let branchName = document.getElementById("branch-name-input").value;
+
+  if (typeof repoFullPath === "undefined") {
+    // repository not selected
+    document.getElementById("branchErrorText").innerText = "Warning: You are not within a Git repository. " +
+        "Open a repository to create a new branch. ";
+  }
+ // Check for empty branch name
+  // @ts-ignore
+  else if (branchName == '' || branchName == null) {
+    // repository not selected
+    document.getElementById("branchErrorText").innerText = "Warning: Please enter a branch name";
+  }
+
+  // Check for invalid branch name
+  // @ts-ignore
+  else if (isIllegalBranchName(branchName)) {
+    // repository not selected
+    // @ts-ignore
+    document.getElementById("branchErrorText").innerText = "Warning: Illegal branch name. ";
+  }
+
+  //check if local changes need to be stashed
+  else if (modifiedFiles > 0){
+    document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
+
+  }
+
+  // TODO: check for existing branch
+  // Check for existing branch
+  // else if ( <existing branch> ) {}
+
+  else {
+    let currentRepository;
+    console.log(branchName + " is being created");
+    Git.Repository.open(repoFullPath)
+      .then(function (repo) {
+        // Create a new branch on commit of stash
+        console.log("found a repository");
+        currentRepository = repo;
+        addCommand("git stash branch " + branchName + " stash{" + index + "}");
+        return repo.getCommit(stashIds[index])
+          .then(function (stash) {
+            console.log("Branching from stash: " + stash);
+            return stash.parent(0)
+              .then(function(commit){
+                console.log("Parent commit: "+ commit);
+                return repo.createBranch(
+                branchName,
+                commit,
+                0,
+                repo.defaultSignature(),
+                "Created new-branch on "+ commit.id());
+              });
+          });
+      }, function (err) {
+            console.log("git.ts, func branchStash(), error occurred while trying to create a new branch " + err);
+      })
+      .done(function () {
+        $('#branch-modal').modal('hide');
+        //refreshAll(currentRepository);
+        checkoutLocalBranch(branchName);
+        popStash(index);
+      });
+    clearBranchErrorText();
+  }
+}
+
+// Delete tag based on tag name and display corresponding git command to footer in VisualGit
+function deleteTag(tagName) {
+  let repository;
+  console.log(repoFullPath);
+  let name = tagName.split(path.sep);
+  name = name[name.length-1];
+  console.log(name);
+  Git.Repository.open(repoFullPath)
+    .then(function (repoResult) {
+      repository = repoResult;
+      repository.deleteTagByName(name)
+        .then(function() {
+          console.log(`${name} deleted`);
+          addCommand('git tag -d '+ name);
+          refreshAll(repository);
+        })
+        .catch((err) => console.log(err));
+    })
+    .catch((err) => console.log(err));
+
+}
 
 function clearStagedFilesList() {
   let filePanel = document.getElementById("files-staged");
@@ -1221,7 +1618,8 @@ async function pushToRemote() {
 
 function commitModal() {
   // TODO: implement commit modal
-  displayModal("Commit inside a modal yet to be implemented");
+  //updateModalText("Commit inside a modal yet to be implemented");
+  addAndCommit();
 }
 
 async function openBranchModal() {
@@ -1265,6 +1663,10 @@ function createBranch() {
     // repository not selected
     // @ts-ignore
     document.getElementById("branchErrorText").innerText = "Warning: Illegal branch name. ";
+
+  } else if (modifiedFiles > 0){
+    document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
+
   }
 
   // TODO: check for existing branch
@@ -2034,7 +2436,7 @@ function cleanRepo() {
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
       console.log("Removing untracked files")
-      displayModal("Removing untracked files...");
+      updateModalText("Removing untracked files...");
       addCommand("git clean -f");
       repo.getStatus().then(function (arrayStatusFiles) {
         arrayStatusFiles.forEach(deleteUntrackedFiles);
@@ -2064,7 +2466,7 @@ function cleanRepo() {
     },
       function (err) {
         console.log("Waiting for repo to be initialised");
-        displayModal("Please select a valid repository");
+        updateModalText("Please select a valid repository");
       });
 }
 
@@ -2087,7 +2489,7 @@ function fetchFromOrigin() {
     Git.Repository.open(repoFullPath)
       .then(function (repo) {
         console.log("fetch path valid")
-        displayModal("Beginning Synchronisation...");
+        updateModalText("Beginning Synchronisation...");
         addCommand("git remote add upstream " + upstreamRepoPath);
         addCommand("git fetch upstream");
         addCommand("git merge upstrean/master");
@@ -2097,9 +2499,9 @@ function fetchFromOrigin() {
       },
         function (err) {
           console.log("Waiting for repo to be initialised");
-          displayModal("Please select a valid repository");
+          updateModalText("Please select a valid repository");
         });
   } else {
-    displayModal("No Path Found.")
+    updateModalText("No Path Found.")
   }
 }
