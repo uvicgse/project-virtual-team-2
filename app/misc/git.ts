@@ -364,7 +364,7 @@ function listDirectoryItems(directoryPath) {
 	directories.forEach((directoryItem, i) => {
 		let parsedPath = (path.join(directoryPath,directories[i])).replace(/\\/g, '\\\\');
 		repoDirectoryHTML +=
-			'<div id="directory-item-' + i + '" ondrop="drop(event,\'' + parsedPath + '\')" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+			'<div id="directory-item-' + i + '" class="directory-item" ondrop="drop(event,\'' + parsedPath + '\')" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
 			  '<input id="directory-id-' + i +'" style="outline:none; background-color:#efefef; border:none;" type="text" value="' + directoryItem + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
 			'</div>';
 	});
@@ -407,6 +407,15 @@ function renameDirectoryItem(event,directoryPath,pos){
   var prevPath = "";
   let breakStringFrom;
 
+  var isFolder = false;
+  var isFile = false;
+
+  if(fs.statSync(directoryPath).isDirectory()){
+    isFolder = true;
+  } else if (fs.statSync(directoryPath).isFile()) {
+    isFile = true;
+  }
+
   // Used to get second last slash
   for (var i = 0; i < directoryPath.length; i++) {
     if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
@@ -420,13 +429,50 @@ function renameDirectoryItem(event,directoryPath,pos){
   var newName = element.value;
   
   if (event.keyCode == 13) {
-    fs.rename(directoryPath, path.join(prevPath, newName), function(err) {
-        if (err) console.log('Renaming Error: ' + err);
-
-    });
+    // Check to see if the original directory item was a file or folder.
+    if(fs.statSync(directoryPath).isDirectory()){
+      // Check to see if the new name is a valid folder name.
+      if(isValidFolderName(newName)){
+        hideDirNameError();
+        fs.rename(directoryPath, path.join(prevPath, newName), function(err) {
+            if (err) console.log('Renaming Error: ' + err);
+        });
+      } else {
+        showDirNameError("Name Error: " + newName + " is not a valid folder name.\nNo special characters allowed. (< > : \" / \\ | ? * & % ^)");
+      }
+    } else if (fs.statSync(directoryPath).isFile()) {
+      // Check to see if the new name is a valid file name.
+      if(isValidFileName(newName)){
+        hideDirNameError();
+        fs.rename(directoryPath, path.join(prevPath, newName), function(err) {
+            if (err) console.log('Renaming Error: ' + err);
+        });
+      } else {
+        showDirNameError("Name Error: " + newName + " is not a valid file name.\n\nPlease make sure you have a valid extension.\nNo special characters allowed. (< > : \" / \\ | ? * & % ^)");
+      }
+    }
     // Wait for files to appear in unstaged
     setTimeout(function(){stageFile(newName)},1200);
   }
+}
+
+function showDirNameError(message){
+  let dirNameErrorElement = document.getElementById("dir-item-name-error");
+  dirNameErrorElement.innerHTML = message;
+  dirNameErrorElement.style.display = "inline-flex";
+}
+
+function hideDirNameError(){
+  let dirNameErrorElement = document.getElementById("dir-item-name-error");
+  dirNameErrorElement.style.display = "none";
+}
+
+function isValidFileName(fileName){
+  return /^[a-z0-9_.@()-]+\.[^.]+$/i.test(fileName);
+}
+
+function isValidFolderName(folderName){
+  return /^[a-zA-Z].*/.test(folderName);
 }
 
 function stageFile(filename){
