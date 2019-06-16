@@ -14,7 +14,7 @@ export class AuthenticateComponent implements OnInit {
     console.log("switchToMainPanel: Authenticate.component.ts");
 
     //If there is a token then sign in
-    let file = 'data.json';
+    let file = 'token.json';
     // check if the data.json file exists
     if (fs.existsSync(file)) {
       getUserInfo(switchToAddRepositoryPanel);
