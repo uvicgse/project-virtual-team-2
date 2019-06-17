@@ -96,10 +96,14 @@ export class AddRepositoryComponent {
   }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   /* commented out because this loads the graph while using stage/unstage drag/drop
     prepareDontMissDND :  function() {
 =======
 /*
+=======
+/* commented out because this loads the graph while using stage/unstage drag/drop
+>>>>>>> Drag and drop functionality working
   prepareDontMissDND :  function() {
 >>>>>>> drag and drop working, need to fix graph loading
 
@@ -122,9 +126,6 @@ export class AddRepositoryComponent {
           fileUpload(e);
           return false;
       });
-
-
-
 } */
 >>>>>>> drag and drop working, need to fix graph loading
 
