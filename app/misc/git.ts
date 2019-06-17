@@ -1773,6 +1773,7 @@ function displayModifiedFiles() {
             }
           }
 
+          // Activate function on mouse drag start and end
           fileElement.addEventListener('dragstart', handleDragStart, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
@@ -1870,7 +1871,6 @@ function displayModifiedFiles() {
           function handleDragStart(e){
             e.dataTransfer.setData("text", e.target.id);
           }
-
           function handleDragEnd(e) {
             e.preventDefault();
             const filepanel = document.querySelector("div.file-panel");
@@ -1896,6 +1896,7 @@ function displayModifiedFiles() {
             }
           }
 
+          // Activate function on mouse drag start and end
           fileElement.addEventListener('dragstart', handleDragStart, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
