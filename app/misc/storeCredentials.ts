@@ -7,8 +7,7 @@ var encryptedOauthToken;
 
 //test to call function and store token.
 //you should use your token for testing and only push to your private repository!!!
-var accessToken = 'replacewithyourtoken';
-storeOauthToken(accessToken);
+
 
 function storeOauthToken(accessToken) {
 
