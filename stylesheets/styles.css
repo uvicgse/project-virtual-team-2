@@ -516,6 +516,12 @@ body .footer .commit-panel .commit-message-input {
   color:rgb(158, 158, 158);
 }
 
+.modal-body-input {
+  border-radius: 3px;
+  padding: 4px;
+  margin: 16px;
+  width: 60%;
+}
 
 body .footer .commit-panel .commit-button-wrapper {
   /* positioned relative to its normal position(bottom left corner) */
