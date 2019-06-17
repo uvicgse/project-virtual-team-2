@@ -580,35 +580,6 @@ body .footer .status-panel {
   border-style: solid;
 }
 
-body .footer .status-panel .fetch-button-wrapper {
-  /* positioned relative to its normal position(bottom left corner) */
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  border: 0;
-}
-
-body .footer .status-panel .fetch-button-wrapper .fetch-button {
-  /*sequences of white space are collapsed and lines are broken at newline characters*/
-  white-space: pre-line;
-  position: static;
-  display: block;
-  margin: 8px;
-
-  height: 40px;
-  border-radius: 10px;
-  border: 0;
-  padding: 0 15px;
-  background-color: #39c0ba;
-  color: #fff;
-}
-
-body .footer .status-panel .fetch-button:hover {
-  opacity: 0.8;
-}
-
 body .footer .terminal .git-command {
   margin: 10px;
 }
