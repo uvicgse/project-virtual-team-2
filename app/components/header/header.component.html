@@ -23,16 +23,12 @@
               <div class="input-group menuitem">
                 <div class="select-menu-text-filter" style="padding:10px">
                     <span class="input-group-btn">
-                    <input type="text" id="branchName" class="form-control" placeholder="Find or create branch" oninput="displayBranchesTags()">
+                    <input type="text" id="branchName" class="form-control" style="width:320px"> placeholder="Find or create branch" oninput="displayBranchesTags()">
                     <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
                     </span>
                 </div>
-                <button class="btn-default" (click)=displayBranches()>
-                    Branches
-                </button>
-                <button class="btn-default" (click)="displayTags()">
-                    Tags
-                </button>
+                <button class="btn btn-default" style="width:45%; margin: 0 1% 5px 4%" (click)=displayBranches()>Branches</button>
+                <button class="btn btn-default" style="width:45%; margin: 0 4% 5px 1%" (click)="displayTags()">Tags</button>
   
                 <div style="display: block;" id="branchesTab"> Branches</div>
                 <div style="display: none;" id="tagsTab"> Tags</div>
@@ -129,29 +125,25 @@
         <span class="caret"></span>
       </a>
       <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
-          <li role="presentation" id="create-branch">
-            <div class="select-menu-header">
-              <span class="select-menu-title"> Switch branches/tags</span>
+        <li role="presentation" id="create-branch">
+          <div class="select-menu-header">
+            <span class="select-menu-title"> Switch branches/tags</span>
+          </div>
+          <div class="input-group menuitem">
+            <div class="select-menu-text-filter" style="padding:10px">
+                <span class="input-group-btn">
+                <input type="text" id="branchName" class="form-control" style="width:320px"> placeholder="Find or create branch" oninput="displayBranchesTags()">
+                <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
+                </span>
             </div>
-            <div class="input-group menuitem">
-              <div class="select-menu-text-filter" style="padding:10px">
-                  <span class="input-group-btn">
-                  <input type="text" id="branchName" class="form-control" placeholder="Find or create branch">
-                  <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
-                  </span>
-              </div>
-              <button class="btn-default" (click)=displayBranches()>
-                  Branches
-              </button>
-              <button class="btn-default" (click)="displayTags()">
-                  Tags
-              </button>
+            <button class="btn-info" style="width:45%" (click)=displayBranches()>Branches</button>
+            <button class="btn-info" style="width:45%" (click)="displayTags()">Tags</button>
 
-              <div style="display: block;" id="branchesTab"> Branches</div>
-              <div style="display: none;" id="tagsTab"> Tags</div>
-            </div>
-          </li>
-        </ul>
+            <div style="display: block;" id="branchesTab"> Branches</div>
+            <div style="display: none;" id="tagsTab"> Tags</div>
+          </div>
+        </li>
+      </ul>
     </li>
     <li class="dropdown">
       <a id="merge-name" onclick="getOtherBranches()" data-toggle="dropdown" href="#">
