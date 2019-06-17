@@ -2154,7 +2154,7 @@ function displayModifiedFiles() {
             fileElement.className = "file file-modified";
           } else if (file.fileModification === "DELETED") {
             fileElement.className = "file file-deleted";
-          } else {circle.yml
+          } else {
             fileElement.className = "file";
           }
 
