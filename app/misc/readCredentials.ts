@@ -33,3 +33,15 @@ function getOauthToken() {
     return decryptedTokenBytes.toString(CryptoJS.enc.Utf8);
   }
 }
+
+function removeToken() {
+  let file = "token.json";
+
+  try{
+    fs.unlinkSync(file);
+  }
+  catch(err) {
+    console.log(err);
+  }
+  encryptedOauthToken = null;
+}

@@ -24,9 +24,6 @@ export class AuthenticateComponent implements OnInit {
       authenticateUser(switchToAddRepositoryPanel);
     }
   }
-  Githublogin():void {
-    authenticateUser(switchToAddRepositoryPanel);
-  }
 }
 
 
