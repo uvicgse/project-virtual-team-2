@@ -1122,12 +1122,17 @@ function checkIfExistOrigin(branchName) {
 }
 
 //push function to remote branch, we need to push to remote and then link that to the local branch
-function createUpstreamPush() {
+async function createUpstreamPush() {
     //todo add loading until its successfull
     displayModal("Pushing changes to remote... and setting upstream branch");
   //todo update getting the branch with new function to get branch.
-  let branch = document.getElementById("branch-name").innerText;
-  let remoteBranch = "refs/heads/";
+
+  let branch = "";
+  await getBranchName().then((branchName) => {
+    branch = branchName;
+  });
+
+  let remoteBranch = "refs/remotes/origin/";
   let remoteName = "origin";
   let originBranchName = "origin";
 
@@ -1137,7 +1142,9 @@ function createUpstreamPush() {
   addCommand("git push -u origin " + branch);
   Git.Repository.open(repoFullPath).then((repo) => {
       repo.getCurrentBranch().then((ref) => {
-        repo.getRemote(remoteName).then((remote) => {
+        alert(remoteName + " a " + branch + " b " + remoteBranch);
+        repo.getRemote(remoteName + "/" + branch).then((remote) => {
+          alert("3func");
           remote.push([remoteBranch+":"+remoteBranch], {
             callbacks: {
               // obtain a new copy of cred every time when user push.
@@ -1149,6 +1156,7 @@ function createUpstreamPush() {
             }
           }).then((result) => {
               //link to local branch
+            alert("before upstream");
             Branch.setUpstream(ref, originBranchName).then((setRemoteResult) => {
                 updateModalText("Set upstream success");
             }), function(e) {
@@ -1211,9 +1219,12 @@ function getBranchName() {
     });
 }
 
-function pushToRemote() {
+async function pushToRemote() {
   // checking status of remote repository and only push if you are ahead of remote
-  let branch = document.getElementById("branch-name").innerText;
+  let branch = "";
+  await getBranchName().then((branchName) => {
+    branch = branchName;
+  });
   //checks if the remote version of your current branch exist
   checkIfExistOrigin(branch).then(function(remoteBranchExist){
     if (!remoteBranchExist) {
