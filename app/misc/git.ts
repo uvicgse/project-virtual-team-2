@@ -1736,7 +1736,7 @@ function displayModifiedFiles() {
             fileElement.className = "file file-modified";
           } else if (file.fileModification === "DELETED") {
             fileElement.className = "file file-deleted";
-          } else {circle.yml
+          } else {
             fileElement.className = "file";
           }
 
@@ -1744,30 +1744,36 @@ function displayModifiedFiles() {
           fileElement.id = file.filePath;
           fileElement.draggable="true";
 
+          /* Functions for handling Drag and Drop - From unstage to stage*/
           function handleDragStart(e){
             e.dataTransfer.setData("text", e.target.id);
           }
-          function handleDragOver(e){
-            e.preventDefault();
-            e.stopPropagation();
-          }
           function handleDragEnd(e) {
             e.preventDefault();
-            const box = document.querySelector("div.files-staged");
-            const boundary = box.getBoundingClientRect();
+            const filepanel = document.querySelector("div.file-panel");
+            const stagepanel = document.querySelector("div.staged-files-header");
+            // create top and bottom boundary for drag release
+            const topboundary = stagepanel.getBoundingClientRect();
+            const bottomboundary = filepanel.getBoundingClientRect();
+
+            // mouse pointer location while dragging
             var x_axis = e.clientX;
             var y_axis = e.clientY;
-            //console.log(boundary);
+
+            //console.log(topboundary);
+            //console.log(bottomboundary);
             //console.log(x_axis);
             //console.log(y_axis);
-            if((x_axis >= boundary.left && x_axis <= boundary.right) && (y_axis >= boundary.top && y_axis <= boundary.bottom)){
+            //console.log("-----");
+
+            // check if the drag ends within the boundary
+            if((x_axis >= bottomboundary.left && x_axis <= bottomboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.bottom)){
               checkbox.click();
               e.stopPropagation();
             }
           }
 
           fileElement.addEventListener('dragstart', handleDragStart, false);
-          fileElement.addEventListener('dragover', handleDragOver, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
 
@@ -1860,31 +1866,37 @@ function displayModifiedFiles() {
           fileElement.draggable="true";
           fileElement.appendChild(filePath);
 
-          /* Functions for Drag and Drop*/
+          /* Functions for handling Drag and Drop - From stage to unstage*/
           function handleDragStart(e){
             e.dataTransfer.setData("text", e.target.id);
           }
-          function handleDragOver(e){
-            e.preventDefault();
-            e.stopPropagation();
-          }
+
           function handleDragEnd(e) {
             e.preventDefault();
-            const box = document.querySelector("div.files-changed");
-            const boundary = box.getBoundingClientRect();
+            const filepanel = document.querySelector("div.file-panel");
+            const stagepanel = document.querySelector("div.staged-files-header");
+            // create top and bottom boundary for drag release
+            const bottomboundary = stagepanel.getBoundingClientRect();
+            const topboundary = filepanel.getBoundingClientRect();
+
+            // mouse pointer location while dragging
             var x_axis = e.clientX;
             var y_axis = e.clientY;
-            //console.log(boundary);
+
+            //console.log(topboundary);
+            //console.log(bottomboundary);
             //console.log(x_axis);
             //console.log(y_axis);
-            if((x_axis >= boundary.left && x_axis <= boundary.right) && (y_axis >= boundary.top && y_axis <= boundary.bottom)){
+            //console.log("-----");
+
+            // check if the drag ends within the boundary
+            if((x_axis >= topboundary.left && x_axis <= topboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.top)){
               checkbox.click();
               e.stopPropagation();
             }
           }
 
           fileElement.addEventListener('dragstart', handleDragStart, false);
-          fileElement.addEventListener('dragover', handleDragOver, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");

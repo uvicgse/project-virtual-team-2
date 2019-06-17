@@ -95,7 +95,7 @@ export class AddRepositoryComponent {
     switchToMainPanel();
   }
 
-/*
+/* commented out because this loads the graph while using stage/unstage drag/drop
   prepareDontMissDND :  function() {
 
       $(document.body).bind("dragover", function(e) {
@@ -108,9 +108,6 @@ export class AddRepositoryComponent {
           fileUpload(e);
           return false;
       });
-
-
-
 } */
 
 function fileUpload(ev){
