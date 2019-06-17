@@ -27,6 +27,6 @@ export class FooterComponent {
   }
 
   async amendLastCommit(): void {
-    await amendLastCommit('TESTING12313');
+    await amendLastCommit(modifyMessage);
   }
 }
