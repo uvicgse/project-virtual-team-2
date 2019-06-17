@@ -1192,35 +1192,6 @@ function displayAheadBehind() {
         }
       });
     }
-  let branch = document.getElementById("branch-name").innerText;
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      console.log("Pushing changes to remote")
-      displayModal("Pushing changes to remote...");
-      addCommand("git push -u origin " + branch);
-      repo.getRemotes()
-        .then(function (remotes) {
-          repo.getRemote(remotes[0])
-            .then(function (remote) {
-              return remote.push(
-                ["refs/heads/" + branch + ":refs/heads/" + branch],
-                {
-                  callbacks: {
-                    credentials: function () {
-                      return createCredentials();
-                    }
-                  }
-                }
-              );
-            })
-            .then(function () {
-              CommitButNoPush = 0;
-              window.onbeforeunload = Confirmed;
-              console.log("Push successful");
-              updateModalText("Push successful");
-              refreshAll(repo);
-            });
-        });
   });
 }
 
