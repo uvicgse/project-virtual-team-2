@@ -89,12 +89,16 @@ export class HeaderComponent   {
   displayBranches(): void {
     document.getElementById('branchesTab').style.display = 'block'
     document.getElementById('tagsTab').style.display = 'none'
+    var inputValue = (<HTMLInputElement>document.getElementById('branchName'));
+    inputValue.placeholder = 'Find or create branch';
     console.log('branches')
   }
 
   displayTags(): void {
     document.getElementById('branchesTab').style.display = 'none'
     document.getElementById('tagsTab').style.display = 'block'
+    var inputValue = (<HTMLInputElement>document.getElementById('branchName'));
+    inputValue.placeholder = 'Find a tag';
     console.log('tags')
   }
 
