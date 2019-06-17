@@ -20,11 +20,71 @@ var repoNotFound = 0;
 var signed = 0;
 var changes = 0;
 let signedAfter = false;
-let loginScopes = [
-  "repo",
-  "user"
-];
+
 let oauthpass = 'x-oauth-basic';
+let electronOauth2 = require('electron-oauth2');
+let account;
+
+
+const OauthConfig = {
+  clientId: 'c2509d8769f5f1e46028',
+  clientSecret: 'e4717832659e95c2f8f4237a3390cf09013b94f7',
+  authorizationUrl: 'https://github.com/login/oauth/authorize',
+  tokenUrl: 'https://github.com/login/oauth/access_token',
+  useBasicAuthorizationHeader: false,
+  redirectUri: 'http://localhost:9000/user/signin/callback'
+};
+
+const windowParams = {
+  alwaysOnTop: true,
+  autoHideMenuBar: true,
+  webPreferences: {
+    nodeIntegration: false,
+  }
+};
+const options = {
+  scope: 'repo user'
+};
+const myApiOauth = electronOauth2(OauthConfig, windowParams);
+
+function authenticateUser(callback) {
+  // Opens Oauth Window and Retrieves Token
+  myApiOauth.getAccessToken(options)
+    .then(token => {
+      if(!token) {
+        return;
+      }
+
+      storeOauthToken(token['access_token']);
+      console.log("ACCESS TOKEN IS:", token)
+
+      // Initialize github client with token from Oauth
+      client = github.client(token['access_token']);
+
+      console.log("build client");
+      // If the client fails to be initialized, a new access token is required...
+      if (!client.token)
+        return;
+
+      // Set the account global to access the username later on
+      client.get('/user', {}, function (err, status, body, headers) {
+        // Set the account variable
+        account = body;
+
+        // When user differs sign in, the sign in button must be hidden
+        // hideSignInButton();
+
+        // Trigger next step in login process
+        getUserInfo(callback);
+      });
+
+    }, err => {
+      console.log('Error while getting token', err);
+	}).catch( err => {
+    console.log(err);
+  });
+}
+
 
 /* // Code for requesting Oauth token using https and then storing using storeOauthToken()
    // Possibly works possibly not, might just use the electron-oauth2 library to do same thing instead
@@ -212,13 +272,14 @@ function searchRepoName() {
 }
 
 function getUserInfo(callback) {
-  if (signedAfter === true){  // if the trys to login after clicking "continues without sign in"
-    encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
-  }
-  else {
-    encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
-  }
+  // if (signedAfter === true){  // if the trys to login after clicking "continues without sign in"
+  //   encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
+  // }
+  // else {
+  //   encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
+  // }
   //calling constructor method
+  console.log("called getuserinfo");
   cred = createCredentials();
 
   client = github.client(getOauthToken());
@@ -231,27 +292,6 @@ function getUserInfo(callback) {
 
   });
 }
-
-
-function submitOTP(callback) {
-  github.auth.config({
-    username: getUsernameTemp(),
-    password: getPasswordTemp(),
-    otp: document.getElementById("otp")!.value
-  }).login({"scopes": loginScopes,
-    "note": Math.random().toString()
-  }, function (err, id, token, headers) {
-    if (err) {
-      displayModal(err);
-    }
-    else {
-      client = github.client(token);
-      var ghme = client.me();
-      processLogin(ghme, callback);
-    }
-  });
-}
-
 
 function processLogin(ghme, callback) {
   ghme.info(function(err, data, head) {

@@ -21,11 +21,14 @@ export class AuthenticateComponent implements OnInit {
     }
     //Otherwise create token then sign in
     else {
-      createOauthToken();
-      getUserInfo(switchToAddRepositoryPanel);
+      authenticateUser(switchToAddRepositoryPanel);
     }
   }
+  Githublogin():void {
+    authenticateUser(switchToAddRepositoryPanel);
+  }
 }
+
 
 /*
   This function will open a new browser window to GitHub's Oauth authentication page and request a token,
