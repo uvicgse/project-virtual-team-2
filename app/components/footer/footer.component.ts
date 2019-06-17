@@ -26,7 +26,8 @@ export class FooterComponent {
     } 
   }
 
-  async amendLastCommit(): void {
-    await amendLastCommit(modifyMessage);
+/* This function is executed when amend button is clicked */
+  async amendLastCommit(amend): void {
+    await amendLastCommit(amend);
   }
 }
