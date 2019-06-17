@@ -485,70 +485,54 @@ function openRepository() {
     ul.appendChild(li);
   }
 
+  function deleteBranchFromDropDown(name){
+    $('#branch-to-delete').val(name);
+    document.getElementById("displayedBranchName").innerHTML = name;
+    $('#delete-branch-modal').modal(); // Display delete branch warning modal
+  }
+
+  //
+  // Used to Initialize list of branches and list of tags
+  //
   function displayBranch(name, id, onclick) {
-    this.quickBranchTagReload = [];
+    quickBranchTagReload = [];
+    // Stop click exit
     $(document).on('click', '.dropdown-menu', function (e) {
       e.stopPropagation();
     });
-    let branchesTab = document.getElementById('branchesTab')
-    let tagsTab = document.getElementById('tagsTab')
-    branchesTab.innerHTML = ""
-    tagsTab.innerHTML = ""
+    // list elements set-up
     let tr = document.createElement("tr");
     let listTD = document.createElement("td");
-    let buttonTD = document.createElement("td");
     let a = document.createElement("a");
     a.setAttribute("href", "#");
     a.setAttribute("class", "list-group-item");
     a.setAttribute("onclick", onclick + ";event.stopPropagation()");
     a.appendChild(document.createTextNode(name));
     a.innerHTML = name;
-
-    // Delete Button
-    var button = document.createElement("Button");
-    button.innerHTML = "Delete";
-    button.classList.add('btn-danger')
-    $(button).css("position", "absolute")
-    $(button).css("right", "5px")
-    //$(button).css("float", "right")
-    $(button).css("margin", "5px")
-    $(button).click(function () {
-      $('#branch-to-delete').val(name);
-      document.getElementById("displayedBranchName").innerHTML = name;
-      $('#delete-branch-modal').modal(); // Display delete branch warning modal
-    });
-    
-    //console.log(ul.innerHTML)
+    // existing check -> Not sure why??
     if (id == "branch-dropdown") {
-      let isLocal = 0;
-      let isRemote = 0;
-      let isTag = false;
-      // Add a local branch icon for local branches
+      // Loop through references
       Git.Repository.open(repoFullPath)
         .then(function (repo) {
           Git.Reference.list(repo).then(function (array) {
             // Remote
             if (array.includes("refs/remotes/origin/" + name)) {
-              // if name has already been found as local make both otherwise remote
+              // already local -> make both
               if(quickBranchTagReload.some(b => b.name == name)) {
                 const thisIndex = quickBranchTagReload.findIndex(b => b.name == name);
                 a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
                 listTD.innerHTML = a.outerHTML
-                //tr.innerHTML = listTD.outerHTML
                 tr.innerHTML = listTD.outerHTML
-                buttonTD.innerHTML += button.outerHTML
-                tr.innerHTML += buttonTD.outerHTML
                 quickBranchTagReload[thisIndex].type = "both"
                 quickBranchTagReload[thisIndex].html = tr.innerHTML
-                return
+                
+              // just remote so far
               } else {
-                // Do Not add delete button for master
                 listTD.innerHTML = a.outerHTML
                 tr.innerHTML = listTD.outerHTML
                 a.innerHTML = "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
                 let remoteObj = {html: "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>", type: "remote", name: name, onclick:onclick}
                 this.quickBranchTagReload.push(remoteObj)
-                branchesTab.appendChild(tr)
               }
             }
           })
@@ -558,37 +542,27 @@ function openRepository() {
               a.innerHTML += "<img src='./assets/tag-icon.png' width='20' height='20' align='right' title='Tag'>";
               listTD.innerHTML += a.outerHTML
               tr.innerHTML += listTD.outerHTML
-              a.setAttribute("onclick", "deleteTag(name)" + ";event.stopPropagation()");
-              buttonTD.innerHTML += button.outerHTML
-              tr.innerHTML += buttonTD.outerHTML
               let tagObj = {html: tr.outerHTML, type: "tag", name: name, onclick:onclick}
               quickBranchTagReload.push(tagObj)
-              tagsTab.appendChild(tr)
-              isTag = true
-              return
+              
             // Local Branch
             } else {
+              // already remote -> make both
               if(quickBranchTagReload.some(b => b.name == name)) {
                 const thisIndex = quickBranchTagReload.findIndex(b => b.name == name);
                 a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
                 listTD.innerHTML = a.outerHTML
-                //tr.innerHTML = listTD.outerHTML
                 tr.innerHTML = listTD.outerHTML
-                buttonTD.innerHTML += button.outerHTML
-                tr.innerHTML += buttonTD.outerHTML
                 quickBranchTagReload[thisIndex].type = "both"
                 quickBranchTagReload[thisIndex].html = tr.innerHTML
-                return
-              
+                
+              // just local so far
               } else {
                 a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
                 listTD.innerHTML += a.outerHTML
                 tr.innerHTML = listTD.outerHTML
-                buttonTD.innerHTML += button.outerHTML
-                tr.innerHTML += buttonTD.outerHTML
                 let localObj = {html: tr.innerHTML,type: "local", name: name, onclick:onclick}
-                quickBranchTagReload.push(localObj)
-                branchesTab.appendChild(tr)
+                quickBranchTagReload.push(localObj)    
               }
             }
           })
@@ -596,28 +570,81 @@ function openRepository() {
     }
   }
 
-  
+  //
+  // Used to populate branches and tags based on search input
+  //
   function displayBranchesTags(){
     console.log(quickBranchTagReload)
+
+    // get input vlaue
     let searchVal = document.getElementById('branchName').value;
+    // clear lists
     let branchesTab = document.getElementById('branchesTab')
     let tagsTab = document.getElementById('tagsTab')
     branchesTab.innerHTML = ""
     tagsTab.innerHTML = ""
+    // populate braches/tags
     this.quickBranchTagReload.forEach(function(BT){
+      //add if contains search input
       if(BT.name.indexOf(searchVal) >= 0){
+        // Delete Button
+        var button = document.createElement("Button");
+        let buttonTD = document.createElement("td");
+        button.innerHTML = "Delete";
+        button.classList.add('btn-danger')
+        $(button).css("position", "absolute")
+        $(button).css("right", "5px")
+        $(button).css("margin", "5px")
+        // row item
         let tr = document.createElement("tr");
+          // add to remote and/or local list
           if(BT.type == "remote" || BT.type == "local" || BT.type == "both"){
             tr.innerHTML += BT.html;
+            //no delete button if master
+            if(BT.name.lowercase!="master"){
+              button.setAttribute("onclick", `deleteBranchFromDropDown("${BT.name}")`);
+              buttonTD.innerHTML += button.outerHTML
+              tr.innerHTML += buttonTD.outerHTML
+            }
             branchesTab.appendChild(tr)
           }
+          // add to tag list
           if(BT.type == "tag"){
             tr.innerHTML += BT.html;
+            
+            //console.log(repoName)
+            // This opens remoteName after delete
+            button.setAttribute("onclick", `deleteTag("${BT.name}");checkoutLocalBranch("${repoCurrentBranch}")`);
+            buttonTD.innerHTML += button.outerHTML
+            tr.innerHTML += buttonTD.outerHTML
             tagsTab.appendChild(tr)
           } 
       }
     })
   }
+
+  // Delete tag based on tag name and display corresponding git command to footer in VisualGit
+async function deleteTag(tagName) {
+  console.log("deleting tag")
+  let repository;
+  let name = tagName.split(path.sep);
+  name = name[name.length-1];
+  return new Promise((resolve) => {
+    Git.Repository.open(repoFullPath)
+      .then((repoResult) => {
+        repository = repoResult;
+        repository.deleteTagByName(name)
+          .then(() => {
+            addCommand('git tag -d '+ name);
+          })
+          .then((res) =>{
+            resolve(res);
+          })
+          .catch((err) => console.log(err));
+      })
+      .catch((err) => console.log(err));
+  });
+}
   
 
   function createDropDownFork(name, id) {
