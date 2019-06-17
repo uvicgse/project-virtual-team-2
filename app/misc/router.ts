@@ -71,17 +71,17 @@ function switchToAddRepositoryPanelWhenNotSignedIn() {
 }
 
 function switchToAddRepositoryPanel() {
+  //window.dispatchEvent(new Event('loadRecentRepos'));
 
-  window.dispatchEvent(new Event('loadRecentRepos'));
 
-  document.getElementById("Button_Sign_out").style.display = "block";
+  // document.getElementById("Button_Sign_out").style.display = "block";
   inTheApp = true
   console.log("Switching to add repo panel");
   hideAuthenticatePanel();
   hideFilePanel();
   hidePullRequestPanel();
   hideGraphPanel();
-  hideStatusPanel();
+  // hideStatusPanel();
   displayAddRepositoryPanel();
 
   if(showUsername){
@@ -91,7 +91,7 @@ function switchToAddRepositoryPanel() {
   }else{
     $("#nav-collapse1").collapse("hide");
     document.getElementById("Button_Sign_out").style.display = "none";
-    document.getElementById("Button_Sign_in").style.display = "block";
+    //document.getElementById("Button_Sign_in").style.display = "block";
   }
   let repoOpen = <HTMLInputElement>document.getElementById("repoOpen");
   if (repoOpen != null){
@@ -100,7 +100,10 @@ function switchToAddRepositoryPanel() {
 }
 
 function hideSignInButton():void{
-  document.getElementById("Button_Sign_in").style.display = "none";
+  if (getOauthToken()) {
+    document.getElementById("Button_Sign_in").style.display = "none";
+  }
+
   if(previousWindow!="repoPanel"){
     switchToMainPanel();
   }

@@ -32,7 +32,7 @@ const OauthConfig = {
   authorizationUrl: 'https://github.com/login/oauth/authorize',
   tokenUrl: 'https://github.com/login/oauth/access_token',
   useBasicAuthorizationHeader: false,
-  redirectUri: 'http://localhost:9000/user/signin/callback'
+  redirectUri: 'http://localhost:8080/user/signin/callback'
 };
 
 const windowParams = {
@@ -72,7 +72,7 @@ function authenticateUser(callback) {
         account = body;
 
         // When user differs sign in, the sign in button must be hidden
-        // hideSignInButton();
+        hideSignInButton();
 
         // Trigger next step in login process
         getUserInfo(callback);
@@ -549,3 +549,9 @@ function displayIssues() {
           });
       }
     }
+function getUsername() {
+  if (!account) {
+    return null;
+  }
+  return account.login;
+}
