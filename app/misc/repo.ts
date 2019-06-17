@@ -494,6 +494,9 @@ function openRepository() {
     let tagsTab = document.getElementById('tagsTab')
     branchesTab.innerHTML = ""
     tagsTab.innerHTML = ""
+    let tr = document.createElement("tr");
+    let listTD = document.createElement("td");
+    let buttonTD = document.createElement("td");
     let a = document.createElement("a");
     a.setAttribute("href", "#");
     a.setAttribute("class", "list-group-item");
@@ -505,8 +508,10 @@ function openRepository() {
     var button = document.createElement("Button");
     button.innerHTML = "Delete";
     button.classList.add('btn-danger')
-    $(button).css("float", "right")
-    $(button).css("margin", "0 5px")
+    $(button).css("position", "absolute")
+    $(button).css("right", "5px")
+    //$(button).css("float", "right")
+    $(button).css("margin", "5px")
     $(button).click(function () {
       $('#branch-to-delete').val(name);
       document.getElementById("displayedBranchName").innerHTML = name;
@@ -517,6 +522,7 @@ function openRepository() {
     if (id == "branch-dropdown") {
       let isLocal = 0;
       let isRemote = 0;
+      let isTag = false;
       // Add a local branch icon for local branches
       Git.Repository.open(repoFullPath)
         .then(function (repo) {
@@ -526,104 +532,91 @@ function openRepository() {
               // if name has already been found as local make both otherwise remote
               if(quickBranchTagReload.some(b => b.name == name)) {
                 const thisIndex = quickBranchTagReload.findIndex(b => b.name == name);
+                a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
+                listTD.innerHTML = a.outerHTML
+                //tr.innerHTML = listTD.outerHTML
+                tr.innerHTML = listTD.outerHTML
+                buttonTD.innerHTML += button.outerHTML
+                tr.innerHTML += buttonTD.outerHTML
                 quickBranchTagReload[thisIndex].type = "both"
-                quickBranchTagReload[thisIndex].html = "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'><img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>"
-                a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
+                quickBranchTagReload[thisIndex].html = tr.innerHTML
+                return
               } else {
-                a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
-                let remoteObj = {html: "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>", type: "remote", name: name}
-                this.quickBranchTagReload.push(remoteObj)
                 // Do Not add delete button for master
-                branchesTab.appendChild(a)
+                listTD.innerHTML = a.outerHTML
+                tr.innerHTML = listTD.outerHTML
+                a.innerHTML = "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
+                let remoteObj = {html: "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>", type: "remote", name: name, onclick:onclick}
+                this.quickBranchTagReload.push(remoteObj)
+                branchesTab.appendChild(tr)
               }
-              isRemote = 1
-              
-              
             }
           })
           repo.getBranch(name).then(function (branch) {
             // Tag
             if(branch.isTag()){
-              let tagObj = {html: "<img src='./assets/tag-icon.png' width='20' height='20' align='right' title='Tag'>", type: "tag", name: name}
-              quickBranchTagReload.push(tagObj)
               a.innerHTML += "<img src='./assets/tag-icon.png' width='20' height='20' align='right' title='Tag'>";
-              tagsTab.appendChild(a)
+              listTD.innerHTML += a.outerHTML
+              tr.innerHTML += listTD.outerHTML
+              a.setAttribute("onclick", "deleteTag(name)" + ";event.stopPropagation()");
+              buttonTD.innerHTML += button.outerHTML
+              tr.innerHTML += buttonTD.outerHTML
+              let tagObj = {html: tr.outerHTML, type: "tag", name: name, onclick:onclick}
+              quickBranchTagReload.push(tagObj)
+              tagsTab.appendChild(tr)
+              isTag = true
+              return
             // Local Branch
-            } else if(isRemote!=1){
+            } else {
               if(quickBranchTagReload.some(b => b.name == name)) {
                 const thisIndex = quickBranchTagReload.findIndex(b => b.name == name);
+                a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
+                listTD.innerHTML = a.outerHTML
+                //tr.innerHTML = listTD.outerHTML
+                tr.innerHTML = listTD.outerHTML
+                buttonTD.innerHTML += button.outerHTML
+                tr.innerHTML += buttonTD.outerHTML
                 quickBranchTagReload[thisIndex].type = "both"
-                quickBranchTagReload[thisIndex].html = "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'><img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>"
-                a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
-              }else {
-                let localObj = {html: "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>",type: "local", name: name}
-                quickBranchTagReload.push(localObj)
-                a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
-                branchesTab.appendChild(a)
-                isLocal = 1
-              }
+                quickBranchTagReload[thisIndex].html = tr.innerHTML
+                return
               
+              } else {
+                a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
+                listTD.innerHTML += a.outerHTML
+                tr.innerHTML = listTD.outerHTML
+                buttonTD.innerHTML += button.outerHTML
+                tr.innerHTML += buttonTD.outerHTML
+                let localObj = {html: tr.innerHTML,type: "local", name: name, onclick:onclick}
+                quickBranchTagReload.push(localObj)
+                branchesTab.appendChild(tr)
+              }
             }
           })
-          if (name.toLowerCase() != "master") {
-            a.innerHTML += button.outerHTML
-            branchesTab.appendChild(a)
-          }
         })
-        
     }
   }
 
   
   function displayBranchesTags(){
-    
+    console.log(quickBranchTagReload)
     let searchVal = document.getElementById('branchName').value;
     let branchesTab = document.getElementById('branchesTab')
     let tagsTab = document.getElementById('tagsTab')
     branchesTab.innerHTML = ""
     tagsTab.innerHTML = ""
-
-    // Delete Button
-    var button = document.createElement("Button");
-    button.innerHTML = "Delete";
-    button.classList.add('btn-danger')
-    $(button).css("float", "right")
-    $(button).css("margin", "0 5px")
-    $(button).click(function () {
-      $('#branch-to-delete').val(name);
-      document.getElementById("displayedBranchName").innerHTML = name;
-      $('#delete-branch-modal').modal(); // Display delete branch warning modal
-    });
-
-
     this.quickBranchTagReload.forEach(function(BT){
       if(BT.name.indexOf(searchVal) >= 0){
-        let a = document.createElement("a");
-          a.setAttribute("href", "#");
-          a.setAttribute("class", "list-group-item");
-          a.setAttribute("onclick", onclick + ";event.stopPropagation()");
-          a.appendChild(document.createTextNode(name));
-         a.innerHTML = BT.name;
+        let tr = document.createElement("tr");
           if(BT.type == "remote" || BT.type == "local" || BT.type == "both"){
-            if (name.toLowerCase() != "master") {
-              a.innerHTML += button.outerHTML
-            }
-            a.innerHTML += BT.html;
-            
-            branchesTab.appendChild(a)
-            isRemote = true
+            tr.innerHTML += BT.html;
+            branchesTab.appendChild(tr)
           }
           if(BT.type == "tag"){
-            if (name.toLowerCase() != "master") {
-              a.innerHTML += button.outerHTML
-            }
-            a.innerHTML += BT.html;
-            tagsTab.appendChild(a)
+            tr.innerHTML += BT.html;
+            tagsTab.appendChild(tr)
           } 
       }
-
     })
-      
   }
   
 

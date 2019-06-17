@@ -915,8 +915,8 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 }
 
 #branchesTab .list-group-item, #tagsTab .list-group-item{
-  width:390px;
-  margin: 0 4px;
+  width:300px;
+  margin: px;
 } 
 
 
