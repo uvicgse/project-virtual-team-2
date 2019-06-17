@@ -62,10 +62,7 @@ function authenticateUser(callback) {
       }
       //grab client information from body object that contains user name.
       client.get('/user', {}, function (err, status, body, headers) {
-
         account = body;
-        hideSignInButton();
-
         //after having the user information, start to sign in
         getUserInfo(callback);
       });
