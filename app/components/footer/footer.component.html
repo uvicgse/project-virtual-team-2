@@ -6,8 +6,8 @@
         </div>
         
        
-        <div class="commit-button-wrapper" id="commit-button-wrapper">
-            <textarea style="width:70%"placeholder="Describe your changes here..." class="commit-message-input" id="commit-message-input"></textarea>
+        <div class="commit-button-wrapper commit-input-button-wrapper" id="commit-button-wrapper">
+          <textarea placeholder="Describe your changes here..." class="commit-message-input" id="commit-message-input"></textarea>
           <button class="commit-button" id="commit-button">Commit</button>
         </div>
         
@@ -45,9 +45,9 @@
         </div>
         <div class="modal-body">
           <div>
-            <button type="button" class="btn btn-primary" (click)="amendLastCommit(amend)" data-dismiss="modal">Amend</button>
             <!-- Here's the input field to add the modified commit message -->
             <input class="modal-body-input" [(ngModel)]="amend" placeholder="Add modified commit message" type="text">
+            <button type="button" class="btn btn-primary" (click)="amendLastCommit(amend)" data-dismiss="modal">Amend</button>
           </div>
         </div>
         <div class="modal-footer">
