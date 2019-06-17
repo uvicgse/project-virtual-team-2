@@ -5,6 +5,7 @@ let continuedWithoutSignIn = false;
 let inTheApp = false;
 let showUsername = true;
 let previousWindow = "repoPanel";
+var fs = require("fs");
 
 function collapseSignPanel() {
   $("#nav-collapse1").collapse("hide");
@@ -100,6 +101,11 @@ function switchToAddRepositoryPanel() {
 }
 
 function hideSignInButton():void{
+  let file = "token.json";
+  fs.access(file, fs.constants.F_OK, (err) => {
+    displayModal("Token detected, please log out first if you want to continue without sign in! ");
+    console.log(`${file} ${err ? 'does not exist' : 'exists'}`);
+  });
   if (getOauthToken()) {
     document.getElementById("Button_Sign_in").style.display = "none";
   }
