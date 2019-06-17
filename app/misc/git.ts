@@ -993,9 +993,7 @@ function fetchStatus() {
         return repository.fetchAll({
           callbacks: {
             credentials: function () {
-              let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-              cred = user.credentials;
-              return cred;
+              return createCredentials();
             },
             certificateCheck: function () {
               return 1;
@@ -1247,12 +1245,8 @@ async function pushToRemote() {
                                     ["refs/heads/" + branch + ":refs/heads/" + branch],
                                     {
                                         callbacks: {
-                                            // obtain a new copy of cred every time when user push.
                                             credentials: function () {
-                                                return Git.Cred.userpassPlaintextNew(GITHUB_TOKEN, 'x-oauth-basic')
-                                                // let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                                                // cred = user.credentials;
-                                                // return cred;
+                                                return createCredentials();
                                             }
                                         }
                                     }
