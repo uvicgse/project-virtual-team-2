@@ -510,7 +510,7 @@ function openRepository() {
     a.setAttribute("class", "list-group-item");
     a.setAttribute("onclick", onclick + ";event.stopPropagation()");
     a.appendChild(document.createTextNode(name));
-    a.innerHTML = name;
+    //a.innerHTML = name;
     // existing check -> Not sure why??
     if (id == "branch-dropdown") {
       // Loop through references
@@ -522,7 +522,7 @@ function openRepository() {
               // already local -> make both
               if(quickBranchTagReload.some(b => b.name == name)) {
                 const thisIndex = quickBranchTagReload.findIndex(b => b.name == name);
-                a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
+                a.innerHTML = `${name}<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'><img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>`;
                 listTD.innerHTML = a.outerHTML
                 tr.innerHTML = listTD.outerHTML
                 quickBranchTagReload[thisIndex].type = "both"
@@ -532,8 +532,8 @@ function openRepository() {
               } else {
                 listTD.innerHTML = a.outerHTML
                 tr.innerHTML = listTD.outerHTML
-                a.innerHTML = "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
-                let remoteObj = {html: "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>", type: "remote", name: name, onclick:onclick}
+                a.innerHTML = `${name}<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>`;
+                let remoteObj = {html: tr.innerHTML, type: "remote", name: name, onclick:onclick}
                 this.quickBranchTagReload.push(remoteObj)
               }
             }
@@ -541,9 +541,9 @@ function openRepository() {
           repo.getBranch(name).then(function (branch) {
             // Tag
             if(branch.isTag()){
-              a.innerHTML += "<img src='./assets/tag-icon.png' width='20' height='20' align='right' title='Tag'>";
-              listTD.innerHTML += a.outerHTML
-              tr.innerHTML += listTD.outerHTML
+              a.innerHTML = `${name}<img src='./assets/tag-icon.png' width='20' height='20' align='right' title='Tag'>`;
+              listTD.innerHTML = a.outerHTML
+              tr.innerHTML = listTD.outerHTML
               let tagObj = {html: tr.outerHTML, type: "tag", name: name, onclick:onclick}
               quickBranchTagReload.push(tagObj)
               
@@ -552,7 +552,7 @@ function openRepository() {
               // already remote -> make both
               if(quickBranchTagReload.some(b => b.name == name)) {
                 const thisIndex = quickBranchTagReload.findIndex(b => b.name == name);
-                a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
+                a.innerHTML = `${name}<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'><img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>`;
                 listTD.innerHTML = a.outerHTML
                 tr.innerHTML = listTD.outerHTML
                 quickBranchTagReload[thisIndex].type = "both"
@@ -560,8 +560,8 @@ function openRepository() {
                 
               // just local so far
               } else {
-                a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
-                listTD.innerHTML += a.outerHTML
+                a.innerHTML = `${name}<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>`;
+                listTD.innerHTML = a.outerHTML
                 tr.innerHTML = listTD.outerHTML
                 let localObj = {html: tr.innerHTML,type: "local", name: name, onclick:onclick}
                 quickBranchTagReload.push(localObj)    
