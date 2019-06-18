@@ -73,17 +73,15 @@ function switchToAddRepositoryPanelWhenNotSignedIn() {
 }
 
 function switchToAddRepositoryPanel() {
-  //window.dispatchEvent(new Event('loadRecentRepos'));
+  window.dispatchEvent(new Event('loadRecentRepos'));
 
-
-  // document.getElementById("Button_Sign_out").style.display = "block";
   inTheApp = true
   console.log("Switching to add repo panel");
   hideAuthenticatePanel();
   hideFilePanel();
   hidePullRequestPanel();
   hideGraphPanel();
-  // hideStatusPanel();
+  hideStatusPanel();
   displayAddRepositoryPanel();
 
   if(showUsername){
