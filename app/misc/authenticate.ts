@@ -80,7 +80,7 @@ function authenticateUser(callback) {
 
 //Called then user pushes to sign out even if they have commited changes but not pushed; prompts a confirmation modal
 function CommitNoPush() {
-        if (CommitButNoPush == 1) {
+        if (getAheadBehindCommits(getBranch()).ahead >= 1) {
                 $("#modalW2").modal();
         }
 }
@@ -437,6 +437,7 @@ function displayIssues() {
     }
 function getUsername() {
   if (!account) {
+    console.log("Could not retrieve username, account stored is invalid")
     return null;
   }
   //the 'login' is the username
