@@ -1,0 +1,21 @@
+#branchName {
+    width:320px;
+}
+.select-menu-text-filter{
+    padding:10px;
+}
+
+#branchesTab .list-group-item, #tagsTab .list-group-item{
+    width:300px;
+    margin: 0;
+}
+
+#showBranchesButton{
+    width:45%; 
+    margin: 0 1% 5px 4%;
+}
+
+#showTagsButton{
+    width:45%; 
+    margin: 0 4% 5px 1%;
+}

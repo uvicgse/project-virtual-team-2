@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, ViewEncapsulation } from "@angular/core";
 import { RepositoryService } from "../../services/repository.service";
 import { GraphService } from "../../services/graph.service";
 
@@ -6,7 +6,11 @@ import { GraphService } from "../../services/graph.service";
 @Component({
   selector: "app-header",
   templateUrl: 'app/components/header/header.component.html',
-  providers: [RepositoryService, GraphService]
+  providers: [RepositoryService, GraphService],
+  styleUrls: [
+    'app/components/header/header.component.css'
+  ],
+  encapsulation: ViewEncapsulation.None
 })
 
 export class HeaderComponent   {

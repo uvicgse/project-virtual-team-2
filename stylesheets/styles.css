@@ -914,10 +914,6 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
   margin-top: -120px;
 }
 
-#branchesTab .list-group-item, #tagsTab .list-group-item{
-  width:300px;
-  margin: px;
-} 
 
 
 @keyframes spin {
