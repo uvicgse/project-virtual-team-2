@@ -1742,6 +1742,41 @@ function displayModifiedFiles() {
 
           fileElement.appendChild(filePath);
           fileElement.id = file.filePath;
+          fileElement.draggable="true";
+
+          /* Functions for handling Drag and Drop - From unstage to stage*/
+          function handleDragStart(e){
+            e.dataTransfer.setData("text", e.target.id);
+          }
+          function handleDragEnd(e) {
+            e.preventDefault();
+            const filepanel = document.querySelector("div.file-panel");
+            const stagepanel = document.querySelector("div.staged-files-header");
+            // create top and bottom boundary for drag release
+            const topboundary = stagepanel.getBoundingClientRect();
+            const bottomboundary = filepanel.getBoundingClientRect();
+
+            // mouse pointer location while dragging
+            var x_axis = e.clientX;
+            var y_axis = e.clientY;
+
+            //console.log(topboundary);
+            //console.log(bottomboundary);
+            //console.log(x_axis);
+            //console.log(y_axis);
+            //console.log("-----");
+
+            // check if the drag ends within the boundary
+            if((x_axis >= bottomboundary.left && x_axis <= bottomboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.bottom)){
+              checkbox.click();
+              e.stopPropagation();
+            }
+          }
+
+          // Activate function on mouse drag start and end
+          fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('dragend',handleDragEnd, false);
+
 
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
@@ -1758,7 +1793,6 @@ function displayModifiedFiles() {
           fileElement.appendChild(checkbox);
 
           document.getElementById("files-changed").appendChild(fileElement);
-
 
           fileElement.onclick = function () {
             let doc = document.getElementById("diff-panel");
@@ -1830,7 +1864,41 @@ function displayModifiedFiles() {
           }
 
           fileElement.id = fileId;
+          fileElement.draggable="true";
           fileElement.appendChild(filePath);
+
+          /* Functions for handling Drag and Drop - From stage to unstage*/
+          function handleDragStart(e){
+            e.dataTransfer.setData("text", e.target.id);
+          }
+          function handleDragEnd(e) {
+            e.preventDefault();
+            const filepanel = document.querySelector("div.file-panel");
+            const stagepanel = document.querySelector("div.staged-files-header");
+            // create top and bottom boundary for drag release
+            const bottomboundary = stagepanel.getBoundingClientRect();
+            const topboundary = filepanel.getBoundingClientRect();
+
+            // mouse pointer location while dragging
+            var x_axis = e.clientX;
+            var y_axis = e.clientY;
+
+            //console.log(topboundary);
+            //console.log(bottomboundary);
+            //console.log(x_axis);
+            //console.log(y_axis);
+            //console.log("-----");
+
+            // check if the drag ends within the boundary
+            if((x_axis >= topboundary.left && x_axis <= topboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.top)){
+              checkbox.click();
+              e.stopPropagation();
+            }
+          }
+
+          // Activate function on mouse drag start and end
+          fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
@@ -1912,86 +1980,86 @@ function displayModifiedFiles() {
         });
       }
 
-        function printFileDiff(filePath) {
-          repo.getHeadCommit().then(function (commit) {
-            getCurrentDiff(commit, filePath, function (line) {
-              formatLine(line);
-            });
+      function printFileDiff(filePath) {
+        repo.getHeadCommit().then(function (commit) {
+          getCurrentDiff(commit, filePath, function (line) {
+            formatLine(line);
           });
-        }
+        });
+      }
 
-        function getCurrentDiff(commit, filePath, callback) {
-          commit.getTree().then(function (tree) {
-            Git.Diff.treeToWorkdir(repo, tree, null).then(function (diff) {
-              diff.patches().then(function (patches) {
-                patches.forEach(function (patch) {
-                  patch.hunks().then(function (hunks) {
-                    hunks.forEach(function (hunk) {
-                      hunk.lines().then(function (lines) {
-                        let oldFilePath = patch.oldFile().path();
-                        let newFilePath = patch.newFile().path();
-                        if (newFilePath === filePath) {
-                          lines.forEach(function (line) {
+      function getCurrentDiff(commit, filePath, callback) {
+        commit.getTree().then(function (tree) {
+          Git.Diff.treeToWorkdir(repo, tree, null).then(function (diff) {
+            diff.patches().then(function (patches) {
+              patches.forEach(function (patch) {
+                patch.hunks().then(function (hunks) {
+                  hunks.forEach(function (hunk) {
+                    hunk.lines().then(function (lines) {
+                      let oldFilePath = patch.oldFile().path();
+                      let newFilePath = patch.newFile().path();
+                      if (newFilePath === filePath) {
+                        lines.forEach(function (line) {
 
-                            // Catch the "no newline at end of file" lines created by git
-                            if (line.origin() != 62) {
+                          // Catch the "no newline at end of file" lines created by git
+                          if (line.origin() != 62) {
 
-                              // include linenumbers and change type
-                              callback(String.fromCharCode(line.origin())
-                                + (line.oldLineno() != -1 ? line.oldLineno() : "")
-                                + "\t" + (line.newLineno() != -1 ? line.newLineno() : "")
-                                + "\t" + String.fromCharCode(line.origin())
-                                + "\t" + line.content());
-                            }
-                          });
-                        }
-                      });
+                            // include linenumbers and change type
+                            callback(String.fromCharCode(line.origin())
+                              + (line.oldLineno() != -1 ? line.oldLineno() : "")
+                              + "\t" + (line.newLineno() != -1 ? line.newLineno() : "")
+                              + "\t" + String.fromCharCode(line.origin())
+                              + "\t" + line.content());
+                          }
+                        });
+                      }
                     });
                   });
                 });
               });
             });
           });
+        });
+      }
+
+      function formatLine(line) {
+        let element = document.createElement("div");
+
+        if (line.charAt(0) === "+") {
+          element.style.backgroundColor = "#84db00";
+        } else if (line.charAt(0) === "-") {
+          element.style.backgroundColor = "#ff2448";
         }
 
-        function formatLine(line) {
-          let element = document.createElement("div");
+        // If not a changed line, origin will be a space character, so still need to slice
+        line = line.slice(1, line.length);
+        element.innerText = line;
 
-          if (line.charAt(0) === "+") {
-            element.style.backgroundColor = "#84db00";
-          } else if (line.charAt(0) === "-") {
-            element.style.backgroundColor = "#ff2448";
-          }
+        // The spacer is needed to pad out the line to highlight the whole row
+        let spacer = document.createElement("spacer");
+        spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
+        element.appendChild(spacer);
 
-          // If not a changed line, origin will be a space character, so still need to slice
-          line = line.slice(1, line.length);
-          element.innerText = line;
+        document.getElementById("diff-panel-body")!.appendChild(element);
+      }
 
-          // The spacer is needed to pad out the line to highlight the whole row
-          let spacer = document.createElement("spacer");
-          spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
-          element.appendChild(spacer);
+      function formatNewFileLine(text) {
+        let element = document.createElement("div");
+        element.style.backgroundColor = green;
+        element.innerHTML = text;
 
-          document.getElementById("diff-panel-body")!.appendChild(element);
-        }
+        // The spacer is needed to pad out the line to highlight the whole row
+        let spacer = document.createElement("spacer");
+        spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
+        element.appendChild(spacer);
 
-        function formatNewFileLine(text) {
-          let element = document.createElement("div");
-          element.style.backgroundColor = green;
-          element.innerHTML = text;
-
-          // The spacer is needed to pad out the line to highlight the whole row
-          let spacer = document.createElement("spacer");
-          spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
-          element.appendChild(spacer);
-
-          document.getElementById("diff-panel-body")!.appendChild(element);
-        }
-      });
-    },
-      function (err) {
-        console.log("waiting for repo to be initialised");
-      });
+        document.getElementById("diff-panel-body")!.appendChild(element);
+      }
+    });
+  },
+  function (err) {
+    console.log("waiting for repo to be initialised");
+  });
 }
 
 // Find HOW the file has been modified
