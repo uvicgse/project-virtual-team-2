@@ -259,7 +259,8 @@ function refreshStashHistory(){
     - function entered onclick from stash dropdown menu
 */
 async function showStash(index){
-
+  updateModalText("Show not fully functional");
+/*
   let stashOid = stashIds[index];
   let filesChanged = 0;
   let insertions = 0;
@@ -283,7 +284,7 @@ async function showStash(index){
           | Git.Diff.OPTION.IGNORE_WHITESPACE_CHANGE
           | Git.Diff.OPTION.IGNORE_WHITESPACE_EOL
           | Git.Diff.OPTION.SKIP_BINARY_CHECK
-      */});
+      /});
     })
     .then(function(diff) {
       console.log("found diff of commit and stash");
@@ -341,6 +342,7 @@ async function showStash(index){
   console.log("Deletions in display: "+ deletions);
   console.log(showMsg);
  // updateModalText(showMsg);
+*/
 }
 
 function passReferenceCommits(){
@@ -751,7 +753,7 @@ function addAndStash(options) {
      updateModalText("Stash successful!");
      stashHistory.unshift(stashName);
      stashIds.unshift(stashOID);
-     refreshStashHistory();
+    // refreshStashHistory();
      refreshAll(repository);
 
     }, function (err) { //catch any known or unknown errors that may have occured since beginning of function
@@ -908,11 +910,11 @@ async function popStash(index) {
       }
       stashHistory.splice(index, 1);
       stashIds.splice(index, 1);
-      refreshStashHistory();
+      //refreshStashHistory();
       refreshAll(repository);
      }, function(err) { //catch all errors thrown since beginning of function
          console.log("git.ts, func popStash(): update, could not pop stash, " + err);
-         updateModalText("Unexpected Error: " + err.message + "\nPlease restart and try again.");
+         updateModalText("Unexpected Error: " + err.message);
      });
 
 }
@@ -990,7 +992,7 @@ async function applyStash(index) {
       } else {
         updateModalText("Success! No conflicts found with branch " + branch + ", and your repo is up to date now!");
       }
-      refreshStashHistory();
+      //refreshStashHistory();
       refreshAll(repository);
      }, function(err) { //catch all errors thrown since beginning of function
          console.log("git.ts, func applyStash(): update, could not apply stash, " + err);
@@ -1034,7 +1036,7 @@ async function dropStash(index) {
         );
         stashHistory.splice(index, 1);
         stashIds.splice(index, 1);
-        refreshStashHistory();
+        //refreshStashHistory();
         refreshAll(repository);
     }, function(err) {
         console.log("git.ts, func dropStash(), could not drop stash, " + err);
@@ -1048,18 +1050,20 @@ async function dropStash(index) {
     - git stash branch <branchname> <stash> will create and checkout a new branch
       starting from the commit where the stash was pushed and then pop the stash onto the new branch
     - Onclick of _branch_ in the stash dropdown, the branch modal will open up to allow the user to create the branch
-    - currently, only the most recent stash can be used to checkout a new branch
 */
 
+async function branchStash(index) {
 
-
-function branchStash(index) {
-  updateModalText("Stash branch functionality not yet fully implemented.");
-
-  /*
   if (index == null) index = 0;
 
   let branchName = document.getElementById("branch-name-input").value;
+  let branchExists = await Git.Repository.open(repoFullPath).then(function(repo){
+    Branch.lookup(repo, branchName, Git.Branch.BRANCH.REMOTE).then(function(res){
+      return true;
+    }, function(err){
+      return false;
+    });
+  });
 
   if (typeof repoFullPath === "undefined") {
     // repository not selected
@@ -1086,13 +1090,13 @@ function branchStash(index) {
   else if (modifiedFiles > 0){
     document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
 
-  }
-
+  }else if(branchExists){
   // TODO: check for existing branch
   // Check for existing branch
   // else if ( <existing branch> ) {}
+    document.getElementById("branchErrorText").innerText = "Warning: Branch name already exists";
 
-  else {
+  }else {
     let currentRepository;
     console.log(branchName + " is being created");
     Git.Repository.open(repoFullPath)
@@ -1103,10 +1107,10 @@ function branchStash(index) {
         addCommand("git stash branch " + branchName + " stash{" + index + "}");
         return repo.getCommit(stashIds[index])
           .then(function (stash) {
-            console.log("Branching from stash: " + stash);
+            console.log("Branching from stash: " + stash + " " + stash.message());
             return stash.parent(0)
               .then(function(commit){
-                console.log("Parent commit: "+ commit);
+                console.log("Parent commit: "+ commit + " " + commit.message());
                 return repo.createBranch(
                 branchName,
                 commit,
@@ -1116,17 +1120,19 @@ function branchStash(index) {
               });
           });
       }, function (err) {
+            document.getElementById("branchErrorText").innerText = err;
             console.log("git.ts, func branchStash(), error occurred while trying to create a new branch " + err);
       })
       .done(function () {
         $('#branch-modal').modal('hide');
         //refreshAll(currentRepository);
         checkoutLocalBranch(branchName);
+        //pop stash to new branch
         popStash(index);
       });
     clearBranchErrorText();
   }
-  */
+
 }
 
 
@@ -1502,6 +1508,8 @@ function commitModal() {
 
 async function openBranchModal(stashIndex) {
 
+  if (stashIndex == null) stashIndex = 0;
+
   let stashBranchFooter =
     '<button type="button" class="btn btn-primary" id="createBranchButton" onclick="createBranch()">Create</button>' +
     '<button type="button" class="btn btn-primary" id="branchFromStashButton" onclick="branchStash(' + stashIndex + ')">Create from Stash{' + stashIndex + '}</button>'
@@ -1523,18 +1531,21 @@ async function openBranchModal(stashIndex) {
     }
 }
 
-function createBranch() {
+async function createBranch() {
   let branchName = document.getElementById("branch-name-input").value;
-
-  // console.log(repo.getBranch(branchName), 'this');
+  let branchExists = await Git.Repository.open(repoFullPath).then(function(repo){
+    Branch.lookup(repo, branchName, Git.Branch.BRANCH.REMOTE).then(function(res){
+      return true;
+    }, function(err){
+      return false;
+    });
+  });
 
   if (typeof repoFullPath === "undefined") {
     // repository not selected
     document.getElementById("branchErrorText").innerText = "Warning: You are not within a Git repository. " +
         "Open a repository to create a new branch. ";
   }
-
-
 
   // Check for empty branch name
   // @ts-ignore
@@ -1553,13 +1564,14 @@ function createBranch() {
   } else if (modifiedFiles > 0){
     document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
 
-  }
 
   // TODO: check for existing branch
   // Check for existing branch
   // else if ( <existing branch> ) {}
+  }else if(branchExists){
+    document.getElementById("branchErrorText").innerText = "Warning: Branch name already exists on remote";
 
-  else {
+  }else {
     let currentRepository;
 
     console.log(branchName + " is being created");
@@ -1577,11 +1589,12 @@ function createBranch() {
               repo.defaultSignature(),
               "Created new-branch on HEAD");
           }, function (err) {
-            console.log("git.ts, func createBranch(), error occurred while trying to create a new branch " + err);
+              document.getElementById("branchErrorText").innerText = err;
+              console.log("git.ts, func createBranch(), error occurred while trying to create a new branch " + err);
           });
       }).done(function () {
         $('#branch-modal').modal('hide');
-        refreshAll(currentRepository);
+          refreshAll(currentRepository);
           checkoutLocalBranch(branchName);
         });
     clearBranchErrorText();
