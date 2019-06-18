@@ -459,13 +459,3 @@ function disableDiffPanelEditOnHide() {
     doc.contentEditable = "false";
   }
 }
-
-// function useSavedCredentials() : boolean {
-//   let file = 'data.json';
-//   // check if the data.json file exists
-//   if (fs.existsSync(file)) {
-//     retrieveEncryptedToken();
-//     return true;
-//   }
-//   return false;
-// }
