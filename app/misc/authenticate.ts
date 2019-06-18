@@ -80,13 +80,18 @@ function authenticateUser(callback) {
 
 //Called then user pushes to sign out even if they have commited changes but not pushed; prompts a confirmation modal
 function CommitNoPush() {
-        if (getAheadBehindCommits(getBranch()).ahead >= 1) {
+        if (getAheadBehindCommits(getBranchName()).ahead >= 1) {
                 $("#modalW2").modal();
         }
 }
 //create credential using oauth
 function createCredentials() {
-  return Git.Cred.userpassPlaintextNew(getOauthToken(), oauthpass);
+  try {
+    return Git.Cred.userpassPlaintextNew(getOauthToken(), oauthpass);
+
+  } catch(err) {
+      displayModal("An error occured creating credentials: " + err);
+  }
 }
 
 function signInHead(callback) {
