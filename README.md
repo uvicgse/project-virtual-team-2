@@ -6,10 +6,14 @@ VisualGit is a visually-oriented desktop client for Git aimed at helping student
 
 ### Prerequisites
 
+
 `Node.js` and its package manager - `npm` (Node Package Manager) are used to manage VisualGit's dependencies. To run
-this project,`node v6.11` and `npm v3.10` is required. Downgrading your `node` version can be done through `nvm` (Node
+this project,`node v10.15.3` and `npm v6.4.1` is required. Downgrading your `node` version can be done through `nvm` (Node
 Version Manager). To setup `node` to have the correct version, see the
 [Project Setup](https://github.com/uvicgse/project-seed/wiki/Project-Setup).
+
+You need to have python version 2.7 installed on your machine.
+
 
 **_Note:_** _If you used `Homebrew` to install `node` on macOS, you may need to reinstall `node` by uninstalling the `brew`
 version first. See the [Project Setup](https://github.com/uvicgse/project-seed/wiki/Project-Setup) to do so._
@@ -26,20 +30,16 @@ git clone git@github.com:uvicgse/project-seed.git
 ````
 git clone https://github.com/uvicgse/project-seed.git
 ````
-then...
+then... You need to have to find the directory where python 2.7 is. On mac you can run `which python` in your command line to find it.
 
 ````
 cd project-seed
+npm config set python {path to python2.7}
 npm install
 ````
-then... for Windows
+then if you get install errors and you have windows you may need to do some troubleshooting if you get an error for nodegyp
 ````
-npm start
-````
-
-or... for macOS
-````
-npm run macstart
+npm install --global --production windows-build-tools
 ````
 
 ### ssh-agent
@@ -104,6 +104,7 @@ When stashing, the user is able to add a message to the stash, keep the files be
 This allows the user to safely save their work without committing and checkout a seperate branch.
 The stash can then be reapplied to the working directory by selecting the stash from the stash list and clicking on the apply button. However, the stash may not be applied on files with unsafe merge conflicts. To remedy this, either stage the files with conflicts or resolve the modified files manually.
 If the user applies the stash using the pop button, the stash will be dropped from the stash list.
+The user may additionally drop a stash from the list, create a new branch from the commit the stash was saved and then apply it, or show a diff of the stashed files with respect to the commit they were stashed at.
 
 
 # Help
