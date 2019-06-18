@@ -167,6 +167,13 @@ function getUserInfo(callback) {
   ghme.info(function(err, data, head) {
     if (!err) {
       processLogin(ghme, callback);
+    } else {
+      // inform user their token file is invalid and delete it
+      displayModal("The token stored is no longer valid. Please sign in again");
+      fs.unlink('token.json', (err) => {
+        if (err) throw err;
+        console.log('token.json has been deleted');
+      });
     }
 
   });
