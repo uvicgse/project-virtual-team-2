@@ -1,14 +1,14 @@
 import * as nodegit from "git";
-
 let vis = require("vis");
 let $ = require("jquery");
+
 let options, bsNodes, bsEdges, abNodes, abEdges, nodes, edges, network;
 let secP = null, fromNode = null, toNode;
 
 let GraphNodeID = 0;
 
 
- 
+
  function returnSelectedNodeValue():number{
     let returnValue = GraphNodeID;
     GraphNodeID = 0;
@@ -235,19 +235,20 @@ function drawGraph() {
         network.on('click', function (properties) {
             if (properties.nodes.length > 0) {
                 let clicknode = properties.nodes[0];
-                console.log('CLICKNODE');
-                
+
                 if (flag === 'node') {
                     clicknode = nodes.get(clicknode);
 					displaySelectedCommitDiffPanel(properties.nodes[0]);
                 } else if (flag === 'abstract') {
                     clicknode = abNodes.get(clicknode);
-                    console.log(clicknode);
                 } else if (flag === 'basic') {
                     clicknode = bsNodes.get(clicknode);
+
                 } else {
                     clicknode = undefined;
                 }
+                console.log('Node Clicked: ' + clicknode.label);
+
 
                 if (clicknode != undefined) {
                     // add class to modal for display
@@ -271,20 +272,26 @@ function drawGraph() {
                         $("#graphNodeClickModal").modal('show');
                     })
                 }
+                // open stash modal if stash branch label clicked
+                if (clicknode.shape == "box" && clicknode.label == "stash"){
+                    console.log("Opening stash modal from graph...");
+                    refreshStashHistory();
+                    $('#stash-modal').modal('show');
+                }
             }
         })
 
         network.on("oncontext", function(params) {
-    
+
             if(GraphNodeID != 0){
               GraphNodeID = 0;
             }else{
               //console.log("Please right click and select the appropriate ID");
             }
           });
-        
-    
-        
+
+
+
           network.on("click", function (params) {
               GraphNodeID = parseInt(params.nodes.toString());
               console.log("Graph Node ID is: " + GraphNodeID);
