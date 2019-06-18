@@ -2,12 +2,7 @@ var CryptoJS = require("crypto-js");
 const os = require('os');
 var jsonfile = require('jsonfile');
 var fs = require('fs');
-//TODO: I think the password and username can be removed
 var encryptedOauthToken;
-
-//test to call function and store token.
-//you should use your token for testing and only push to your private repository!!!
-
 
 function storeOauthToken(accessToken) {
 
