@@ -178,6 +178,10 @@ body .navbar .dropdown-toggle {
   margin-top: 10px;
 }*/
 
+#file-panel {
+  padding: 0px 6px;
+}
+
 body .file-panel {
   width: 20%;
   height: 70vh;
@@ -202,12 +206,32 @@ body .file-panel .files-staged .modified-files-message {
     padding: 20px;
 }
 
+/*Changed files*/
 body .file-panel .files-changed .file {
   width: 99%;
   height: 10%;
   position: relative;
   overflow: hidden;
   border: 1px solid #fff;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2px;
+  padding-left: 2px;
+  padding-right: 6px;
+}
+
+/*Staged files*/
+body .file-panel .files-staged .file {
+  width: 99%;
+  height: 10%;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #fff;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2px;
+  padding-left: 2px;
+  padding-right: 6px;
 }
 
 body .file-panel .files-changed .files-staged .file p {
@@ -219,6 +243,11 @@ body .file-panel .files-changed .files-staged .file p {
   text-overflow: ellipsis;
   overflow: hidden;
   width: 80%;
+}
+
+body .file-panel .files-staged .file input,
+body .file-panel .files-changed .file input {
+  cursor: pointer;
 }
 
 body .file-panel .files-changed .files-staged .file input {
@@ -1217,7 +1246,7 @@ body .pull-request-panel {
   margin-left: 10px;
 }
 
-#stash-item {
+.stash-item {
   display: inline-flex;
   align-items: center;
   background: #efefef;
@@ -1226,7 +1255,7 @@ body .pull-request-panel {
   width: 100%;
 }
 
-#stash-id {
+.stash-name {
   width: 100%;
 }
 
@@ -1251,6 +1280,7 @@ body .pull-request-panel {
     margin-top: auto;
     margin-right: auto;
     margin-bottom: auto;
+    padding: 8px;
 }
 
 .dropdown {
@@ -1275,7 +1305,10 @@ body .pull-request-panel {
     display: block;
 }
 
-.dropdown a:hover {background-color: #f1f1f1}
+.dropdown-content a:hover {
+  background-color: #efefef;
+  cursor: pointer;
+}
 
 .show {display:block;}
 /* stash-item dropdown menu styles END */

@@ -19,7 +19,10 @@ function onClosed() {
 function createMainWindow() {
 	const win = new electron.BrowserWindow({
 		backgroundColor: "#000",
-		icon: __dirname + "/assets/icons/Icon.png"
+		icon: __dirname + "/assets/icons/Icon.png",
+		webPreferences: {
+			nodeIntegration: true
+		},
 	});
 
 	// Set minimum size

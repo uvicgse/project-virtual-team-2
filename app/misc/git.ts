@@ -1,7 +1,6 @@
 import {Graph, Branch} from "nodegit";
 
 
-let opn = require('opn');
 let $ = require("jquery");
 let Git = require("nodegit");
 let fs = require("fs");
@@ -210,14 +209,14 @@ function refreshStashHistory(){
     stashHistory = [""];
     stashIds = [""];
     let stashId;
-    console.log("initializing stash history...");
+    console.log("retrieving stash history...");
     if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
       let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
       txt.pop();
       txt.forEach(function(line) {
         stashId = line.split(" ")[1];
         line = line.split(" ").slice(6, line.length).join(" ");
-        console.log("Adding " + stashId +": "+ line + " to Stash history");
+        //console.log("Adding " + stashId +": "+ line + " to Stash history");
         stashHistory.unshift(line);
         stashIds.unshift(stashId);
 
@@ -229,11 +228,10 @@ function refreshStashHistory(){
     // For each stash create a unique element with unique pop, drop, and apply functionality.
     stashHistory.forEach((stash, i) => {
       stashListHTML +=
-        '<div id="stash-item">' +
-          '<div id="stash-id">' +
-
+        '<div class="stash-item">' +
+          '<span class="stash-name">' +
               'Stash{' + i + '}: ' + stash +
-          '</div>' +
+          '</span>' +
           '<div class="stash-actions">' +
               '<ul class="dropbtn icons" onclick="showDropdown(' + i + ')">' +
                   '<li></li>' +
@@ -242,11 +240,11 @@ function refreshStashHistory(){
               '</ul>' +
 
               '<div id="stash-item-' + i + '-dropdown" class="dropdown-content">' +
-                  '<a onclick="popStash(' + i + ')">Pop</a>' +
-                  '<a onclick="applyStash(' + i + ')">Apply</a>' +
-                  '<a onclick="dropStash(' + i + ')">Drop</a>' +
-                  '<a onclick="showStash(' + i + ')">Show</a>' +
-                  '<a onclick="openBranchModal('+i+')">Branch<\a>' +
+                  '<a data-dismiss="modal" onclick="popStash(' + i + ')">Pop</a>' +
+                  '<a data-dismiss="modal" onclick="applyStash(' + i + ')">Apply</a>' +
+                  '<a data-dismiss="modal" onclick="dropStash(' + i + ')">Drop</a>' +
+                  '<a data-dismiss="modal" onclick="showStash(' + i + ')">Show</a>' +
+                  '<a data-dismiss="modal" onclick="openBranchModal('+i+')">Branch</a>' +
               '</div>' +
           '</div>' +
         '</div>';
@@ -254,40 +252,95 @@ function refreshStashHistory(){
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
-function protoShowStash(){
-  displayModal("test.txt | 5 ++++-\n1 file changed, 4 insertions(+), 1 deletions(-)");
-}
+
 /* Issue 84: further implement stashing
-    - git stash show stash{index} shows the deltas of the files
+    - git stash show stash{index} shows the deltas of
+    the files between the stash and the commit it is stashed at.
     - function entered onclick from stash dropdown menu
 */
 async function showStash(index){
 
-  let repository;
   let stashOid = stashIds[index];
-  let diff;
-  await Git.Repository.open(repoFullPath).then(function(repoResult){
-    repository = repoResult;
+  let filesChanged = 0;
+  let insertions = 0;
+  let deletions = 0;
+  let repository = await Git.Repository.open(repoFullPath).then(function(repoResult){
+    return repoResult;
     console.log("found a repository");
-  })
-  .then(function (){
-    return repository.getCommit(stashOid);
-  })
-  .then(function(stash){
-    console.log("found id of stash");
-    return stash.getDiff();
-  })
-  .then(function(diffArray){
-    console.log(diffArray);
-    diffArray.forEach((diff, i) => {
-      //console.log(diff.getStats());
-      //console.log(diff.getDelta(0));
-    });
-    protoShowStash();
   }, function (err) {
-    console.log("git.ts, func showStash(): getCommit, " + err);
+    console.log("git.ts, func showStash(): openRepo, " + err);
   });
 
+  let p = new Promise((resolve, reject) => {
+    repository.getCommit(stashOid).then( (stashObj) => {
+      console.log("found stash: "+ stashObj.id() + " " + stashObj.message());
+      return stashObj;
+    })
+    .then(function(stash) {
+      return stash.getDiffWithOptions({
+        'flags': Git.Diff.OPTION.INCLUDE_UNTRACKED
+        /*| Git.Diff.OPTION.IGNORE_WHITESPACE
+          | Git.Diff.OPTION.IGNORE_WHITESPACE_CHANGE
+          | Git.Diff.OPTION.IGNORE_WHITESPACE_EOL
+          | Git.Diff.OPTION.SKIP_BINARY_CHECK
+      */});
+    })
+    .then(function(diff) {
+      console.log("found diff of commit and stash");
+      return diff[0].patches();
+    })
+    .then(function(patches) {
+      let msg = "";
+      return new Promise((resolve, reject) => {
+        patches.forEach(function(patch) {
+          let newFilePath = patch.newFile().path();
+          filesChanged++;
+          console.log("Diff stats: "+ newFilePath);
+          console.log(patch.lineStats());
+          patch.hunks().then(function(hunks) {
+            hunks.forEach(function(hunk){
+              let plus = "";
+              let min = "";
+              insertions += hunk.newLines();
+              deletions += hunk.oldLines();
+
+              for(var i = 0; i < hunk.newLines(); i++){
+                plus += "+";
+              }
+
+              for(var j = 0; j < hunk.oldLines(); j++){
+                min += "-";
+              }
+              msg += newFilePath + " | " + plus + min + "\n";
+              return msg;
+            });
+            console.log(msg);
+            return msg;
+          });
+          return msg;
+        });
+        resolve(msg);
+      });
+     // return msg;
+    })
+    .then(async function(p){
+      let msg = await p;
+      msg += filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)\n";
+      updateModalText(msg);
+      resolve(msg);
+    }, function (err) {
+      console.log("git.ts, func showStash(): in promise, " + err);
+      reject(err);
+    });
+  });
+
+  let showMsg = await p;
+
+  console.log("Files Changed in display: " + filesChanged);
+  console.log("Insertions in display: " + insertions);
+  console.log("Deletions in display: "+ deletions);
+  console.log(showMsg);
+ // updateModalText(showMsg);
 }
 
 function passReferenceCommits(){
@@ -514,7 +567,7 @@ function addAndCommit() {
       if (err.message == "No files selected to commit.") {
         updateModalText(err.message);
       } else {
-        updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
+        updateModalText("Unexpected Error: " + err.message + "\nPlease restart and try again.");
       }
     });
 }
@@ -597,7 +650,6 @@ function addAndStash(options) {
       });      console.log("Current branch: " + branch);
 
       stashMessage = document.getElementById("stash-message-input").value;
-
 
       /* Checks if there is a stashMessage. If not: imitates the WIP message with the commit-head and message */
       if(stashMessage == null || stashMessage == "") {
@@ -707,7 +759,7 @@ function addAndStash(options) {
       if (err.message == "No files selected to stash.") {
         updateModalText(err.message);
       } else {
-        updateModalText("Unexpected Error: " + err.message + " Please restart and try again.");
+        updateModalText("Unexpected Error: " + err.message + "\nPlease restart and try again.");
       }
     });
 }
@@ -790,9 +842,9 @@ async function popStash(index) {
 
   let repository;
   let branch = "";
-      await getBranchName().then((branchName) => {
-          branch = branchName;
-      });
+  await getBranchName().then((branchName) => {
+      branch = branchName;
+  });
   if (modifiedFiles.length > 0) {
     updateModalText("Please commit before popping stash!");
   }
@@ -859,7 +911,7 @@ async function popStash(index) {
       refreshAll(repository);
      }, function(err) { //catch all errors thrown since beginning of function
          console.log("git.ts, func popStash(): update, could not pop stash, " + err);
-         updateModalText("Unexpected Error: " + err.message + "Please restart and try again.");
+         updateModalText("Unexpected Error: " + err.message + "\nPlease restart and try again.");
      });
 
 }
@@ -985,7 +1037,7 @@ async function dropStash(index) {
         refreshAll(repository);
     }, function(err) {
         console.log("git.ts, func dropStash(), could not drop stash, " + err);
-        updateModalText("Unexpected Error: " + err.message + "Please restart and try again.");
+        updateModalText("Unexpected Error: " + err.message + "\nPlease restart and try again.");
       }
     );
 }
@@ -997,7 +1049,13 @@ async function dropStash(index) {
     - Onclick of _branch_ in the stash dropdown, the branch modal will open up to allow the user to create the branch
     - currently, only the most recent stash can be used to checkout a new branch
 */
+
+
+
 function branchStash(index) {
+  updateModalText("Stash branch functionality not yet fully implemented.");
+
+  /*
   if (index == null) index = 0;
 
   let branchName = document.getElementById("branch-name-input").value;
@@ -1067,29 +1125,9 @@ function branchStash(index) {
       });
     clearBranchErrorText();
   }
+  */
 }
 
-// Delete tag based on tag name and display corresponding git command to footer in VisualGit
-function deleteTag(tagName) {
-  let repository;
-  console.log(repoFullPath);
-  let name = tagName.split(path.sep);
-  name = name[name.length-1];
-  console.log(name);
-  Git.Repository.open(repoFullPath)
-    .then(function (repoResult) {
-      repository = repoResult;
-      repository.deleteTagByName(name)
-        .then(function() {
-          console.log(`${name} deleted`);
-          addCommand('git tag -d '+ name);
-          refreshAll(repository);
-        })
-        .catch((err) => console.log(err));
-    })
-    .catch((err) => console.log(err));
-
-}
 
 function clearStagedFilesList() {
   let filePanel = document.getElementById("files-staged");
@@ -1424,6 +1462,14 @@ function commitModal() {
 }
 
 async function openBranchModal(stashIndex) {
+
+  let stashBranchFooter =
+    '<button type="button" class="btn btn-primary" id="createBranchButton" onclick="createBranch()">Create</button>' +
+    '<button type="button" class="btn btn-primary" id="branchFromStashButton" onclick="branchStash(' + stashIndex + ')">Create from Stash{' + stashIndex + '}</button>'
+    ;
+
+  document.getElementById('stash-branch-modal-footer').innerHTML = stashBranchFooter;
+
   $('#branch-modal').modal('show');
 
     // Shows current branch inside the branch mdoal
@@ -1431,10 +1477,10 @@ async function openBranchModal(stashIndex) {
     await getBranchName().then((branchName) => {
         branch = branchName;
     });
-    if (currentBranch === undefined || currentBranch == 'branch') {
+    if (branch === undefined || branch == 'branch') {
         document.getElementById("currentBranchText").innerText = "Current Branch: ";
     } else {
-        document.getElementById("currentBranchText").innerText = "Current Branch: " + currentBranch;
+        document.getElementById("currentBranchText").innerText = "Current Branch: " + branch;
     }
 }
 
@@ -1810,7 +1856,6 @@ function Reload() {
 
 function displayModifiedFiles() {
   modifiedFiles = [];
-
   let selectedFile = "";
 
   Git.Repository.open(repoFullPath)
@@ -2137,7 +2182,6 @@ function displayModifiedFiles() {
                         let newFilePath = patch.newFile().path();
                         if (newFilePath === filePath) {
                           lines.forEach(function (line) {
-
                             // Catch the "no newline at end of file" lines created by git
                             if (line.origin() != 62) {
 
