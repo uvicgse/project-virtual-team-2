@@ -21,17 +21,18 @@
                 <span class="select-menu-title"> Switch branches/tags</span>
               </div>
               <div class="input-group menuitem">
-                <div class="select-menu-text-filter" style="padding:10px">
+                <div class="select-menu-text-filter">
                     <span class="input-group-btn">
-                    <input type="text" id="branchName" class="form-control" style="width:320px" placeholder="Find or create branch" oninput="displayBranchesTags()">
+                    <input type="text" id="branchName" class="form-control" placeholder="Find or create branch" oninput="displayBranchesTags()">
                     <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
                     </span>
                 </div>
-                <button class="btn btn-default" style="width:45%; margin: 0 1% 5px 4%" (click)=displayBranches()>Branches</button>
-                <button class="btn btn-default" style="width:45%; margin: 0 4% 5px 1%" (click)="displayTags()">Tags</button>
+                
+                <button id="showBranchesButton" class="btn btn-default" (click)=displayBranches()>Branches</button>
+                <button id="showTagsButton" class="btn btn-default" (click)="displayTags()">Tags</button>
   
-                <div style="display: block;" id="branchesTab"> Branches</div>
-                <div style="display: none;" id="tagsTab"> Tags</div>
+                <div style="display: block;" id="branchesTab"></div>
+                <div style="display: none;" id="tagsTab"></div>
               </div>
             </li>
           </ul>
@@ -130,17 +131,17 @@
             <span class="select-menu-title"> Switch branches/tags</span>
           </div>
           <div class="input-group menuitem">
-            <div class="select-menu-text-filter" style="padding:10px">
+            <div class="select-menu-text-filter">
                 <span class="input-group-btn">
-                <input type="text" id="branchName" class="form-control" style="width:320px"> placeholder="Find or create branch" oninput="displayBranchesTags()">
+                <input type="text" id="branchName" class="form-control" placeholder="Find or create branch" oninput="displayBranchesTags()">
                 <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
                 </span>
             </div>
-            <button class="btn-info" style="width:45%" (click)=displayBranches()>Branches</button>
-            <button class="btn-info" style="width:45%" (click)="displayTags()">Tags</button>
+            <button id="showBranchesButton" class="btn-default" (click)=displayBranches()>Branches</button>
+            <button id="showTagsButton" class="btn-default" (click)="displayTags()">Tags</button>
 
-            <div style="display: block;" id="branchesTab"> Branches</div>
-            <div style="display: none;" id="tagsTab"> Tags</div>
+            <div style="display: block;" id="branchesTab"></div>
+            <div style="display: none;" id="tagsTab"></div>
           </div>
         </li>
       </ul>
