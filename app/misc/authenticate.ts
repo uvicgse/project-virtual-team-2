@@ -55,11 +55,13 @@ function authenticateUser(callback) {
   myApiOauth.getAccessToken(options)
     .then(token => {
       if(!token) {
+        displayModal("An authentication error has occured, the access token used is not valid");
         return;
       }
       storeOauthToken(token['access_token']);
       client = github.client(token['access_token']);
       if (!client.token) {
+        displayModal("An authentication error has occured, the access token used is not valid");
         return;
       }
       //grab client information from body object that contains user name.
