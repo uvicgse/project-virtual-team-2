@@ -1,3 +1,5 @@
+import { _ } from "core-js";
+
 let Git = require("nodegit");
 let repoFullPath;
 let repoLocalPath;
@@ -584,7 +586,7 @@ function openRepository() {
     branchesTab.innerHTML = ""
     tagsTab.innerHTML = ""
     // populate braches/tags
-    this.quickBranchTagReload.forEach(function(BT){
+    quickBranchTagReload.forEach(function(BT){
       //add if contains search input
       if(BT.name.indexOf(searchVal) >= 0){
         // Delete Button
@@ -614,7 +616,7 @@ function openRepository() {
             
             //console.log(repoName)
             // This opens remoteName after delete
-            button.setAttribute("onclick", `deleteTag("${BT.name}");checkoutLocalBranch("${repoCurrentBranch}")`);
+            button.setAttribute("onclick", `deleteTag("${BT.name}");removeBranchOrTagFromQuick("${BT.name}");event.stopPropagation()`);
             buttonTD.innerHTML += button.outerHTML
             tr.innerHTML += buttonTD.outerHTML
             tagsTab.appendChild(tr)
@@ -623,29 +625,16 @@ function openRepository() {
     })
   }
 
-  // Delete tag based on tag name and display corresponding git command to footer in VisualGit
-async function deleteTag(tagName) {
-  console.log("deleting tag")
-  let repository;
-  let name = tagName.split(path.sep);
-  name = name[name.length-1];
-  return new Promise((resolve) => {
-    Git.Repository.open(repoFullPath)
-      .then((repoResult) => {
-        repository = repoResult;
-        repository.deleteTagByName(name)
-          .then(() => {
-            addCommand('git tag -d '+ name);
-          })
-          .then((res) =>{
-            resolve(res);
-          })
-          .catch((err) => console.log(err));
-      })
-      .catch((err) => console.log(err));
-  });
-}
-  
+  function removeBranchOrTagFromQuick(name){
+    let i = 0;
+    for(let i = 0; i < quickBranchTagReload.length; i++){
+      if(quickBranchTagReload[i].name == name){
+        quickBranchTagReload.splice(i, 1);
+        break;
+      }
+    }
+    displayBranchesTags();
+  }
 
   function createDropDownFork(name, id) {
     let ul = document.getElementById(id);
