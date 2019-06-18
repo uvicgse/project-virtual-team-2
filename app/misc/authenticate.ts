@@ -26,6 +26,8 @@ let electronOauth2 = require('electron-oauth2');
 let account;
 
 //config from oauth library
+//TODO for production release use a web server to store this information
+//as client secret should not be available in application source code
 const OauthConfig = {
   clientId: 'c2509d8769f5f1e46028',
   clientSecret: 'e4717832659e95c2f8f4237a3390cf09013b94f7',
