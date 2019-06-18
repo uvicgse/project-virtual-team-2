@@ -936,16 +936,13 @@ function getAllCommits(callback) {
   let aclist = [];
   let singleReference;
   let name;
-  console.log("Finding all commits");
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
       repos = repo;
-      console.log("fetching all remote repositories");
       return repo.getReferences(Git.Reference.TYPE.LISTALL);
     })
     .then(function (refs) {
       let count = 0;
-      console.log("getting " + refs.length + " remote repositories");
       async.whilst(
         function () {
           return count < refs.length;
@@ -954,7 +951,6 @@ function getAllCommits(callback) {
         function (cb) {
           // Remove tag references or because getReferenceCommit does not recognize tag references
           if (!refs[count].isTag() && !refs[count].isRemote()) {
-            console.log("referenced branch exists on remote repository");
             repos.getReferenceCommit(refs[count])
             .then(function (commit) {
               let history = commit.history(Git.Revwalk.SORT.Time);
@@ -966,7 +962,6 @@ function getAllCommits(callback) {
                   }
                 }
                 count++;
-                console.log(count + " out of " + allCommits.length + " commits");
                 cb();
               });
 
@@ -975,7 +970,6 @@ function getAllCommits(callback) {
               console.log(err);
             });
           } else {
-            console.log('current branch does not exist on remote');
             count++;
             cb();
           }
@@ -1123,50 +1117,47 @@ function checkIfExistOrigin(branchName) {
 
 //push function to remote branch, we need to push to remote and then link that to the local branch
 async function createUpstreamPush() {
-    //todo add loading until its successfull
     displayModal("Pushing changes to remote... and setting upstream branch");
-  //todo update getting the branch with new function to get branch.
 
   let branch = "";
   await getBranchName().then((branchName) => {
     branch = branchName;
   });
 
-  let remoteBranch = "refs/remotes/origin/";
-  let remoteName = "origin";
-  let originBranchName = "origin";
+  let remoteDirectory = "refs/remotes/origin";
+  let localDirectory = "refs/heads";
 
-  originBranchName = path.join(originBranchName,branch);
-  remoteBranch = path.join(remoteBranch, branch);
+  let remoteBranchName = path.join(remoteDirectory,branch);
+  let localBranch = path.join(localDirectory, branch);
 
   addCommand("git push -u origin " + branch);
   Git.Repository.open(repoFullPath).then((repo) => {
       repo.getCurrentBranch().then((ref) => {
-        alert(remoteName + " a " + branch + " b " + remoteBranch);
-        repo.getRemote(remoteName + "/" + branch).then((remote) => {
-          alert("3func");
-          remote.push([remoteBranch+":"+remoteBranch], {
-            callbacks: {
-              // obtain a new copy of cred every time when user push.
-              credentials: function () {
-                let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                cred = user.credentials;
-                return cred;
+        console.log("HERE");
+        repo.getRemotes().then((remotes) => {
+          repo.getRemote(remotes[0]).then((remote)=> {
+            remote.push([localBranch+":"+localBranch], {
+              callbacks: {
+                // obtain a new copy of cred every time when user push.
+                credentials: function () {
+                  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                  cred = user.credentials;
+                  return cred;
+                }
               }
-            }
-          }).then((result) => {
+            }).then((result) => {
               //link to local branch
-            alert("before upstream");
-            Branch.setUpstream(ref, originBranchName).then((setRemoteResult) => {
+              Branch.setUpstream(ref, remoteBranchName).then((setRemoteResult) => {
                 updateModalText("Set upstream success");
-            }), function(e) {
+              }), function(e) {
                 updateModalText("Something went wrong");
+                console.log(Error(e));
+              }
+            }), function(e) {
+              updateModalText("Something went wrong");
               console.log(Error(e));
             }
-          }), function(e) {
-              updateModalText("Something went wrong");
-            console.log(Error(e));
-          }
+          });
         }), function(e) {
             updateModalText("Something went wrong");
           console.log(Error(e));
@@ -1176,8 +1167,6 @@ async function createUpstreamPush() {
         console.log(Error(e));
       }
   })
-
-
 
 }
 
@@ -1220,15 +1209,13 @@ function getBranchName() {
 }
 
 async function pushToRemote() {
-  // checking status of remote repository and only push if you are ahead of remote
   let branch = "";
   await getBranchName().then((branchName) => {
     branch = branchName;
   });
   //checks if the remote version of your current branch exist
-  checkIfExistOrigin(branch).then(function(remoteBranchExist){
+  checkIfExistOrigin(branch).then(function (remoteBranchExist) {
     if (!remoteBranchExist) {
-      //remote branch does not exist. Modal asks user if they would like to create one
       displayPushToRemoteModal();
       return;
     } else {
@@ -1237,44 +1224,46 @@ async function pushToRemote() {
         if (aheadBehind.behind !== 0) {
           window.alert("your branch is behind remote by " + aheadBehind.behind);
           return;
-                } else if (aheadBehind.ahead === 0) {
-                    window.alert("Your branch is already up to date");
-                    return;
-                } else {
-                    // Do the Push
-                    Git.Repository.open(repoFullPath).then(function (repo) {
-                        displayModal("Pushing changes to remote...");
-                        addCommand("git push");
-                        repo.getRemotes().then(function (remotes) {
-                            repo.getRemote(remotes[0]).then(function (remote) {
-                                return remote.push(
-                                    ["refs/heads/" + branch + ":refs/heads/" + branch],
-                                    {
-                                        callbacks: {
-                                            // obtain a new copy of cred every time when user push.
-                                            credentials: function () {
-                                                let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                                                cred = user.credentials;
-                                                return cred;
-                                            }
-                                        }
-                                    }
-                                );
-                            }, function (e) {
-                                console.log(Error(e));
-                            }).then(async function () {
-                                window.onbeforeunload = Confirmed;
-                                await refreshAll(repo);
-                                updateModalText("Push successful");
-                            });
-                        }, function (e) {
-                            console.log(Error(e));
-                        });
-                    });
-                }
+
+        } else if (aheadBehind.ahead === 0) {
+          window.alert("Your branch is already up to date");
+          return;
+        } else {
+          // Do the Push
+          Git.Repository.open(repoFullPath).then(function (repo) {
+            displayModal("Pushing changes to remote...");
+            addCommand("git push");
+            repo.getRemotes().then(function (remotes) {
+              repo.getRemote(remotes[0]).then(function (remote) {
+                return remote.push(
+                    ["refs/heads/" + branch + ":refs/heads/" + branch],
+                    {
+                      callbacks: {
+                        // obtain a new copy of cred every time when user push.
+                        credentials: function () {
+                          let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
+                          cred = user.credentials;
+                          return cred;
+                        }
+                      }
+                    }
+                );
+              }, function (e) {
+                console.log(Error(e));
+              }).then(async function () {
+                window.onbeforeunload = Confirmed;
+                await refreshAll(repo);
+                updateModalText("Push successful");
+              });
+            }, function (e) {
+              console.log(Error(e));
             });
+          });
         }
-    });
+      });
+    }
+  });
+}
 }
 
 function commitModal() {
