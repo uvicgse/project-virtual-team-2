@@ -576,8 +576,6 @@ function openRepository() {
   // Used to populate branches and tags based on search input
   //
   function displayBranchesTags(){
-    console.log(quickBranchTagReload)
-
     // get input vlaue
     let searchVal = document.getElementById('branchName').value;
     // clear lists
@@ -613,9 +611,6 @@ function openRepository() {
           // add to tag list
           if(BT.type == "tag"){
             tr.innerHTML += BT.html;
-            
-            //console.log(repoName)
-            // This opens remoteName after delete
             button.setAttribute("onclick", `deleteTag("${BT.name}");removeBranchOrTagFromQuick("${BT.name}");event.stopPropagation()`);
             buttonTD.innerHTML += button.outerHTML
             tr.innerHTML += buttonTD.outerHTML

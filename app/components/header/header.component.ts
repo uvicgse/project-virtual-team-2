@@ -91,7 +91,6 @@ export class HeaderComponent   {
     document.getElementById('tagsTab').style.display = 'none'
     var inputValue = (<HTMLInputElement>document.getElementById('branchName'));
     inputValue.placeholder = 'Find or create branch';
-    console.log('branches')
   }
 
   displayTags(): void {
@@ -99,7 +98,6 @@ export class HeaderComponent   {
     document.getElementById('tagsTab').style.display = 'block'
     var inputValue = (<HTMLInputElement>document.getElementById('branchName'));
     inputValue.placeholder = 'Find a tag';
-    console.log('tags')
   }
 
 }
