@@ -276,12 +276,12 @@ function refreshStashHistory(){
     - function entered onclick from stash dropdown menu
 */
 async function showStash(index){
-  updateModalText("Show not fully functional");
-/*
   let stashOid = stashIds[index];
   let filesChanged = 0;
   let insertions = 0;
   let deletions = 0;
+  let msg = [""];
+  msg.pop();
   let repository = await Git.Repository.open(repoFullPath).then(function(repoResult){
     return repoResult;
     console.log("found a repository");
@@ -301,65 +301,49 @@ async function showStash(index){
           | Git.Diff.OPTION.IGNORE_WHITESPACE_CHANGE
           | Git.Diff.OPTION.IGNORE_WHITESPACE_EOL
           | Git.Diff.OPTION.SKIP_BINARY_CHECK
-      /});
+      */});
     })
     .then(function(diff) {
       console.log("found diff of commit and stash");
       return diff[0].patches();
     })
     .then(function(patches) {
-      let msg = "";
-      return new Promise((resolve, reject) => {
-        patches.forEach(function(patch) {
-          let newFilePath = patch.newFile().path();
-          filesChanged++;
-          console.log("Diff stats: "+ newFilePath);
-          console.log(patch.lineStats());
-          patch.hunks().then(function(hunks) {
-            hunks.forEach(function(hunk){
-              let plus = "";
-              let min = "";
-              insertions += hunk.newLines();
-              deletions += hunk.oldLines();
+      return patches.forEach(function(patch) {
+        let newFilePath = patch.newFile().path();
+        filesChanged++;
+        return patch.hunks().then(function(hunks) {
+          hunks.forEach(function(hunk){
+            let plus = "";
+            let min = "";
+            insertions += hunk.newLines();
+            deletions += hunk.oldLines();
 
-              for(var i = 0; i < hunk.newLines(); i++){
-                plus += "+";
-              }
-
-              for(var j = 0; j < hunk.oldLines(); j++){
-                min += "-";
-              }
-              msg += newFilePath + " | " + plus + min + "\n";
-              return msg;
-            });
-            console.log(msg);
-            return msg;
+            for(var i = 0; i < hunk.newLines(); i++){
+              plus += "+";
+            }
+            for(var j = 0; j < hunk.oldLines(); j++){
+              min += "-";
+            }
+            msg.push(newFilePath + " | " + plus + min + "\n");
           });
-          return msg;
         });
-        resolve(msg);
       });
-     // return msg;
     })
-    .then(async function(p){
-      let msg = await p;
-      msg += filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)\n";
-      updateModalText(msg);
-      resolve(msg);
+    .then(function(msg){
+      setTimeout(function(){
+        msg.push(" " + filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)");
+        console.log("Displaying diff...");
+        resolve(msg);
+      }, 200);
     }, function (err) {
       console.log("git.ts, func showStash(): in promise, " + err);
       reject(err);
     });
   });
-
   let showMsg = await p;
 
-  console.log("Files Changed in display: " + filesChanged);
-  console.log("Insertions in display: " + insertions);
-  console.log("Deletions in display: "+ deletions);
-  console.log(showMsg);
- // updateModalText(showMsg);
-*/
+  updateModalText(showMsg);
+
 }
 
 function passReferenceCommits(){

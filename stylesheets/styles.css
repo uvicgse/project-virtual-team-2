@@ -1330,4 +1330,19 @@ body .pull-request-panel {
 .stash-function-buttons {
   text-align: center;
 }
+
+#stash-show-modal-body {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+}
+
+.plus {
+  color: green;
+}
+
+.minus {
+  color: red;
+}
+
 /* Stash-functions END */
