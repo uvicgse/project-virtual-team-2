@@ -1,7 +1,6 @@
 import {Graph, Branch} from "nodegit";
 
 
-let opn = require('opn');
 let $ = require("jquery");
 let Git = require("nodegit");
 let fs = require("fs");
@@ -296,7 +295,7 @@ function getDirectories(directoryPath) {
 }
 
 // Description: Used to list the files and folders in a certain directory.
-// 
+//
 // @param directoryPath: The path of the directory to be shown.
 function listDirectoryItems(directoryPath) {
 	let directories = getDirectories(directoryPath);
@@ -345,18 +344,18 @@ function listDirectoryItems(directoryPath) {
     document.getElementById('move-current-directory').innerHTML = newPath;
   } else {
     let parsedPrevPath = (prevPath).replace(/\\/g, '\\\\');
-    document.getElementById('move-current-directory').innerHTML = 
-    '<div>' + 
-      '<a id="move-last-directory" class="move-last-directory" ondragover="allowDrop(event)" ondrop="dropInPreviousDir(event,\'' + directoryPath.replace(/\\/g, '\\\\') + '\')" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
+    document.getElementById('move-current-directory').innerHTML =
+    '<div>' +
+      '<a id="move-last-directory" class="move-last-directory" ondragover="allowDrop(event)" ondrop="dropInPreviousDir(event,\'' + directoryPath.replace(/\\/g, '\\\\') + '\')" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath +
     '</div>';
   }
 }
 
 // Description: Used to handle file or directory name changes.
-// 
+//
 // @param event: Used to listen for the ENTER button.
 // @param directoryPath: The path of that directory item.
-// @param pos: The position of the directory item in the 
+// @param pos: The position of the directory item in the
 // directory list.
 function renameDirectoryItem(event,directoryPath,pos){
   // TODO: Figure out how to disable new line but not enter
@@ -375,7 +374,7 @@ function renameDirectoryItem(event,directoryPath,pos){
   var id = "directory-id-" + pos;
   var element = document.getElementById(id);
   var newName = element.value;
-  
+
   if (event.keyCode == 13) {
     // Check to see if the original directory item was a file or folder.
     if(fs.statSync(directoryPath).isDirectory()){
@@ -406,7 +405,7 @@ function renameDirectoryItem(event,directoryPath,pos){
 
 // Description: Used to show errors regarding actions taken in the
 // Move modal.
-// 
+//
 // @param message: Used to provide the user with a thorough
 // description of the error, plus what possible steps they can
 // take to prevent this error from happening.
@@ -429,8 +428,8 @@ function isValidFolderName(folderName){
   return /^[a-zA-Z].*/.test(folderName);
 }
 
-/* Allows you to stage specific files. Assumes these files are in the 
-   unstaged file section. 
+/* Allows you to stage specific files. Assumes these files are in the
+   unstaged file section.
    @param filename: The literal name of the file */
 function stageFile(filename){
   let unstagedFileElements = document.getElementById('files-changed').children;
@@ -992,10 +991,8 @@ async function deleteTag(tagName) {
 
 
 
-/* Issue 35: Add applying functionality
-=======
+
 /* Issue 35: Add popping functionality
->>>>>>> rhys-git-mv
    Skeleton copied from pullFromRemote()
     - Function entered from onclick of the given stash in Stashing options window
     - pops stash from given index and merges into working directory. Fails if conflicts found.
@@ -1331,16 +1328,13 @@ function getAllCommits(callback) {
   let aclist = [];
   let singleReference;
   let name;
-  console.log("Finding all commits");
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
       repos = repo;
-      console.log("fetching all remote repositories");
       return repo.getReferences(Git.Reference.TYPE.LISTALL);
     })
     .then(function (refs) {
       let count = 0;
-      console.log("getting " + refs.length + " remote repositories");
       async.whilst(
         function () {
           return count < refs.length;
@@ -1349,7 +1343,6 @@ function getAllCommits(callback) {
         function (cb) {
           // Remove tag references or because getReferenceCommit does not recognize tag references
           if (!refs[count].isTag() && !refs[count].isRemote()) {
-            console.log("referenced branch exists on remote repository");
             repos.getReferenceCommit(refs[count])
             .then(function (commit) {
               let history = commit.history(Git.Revwalk.SORT.Time);
@@ -1361,7 +1354,6 @@ function getAllCommits(callback) {
                   }
                 }
                 count++;
-                console.log(count + " out of " + allCommits.length + " commits");
                 cb();
               });
 
@@ -1370,7 +1362,6 @@ function getAllCommits(callback) {
               console.log(err);
             });
           } else {
-            console.log('current branch does not exist on remote');
             count++;
             cb();
           }
@@ -1394,9 +1385,7 @@ function fetchStatus() {
         return repository.fetchAll({
           callbacks: {
             credentials: function () {
-              let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-              cred = user.credentials;
-              return cred;
+              return createCredentials();
             },
             certificateCheck: function () {
               return 1;
@@ -1430,44 +1419,42 @@ async function pullFromRemote() {
             addCommand("git pull");
             displayModal("Pulling new changes from the remote repository");
 
-            return repository.fetchAll({
-                callbacks: {
-                    credentials: function () {
-                        let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                        cred = user.credentials;
-                        return cred;
-                    },
-                    certificateCheck: function () {
-                        return 1;
-                    }
-                }
-            });
-        })
-        // Now that we're finished fetching, go ahead and merge our local branch
-        // with the new one
-        .then(function () {
-            return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
-        })
-        .then(function (oid) {
-            console.log("Looking up commit with id " + oid + " in all repositories");
-            return Git.AnnotatedCommit.lookup(repository, oid);
-        }, function (err) {
-            console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
-        })
-        .then(function (annotated) {
-            console.log("merging " + annotated + "with local forcefully");
-            Git.Merge.merge(repository, annotated, null, {
-                checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
-            });
-            theirCommit = annotated;
-        })
-        .then(function () {
-            let conflicsExist = false;
-            let tid = "";
-            if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
-                tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
-                conflicsExist = tid.indexOf("Conflicts") !== -1;
-            }
+      return repository.fetchAll({
+        callbacks: {
+          credentials: function () {
+            return createCredentials();
+          },
+          certificateCheck: function () {
+            return 1;
+          }
+        }
+      });
+    })
+    // Now that we're finished fetching, go ahead and merge our local branch
+    // with the new one
+    .then(function () {
+      return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
+    })
+    .then(function (oid) {
+      console.log("Looking up commit with id " + oid + " in all repositories");
+      return Git.AnnotatedCommit.lookup(repository, oid);
+    }, function (err) {
+      console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
+    })
+    .then(function (annotated) {
+      console.log("merging " + annotated + "with local forcefully");
+      Git.Merge.merge(repository, annotated, null, {
+        checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
+      });
+      theirCommit = annotated;
+    })
+    .then(function () {
+      let conflicsExist = false;
+      let tid = "";
+      if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
+        tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
+        conflicsExist = tid.indexOf("Conflicts") !== -1;
+      }
 
             if (conflicsExist) {
                 let conflictedFiles = tid.split("Conflicts:")[1];
@@ -1516,6 +1503,59 @@ function checkIfExistOrigin(branchName) {
     });
 }
 
+//push function to remote branch, we need to push to remote and then link that to the local branch
+async function createUpstreamPush() {
+    displayModal("Pushing changes to remote... and setting upstream branch");
+
+  let branch = "";
+  await getBranchName().then((branchName) => {
+    branch = branchName;
+  });
+
+  let remoteDirectory = "refs/remotes/origin";
+  let localDirectory = "refs/heads";
+
+  let remoteBranchName = path.join(remoteDirectory,branch);
+  let localBranch = path.join(localDirectory, branch);
+
+  addCommand("git push -u origin " + branch);
+  Git.Repository.open(repoFullPath).then((repo) => {
+      repo.getCurrentBranch().then((ref) => {
+        console.log("HERE");
+        repo.getRemotes().then((remotes) => {
+          repo.getRemote(remotes[0]).then((remote)=> {
+            remote.push([localBranch+":"+localBranch], {
+              callbacks: {
+                credentials: function () {
+                  return createCredentials();
+                }
+              }
+            }).then((result) => {
+              //link to local branch
+              Branch.setUpstream(ref, remoteBranchName).then((setRemoteResult) => {
+                updateModalText("Set upstream success");
+              }), function(e) {
+                updateModalText("Something went wrong");
+                console.log(Error(e));
+              }
+            }), function(e) {
+              updateModalText("Something went wrong");
+              console.log(Error(e));
+            }
+          });
+        }), function(e) {
+            updateModalText("Something went wrong");
+          console.log(Error(e));
+        }
+      }), function(e) {
+          updateModalText("Something went wrong");
+        console.log(Error(e));
+      }
+  })
+
+}
+
+
 //calls getAheadBedhindCommits to display status of local repo to user
 function displayAheadBehind() {
   let branch = document.getElementById("branch-name").innerText;
@@ -1554,18 +1594,25 @@ function getBranchName() {
 }
 
 async function pushToRemote() {
-    let branch = "";
-    await getBranchName().then((branchName) => {
-        branch = branchName;
-    });
-    //checks if the remote version of your current branch exist
-    checkIfExistOrigin(branch).then(function (remoteBranchExist) {
-        if (!remoteBranchExist) {
-            window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
-                "To push the current branch and set the remote as upstream, use\n" +
-                "\n" +
-                "    git push --set-upstream origin test-branch");
-            return;
+  let branch = "";
+  await getBranchName().then((branchName) => {
+    branch = branchName;
+  });
+  //checks if the remote version of your current branch exist
+  checkIfExistOrigin(branch).then(function (remoteBranchExist) {
+    if (!remoteBranchExist) {
+      displayPushToRemoteModal();
+      return;
+    } else {
+      // tells the user if their branch is up to date or behind the remote branch
+      getAheadBehindCommits(branch).then(function (aheadBehind) {
+        if (aheadBehind.behind !== 0) {
+          window.alert("your branch is behind remote by " + aheadBehind.behind);
+          return;
+
+        } else if (aheadBehind.ahead === 0) {
+          window.alert("Your branch is already up to date");
+          return;
         } else {
             // tells the user if their branch is up to date or behind the remote branch
             getAheadBehindCommits(branch).then(function (aheadBehind) {
@@ -1587,11 +1634,8 @@ async function pushToRemote() {
                                     ["refs/heads/" + branch + ":refs/heads/" + branch],
                                     {
                                         callbacks: {
-                                            // obtain a new copy of cred every time when user push.
                                             credentials: function () {
-                                                let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                                                cred = user.credentials;
-                                                return cred;
+                                                return createCredentials();
                                             }
                                         }
                                     }
@@ -1609,8 +1653,11 @@ async function pushToRemote() {
                     });
                 }
             });
+          });
         }
-    });
+      });
+    }
+  });
 }
 
 function commitModal() {
@@ -1760,9 +1807,7 @@ function deleteRemoteBranch() {
               {
                 callbacks: { // pass in user credentials as a parameter
                   credentials: function () {
-                    let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                    cred = user.credentials;
-                    return cred;
+                    return createCredentials();
                   }
                 }
               }).then(function () {
@@ -2006,7 +2051,6 @@ function Reload() {
 
 function displayModifiedFiles() {
   modifiedFiles = [];
-
   let selectedFile = "";
 
   Git.Repository.open(repoFullPath)
@@ -2143,6 +2187,41 @@ function displayModifiedFiles() {
 
           fileElement.appendChild(filePath);
           fileElement.id = file.filePath;
+          fileElement.draggable="true";
+
+          /* Functions for handling Drag and Drop - From unstage to stage*/
+          function handleDragStart(e){
+            e.dataTransfer.setData("text", e.target.id);
+          }
+          function handleDragEnd(e) {
+            e.preventDefault();
+            const filepanel = document.querySelector("div.file-panel");
+            const stagepanel = document.querySelector("div.staged-files-header");
+            // create top and bottom boundary for drag release
+            const topboundary = stagepanel.getBoundingClientRect();
+            const bottomboundary = filepanel.getBoundingClientRect();
+
+            // mouse pointer location while dragging
+            var x_axis = e.clientX;
+            var y_axis = e.clientY;
+
+            //console.log(topboundary);
+            //console.log(bottomboundary);
+            //console.log(x_axis);
+            //console.log(y_axis);
+            //console.log("-----");
+
+            // check if the drag ends within the boundary
+            if((x_axis >= bottomboundary.left && x_axis <= bottomboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.bottom)){
+              checkbox.click();
+              e.stopPropagation();
+            }
+          }
+
+          // Activate function on mouse drag start and end
+          fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('dragend',handleDragEnd, false);
+
 
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
@@ -2159,7 +2238,6 @@ function displayModifiedFiles() {
           fileElement.appendChild(checkbox);
 
           document.getElementById("files-changed").appendChild(fileElement);
-
 
           fileElement.onclick = function () {
             let doc = document.getElementById("diff-panel");
@@ -2231,7 +2309,41 @@ function displayModifiedFiles() {
           }
 
           fileElement.id = fileId;
+          fileElement.draggable="true";
           fileElement.appendChild(filePath);
+
+          /* Functions for handling Drag and Drop - From stage to unstage*/
+          function handleDragStart(e){
+            e.dataTransfer.setData("text", e.target.id);
+          }
+          function handleDragEnd(e) {
+            e.preventDefault();
+            const filepanel = document.querySelector("div.file-panel");
+            const stagepanel = document.querySelector("div.staged-files-header");
+            // create top and bottom boundary for drag release
+            const bottomboundary = stagepanel.getBoundingClientRect();
+            const topboundary = filepanel.getBoundingClientRect();
+
+            // mouse pointer location while dragging
+            var x_axis = e.clientX;
+            var y_axis = e.clientY;
+
+            //console.log(topboundary);
+            //console.log(bottomboundary);
+            //console.log(x_axis);
+            //console.log(y_axis);
+            //console.log("-----");
+
+            // check if the drag ends within the boundary
+            if((x_axis >= topboundary.left && x_axis <= topboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.top)){
+              checkbox.click();
+              e.stopPropagation();
+            }
+          }
+
+          // Activate function on mouse drag start and end
+          fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
@@ -2313,86 +2425,86 @@ function displayModifiedFiles() {
         });
       }
 
-        function printFileDiff(filePath) {
-          repo.getHeadCommit().then(function (commit) {
-            getCurrentDiff(commit, filePath, function (line) {
-              formatLine(line);
-            });
+      function printFileDiff(filePath) {
+        repo.getHeadCommit().then(function (commit) {
+          getCurrentDiff(commit, filePath, function (line) {
+            formatLine(line);
           });
-        }
+        });
+      }
 
-        function getCurrentDiff(commit, filePath, callback) {
-          commit.getTree().then(function (tree) {
-            Git.Diff.treeToWorkdir(repo, tree, null).then(function (diff) {
-              diff.patches().then(function (patches) {
-                patches.forEach(function (patch) {
-                  patch.hunks().then(function (hunks) {
-                    hunks.forEach(function (hunk) {
-                      hunk.lines().then(function (lines) {
-                        let oldFilePath = patch.oldFile().path();
-                        let newFilePath = patch.newFile().path();
-                        if (newFilePath === filePath) {
-                          lines.forEach(function (line) {
+      function getCurrentDiff(commit, filePath, callback) {
+        commit.getTree().then(function (tree) {
+          Git.Diff.treeToWorkdir(repo, tree, null).then(function (diff) {
+            diff.patches().then(function (patches) {
+              patches.forEach(function (patch) {
+                patch.hunks().then(function (hunks) {
+                  hunks.forEach(function (hunk) {
+                    hunk.lines().then(function (lines) {
+                      let oldFilePath = patch.oldFile().path();
+                      let newFilePath = patch.newFile().path();
+                      if (newFilePath === filePath) {
+                        lines.forEach(function (line) {
 
-                            // Catch the "no newline at end of file" lines created by git
-                            if (line.origin() != 62) {
+                          // Catch the "no newline at end of file" lines created by git
+                          if (line.origin() != 62) {
 
-                              // include linenumbers and change type
-                              callback(String.fromCharCode(line.origin())
-                                + (line.oldLineno() != -1 ? line.oldLineno() : "")
-                                + "\t" + (line.newLineno() != -1 ? line.newLineno() : "")
-                                + "\t" + String.fromCharCode(line.origin())
-                                + "\t" + line.content());
-                            }
-                          });
-                        }
-                      });
+                            // include linenumbers and change type
+                            callback(String.fromCharCode(line.origin())
+                              + (line.oldLineno() != -1 ? line.oldLineno() : "")
+                              + "\t" + (line.newLineno() != -1 ? line.newLineno() : "")
+                              + "\t" + String.fromCharCode(line.origin())
+                              + "\t" + line.content());
+                          }
+                        });
+                      }
                     });
                   });
                 });
               });
             });
           });
+        });
+      }
+
+      function formatLine(line) {
+        let element = document.createElement("div");
+
+        if (line.charAt(0) === "+") {
+          element.style.backgroundColor = "#84db00";
+        } else if (line.charAt(0) === "-") {
+          element.style.backgroundColor = "#ff2448";
         }
 
-        function formatLine(line) {
-          let element = document.createElement("div");
+        // If not a changed line, origin will be a space character, so still need to slice
+        line = line.slice(1, line.length);
+        element.innerText = line;
 
-          if (line.charAt(0) === "+") {
-            element.style.backgroundColor = "#84db00";
-          } else if (line.charAt(0) === "-") {
-            element.style.backgroundColor = "#ff2448";
-          }
+        // The spacer is needed to pad out the line to highlight the whole row
+        let spacer = document.createElement("spacer");
+        spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
+        element.appendChild(spacer);
 
-          // If not a changed line, origin will be a space character, so still need to slice
-          line = line.slice(1, line.length);
-          element.innerText = line;
+        document.getElementById("diff-panel-body")!.appendChild(element);
+      }
 
-          // The spacer is needed to pad out the line to highlight the whole row
-          let spacer = document.createElement("spacer");
-          spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
-          element.appendChild(spacer);
+      function formatNewFileLine(text) {
+        let element = document.createElement("div");
+        element.style.backgroundColor = green;
+        element.innerHTML = text;
 
-          document.getElementById("diff-panel-body")!.appendChild(element);
-        }
+        // The spacer is needed to pad out the line to highlight the whole row
+        let spacer = document.createElement("spacer");
+        spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
+        element.appendChild(spacer);
 
-        function formatNewFileLine(text) {
-          let element = document.createElement("div");
-          element.style.backgroundColor = green;
-          element.innerHTML = text;
-
-          // The spacer is needed to pad out the line to highlight the whole row
-          let spacer = document.createElement("spacer");
-          spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
-          element.appendChild(spacer);
-
-          document.getElementById("diff-panel-body")!.appendChild(element);
-        }
-      });
-    },
-      function (err) {
-        console.log("waiting for repo to be initialised");
-      });
+        document.getElementById("diff-panel-body")!.appendChild(element);
+      }
+    });
+  },
+  function (err) {
+    console.log("waiting for repo to be initialised");
+  });
 }
 
 // Find HOW the file has been modified

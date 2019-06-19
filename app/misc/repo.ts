@@ -127,7 +127,7 @@ function downloadFunc(cloneURL, fullLocalPath) {
           return 1;
         },
         credentials: function () {
-          return Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
+          return createCredentials();
         },
         transferProgress: function (data) {
           let bytesRatio = data.receivedObjects() / data.totalObjects();
@@ -227,7 +227,7 @@ function openRepository() {
             url: "https://api.github.com/repos/" + repoOwner + "/" + repoName + "/contributors",
             type: "GET",
             beforeSend: function (xhr) {
-              xhr.setRequestHeader('Authorization', make_base_auth(getUsername(), getPassword()));
+              xhr.setRequestHeader('Authorization','token' + getOauthToken());
             },
             headers: {
               'Accept': 'application/vnd.github.v3+json'
@@ -726,6 +726,11 @@ function openRepository() {
     //  handleModal();
     document.getElementById("modal-text-box").innerHTML = text;
     $('#modal').modal('show');
+  }
+
+  function displayPushToRemoteModal() { //modal displayed when push attempted to remote branch that doesnt exist
+
+    $('#modalW4').modal('show');
   }
 
   function updateModalText(text) {

@@ -2,59 +2,30 @@ var CryptoJS = require("crypto-js");
 const os = require('os');
 var jsonfile = require('jsonfile');
 var fs = require('fs');
-var encryptedPassword;
-var encryptedUsername;
+var encryptedOauthToken;
 
+function storeOauthToken(accessToken) {
 
-function encrypt(username, password) {
+  //Encrypt token
+  encryptOauthToken(accessToken);
 
-    //OS.hostname() is the key.
-    //AES encryption
+  //Write to the JSON file
+  console.log("encrypted Oauth token is: " + encryptedOauthToken);
+  var file = 'token.json';
+  var obj = {'OauthToken': encryptedOauthToken.toString()};
 
-    encryptedUsername = CryptoJS.AES.encrypt(username, os.hostname());
-    encryptedPassword = CryptoJS.AES.encrypt(password, os.hostname());
+  jsonfile.writeFile(file, obj, function (err) {
+    if (err) throw err;
+    console.log('Oauth Token successfully saved');
+  })
 
-
-    writetoJSON(encryptedUsername, encryptedPassword);
-
+  return;
 }
 
-function encryptTemp(username, password) {
-  encryptedUsername = CryptoJS.AES.encrypt(username, os.hostname());
-  encryptedPassword = CryptoJS.AES.encrypt(password, os.hostname());
+/*
+  This function will ecrypt an Oauth token and store in memory
+  encrypted using AES encryption and using os.hostname() as the key
+*/
+function encryptOauthToken(accessToken) {
+  encryptedOauthToken = CryptoJS.AES.encrypt(accessToken, os.hostname());
 }
-
-function getUsernameTemp() {
-  if (encryptedUsername === undefined){ // the user has not logged in, return null
-    return null;
-  }else {
-    var decryptedUsernameBytes = CryptoJS.AES.decrypt(encryptedUsername.toString(), os.hostname());
-    return decryptedUsernameBytes.toString(CryptoJS.enc.Utf8);
-  }
-}
-
-function getPasswordTemp() {
-  if(encryptedPassword === undefined){ //the user did not login, return null
-    return null;
-  }else {
-    var decryptedPasswordBytes = CryptoJS.AES.decrypt(encryptedPassword.toString(), os.hostname());
-    return decryptedPasswordBytes.toString(CryptoJS.enc.Utf8);
-  }
-}
-
-function writetoJSON(encryptedUsername, encryptedPassword) {
-
-   console.log("encrypted username is: " + encryptedUsername);
-   var file = 'data.json';
-   var obj = {'username': encryptedUsername.toString(), 'password': encryptedPassword.toString()};
-
-   jsonfile.writeFile(file, obj, function (err) {
-     if (err) throw err;
-     console.log('username and password succesfully saved');
-
-   })
-
-}
-
-
-

@@ -89,88 +89,25 @@
           <span class="toolbar-Text">Move</span>
         </li>
       </ul>
+      <ul class="navbar-nav navbar-right hidden-xs">
+        <li>
+          <label id="githubname" style="color:white"></label>
+          <div id="Button_Sign_out">
+              <a class="btn btn-default btn-outline btn-circle"  id="avatar" data-toggle="collapse" href="#nav-collapse1" aria-expanded="false" aria-controls="nav-collapse1" onclick="signOut()">Sign out</a>
+          </div>
+          <div id="Button_Sign_in">
+              <a class="btn btn-default btn-outline btn-circle"  id="avatar" data-toggle="collapse" href="#nav-collapse1" aria-expanded="false" aria-controls="nav-collapse1" onclick="hideSignInButton()">Sign In with Github</a>
+          </div>
+          </li>
+      </ul>
 
-      <div class="collapse nav navbar-nav nav-collapse" id="nav-collapse1">
-        <form class="navbar-form navbar-right form-inline" role="form" style="width:280px;">
-          <div class="form-group">
-            <label class="sr-only" for="Email">User name</label>
-            <img src="./assets/error.png" class="error-icon" id="username-error-icon">
-            <input type="text" class="form-control" id="Email1" placeholder="Username or Email" autofocus required
-              style="width: 206px !important" />
-          </div>
-          <div class="form-group">
-            <label class="sr-only" for="Password">Password</label>
-            <img src="./assets/error.png" class="error-icon" id="password-error-icon">
-            <input type="password" class="form-control" id="Password1" placeholder="Password" required />
-          </div>
-          <button type="submit" class="btn btn-success" (click)="switchToMainPanel()">Sign in</button>
-        </form>
-      </div>
     </div>
     <div id="cloneProgressDiv" class="progress" style="visibility: collapse">
       <div id="cloneProgressBar" class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20"
         aria-valuemin="0" aria-valuemax="100" style="width: 0%">
       </div>
     </div>
-    <ul id="sign-in-btn" class="navbar-nav hidden-xs">
-      <li class="text-center">
-        <label id="githubname" style="color:white"></label>
-        <div id="Button_Sign_out">
-          <a class="btn btn-default btn-outline btn-circle" id="avatar" data-toggle="collapse" href="#nav-collapse1"
-            aria-expanded="false" aria-controls="nav-collapse1" onclick="signInOrOut()">Sign out</a>
-        </div>
-        <div id="Button_Sign_in">
-          <a class="btn btn-default btn-outline btn-circle" id="avatar" data-toggle="collapse" href="#nav-collapse1"
-            aria-expanded="false" aria-controls="nav-collapse1" onclick="hideSignInButton()">Sign in</a>
-        </div>
-      </li>
-    </ul>
-    <button type="button" class="navbar-toggle collapsed nav-ham-menu" data-toggle="collapse"
-      data-target="#git-controls-dropdown" aria-expanded="false" aria-controls="git-controls-dropdown">
-      <span class="sr-only">Toggle navigation</span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-    </button>
   </div>
-  <ul id="git-controls-dropdown" class="nav navbar-nav collapse">
-    <li (click)="promptUserToAddRepository()"><a>&nbsp;&nbsp;add repository</a></li>
-    <li class="dropdown">
-      <a id="repo-name" data-toggle="modal" data-target="#repo-modal" href="#">
-        &nbsp;&nbsp;repository
-        <span class="caret"></span>
-      </a>
-    </li>
-    <li class="dropdown">
-      <a id="branch-name" data-toggle="dropdown" href="#">
-        &nbsp;&nbsp;branch
-        <span class="caret"></span>
-      </a>
-      <ul class="dropdown-menu" id="branch-dropdown" role="menu" aria-labelledby="branch-name">
-        <li role="presentation" id="create-branch">
-          <div class="input-group menuitem">
-            <input type="text" id="branchName" class="form-control" placeholder="Search or create branch">
-            <span class="input-group-btn">
-              <button class="btn btn-default" type="button" onclick="createBranch()">OK</button>
-            </span>
-          </div>
-        </li>
-      </ul>
-    </li>
-    <li class="dropdown">
-      <a id="merge-name" onclick="getOtherBranches()" data-toggle="dropdown" href="#">
-        &nbsp;&nbsp;update from
-        <span class="caret"></span>
-      </a>
-      <ul class="dropdown-menu" id="merge-dropdown" role="menu">
-      </ul>
-    </li>
-    <li class="upload" onclick="pushToRemote()"><a href="#">&nbsp;&nbsp;pull</a></li>
-    <li class="download" onclick="pullFromRemote()"><a href="#">&nbsp;&nbsp;push</a></li>
-    <li class="clone" onclick="cloneFromRemote()"><a href="#">&nbsp;&nbsp;clone</a></li>
-    <li class="clean" onclick="cleanRepo()"><a href="#">&nbsp;&nbsp;clean</a></li>
-    <li class="sync" onclick="requestLinkModal()"><a href="#">&nbsp;&nbsp;sync</a></li>
-  </ul>
 </nav>
 
 <div id="otpModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
@@ -475,4 +412,34 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- Modal for creating a remote branch when none exists -->
+<div id="modalW4" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Warning!</h4>
+            </div>
+            <div class="modal-body" id="modal-text-box">
+                <p style="color:black">Console Log:</p>
+
+                <p><code>fatal: The current branch has no upstream branch.
+                    To push the current branch and set the remote as upstream, use</code></p>
+
+                <p><code>git push --set-upstream origin [branch name]</code></p>
+
+              <p style="color:black">There is no upstream for the current branch. Would you like to run:</p>
+              <p><code>git push --set-upstream origin [branch name]</code></p><p style="color:black">to create one?</p>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="createUpstreamPush()">Run Command</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+            </div>
+        </div>
+    </div>
 </div>

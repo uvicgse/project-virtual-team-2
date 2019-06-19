@@ -1,7 +1,7 @@
 /// <reference path="git.ts" />
 
 let $ = require("jquery");
-
+const { BrowserWindow } = require('electron').remote;
 //import * as nodegit from "git";
 //import NodeGit, { Status } from "nodegit";
 
@@ -20,18 +20,78 @@ var repoNotFound = 0;
 var signed = 0;
 var changes = 0;
 let signedAfter = false;
-let loginScopes = [
-  "repo",
-  "user"
-];
 
+let oauthpass = 'x-oauth-basic';
+let electronOauth2 = require('electron-oauth2');
+let account;
 
+//config from oauth library
+//TODO for production release use a web server to store this information
+//as client secret should not be available in application source code
+const OauthConfig = {
+  clientId: 'c2509d8769f5f1e46028',
+  clientSecret: 'e4717832659e95c2f8f4237a3390cf09013b94f7',
+  authorizationUrl: 'https://github.com/login/oauth/authorize',
+  tokenUrl: 'https://github.com/login/oauth/access_token',
+  useBasicAuthorizationHeader: false,
+  redirectUri: 'http://localhost:8080/user/signin/callback'
+};
 
-//constructor method to create a new copy of cred every time
-function createCredentials(username, password) {
-  this.username = username;
-  this.password = password;
-  this.credentials = Git.Cred.userpassPlaintextNew(username,password);
+const windowParams = {
+  alwaysOnTop: true,
+  autoHideMenuBar: true,
+  webPreferences: {
+    nodeIntegration: false,
+  }
+};
+const options = {
+  scope: 'repo user',
+  accessType: 'admin script'
+};
+const myApiOauth = electronOauth2(OauthConfig, windowParams);
+
+function authenticateUser(callback) {
+  // use oauth call to get token
+  myApiOauth.getAccessToken(options)
+    .then(token => {
+      if(!token) {
+        displayModal("An authentication error has occured, the access token used is not valid");
+        return;
+      }
+      storeOauthToken(token['access_token']);
+      client = github.client(token['access_token']);
+      if (!client.token) {
+        displayModal("An authentication error has occured, the access token used is not valid");
+        return;
+      }
+      //grab client information from body object that contains user name.
+      client.get('/user', {}, function (err, status, body, headers) {
+        account = body;
+        //after having the user information, start to sign in
+        getUserInfo(callback);
+      });
+
+    }, err => {
+      console.log('cannot obtain token', err);
+	}).catch( err => {
+    console.log(err);
+  });
+}
+
+//Called then user pushes to sign out even if they have commited changes but not pushed; prompts a confirmation modal
+function CommitNoPush() {
+        if (getAheadBehindCommits(getBranchName()).ahead >= 1) {
+                $("#modalW2").modal();
+        }
+}
+//create credential using oauth
+function createCredentials() {
+  try {
+    return Git.Cred.userpassPlaintextNew(getOauthToken(), oauthpass);
+
+  } catch(err) {
+      displayModal("An error occured creating credentials: " + err);
+  }
 }
 
 function signInHead(callback) {
@@ -73,11 +133,7 @@ function searchRepoName() {
 
   ul.innerHTML = ''; // clears the dropdown menu which shows all the repos
 
-  // Gets users name and password
-  encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
-  //obtain a new copy of cred every time by calling constructor method.
-  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-  cred = user.credentials;
+  cred = createCredentials();
 
   var ghme = client.me();
   ghme.repos(function (err, data, head) {
@@ -108,126 +164,33 @@ function searchRepoName() {
 }
 
 function getUserInfo(callback) {
+  cred = createCredentials();
 
-
-  if (signedAfter === true){  // if the trys to login after clicking "continues without sign in"
-    encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
-  }
-  else {
-    encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
-  }
-  //calling constructor method
-  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-  cred = user.credentials;
-
-  client = github.client({
-    username: getUsernameTemp(),
-    password: getPasswordTemp()
-  });
+  client = github.client(getOauthToken());
   var ghme = client.me();
 
   ghme.info(function(err, data, head) {
-    if (err) {
-      if (err.toString().indexOf("OTP") !== -1)
-      {
-        github.auth.config({
-          username: getUsernameTemp(),
-          password: getPasswordTemp()
-        }).login({"scopes": loginScopes,
-          "note": Math.random().toString()
-        }, function (err, id, token, headers) {
-          document.getElementById("submitOtpButton")!.onclick = function() {
-            submitOTP(callback);
-          }
-          $("#otpModal").modal('show');
-        });
-      }
-      else if (err == "Error: getaddrinfo ENOTFOUND api.github.com api.github.com:443" || err == "Error: getaddrinfo ENOENT api.github.com:443" || err == "Error: getaddrinfo EAI_AGAIN api.github.com:443") {
-
-        displayModal("No internet connection - Unable to complete sign in"); //catch any sign in errors related to internet connectivity and display a clear message
-
-      }
-      else if(err == "Error: Bad credentials"){   //if github sends as err, replace with the more complete message below
-
-          displayModal("Incorrect username or password - Unable to complete sign in");
-
-      }
-      else{
-
-        displayModal(err); //catch any unanticipated errors
-
-      }
-      document.getElementById('grey-out').style.display = 'none';
-    }
-
     if (!err) {
       processLogin(ghme, callback);
+    } else {
+      // inform user their token file is invalid and delete it
+      displayModal("The token stored is no longer valid. Please sign in again");
+      fs.unlink('token.json', (err) => {
+        if (err) throw err;
+        console.log('token.json has been deleted');
+      });
     }
 
   });
-
-
 }
-
-
-function submitOTP(callback) {
-  github.auth.config({
-    username: getUsernameTemp(),
-    password: getPasswordTemp(),
-    otp: document.getElementById("otp")!.value
-  }).login({"scopes": loginScopes,
-    "note": Math.random().toString()
-  }, function (err, id, token, headers) {
-    if (err) {
-      displayModal(err);
-    }
-    else {
-      client = github.client(token);
-      var ghme = client.me();
-      processLogin(ghme, callback);
-    }
-  });
-}
-
 
 function processLogin(ghme, callback) {
   ghme.info(function(err, data, head) {
     if (err) {
       displayModal(err);
     } else {
-     // assigning the check box to a variable to check the value
-    let rememberLogin: any = (<HTMLInputElement>document.getElementById("rememberLogin"));
-
-    // username and password values taken to be stored.
-    let username: any = (<HTMLInputElement>document.getElementById("username")).value;
-    let password: any = (<HTMLInputElement>document.getElementById("password")).value;
-
-    // If password needs remembering encrypt it within data.json
-    if (rememberLogin.checked == true) {
-        encrypt(username, password);
-    }
-    // Else remove the file
-    else {
-      let credentialFile = './data.json';
-      if (fs.existsSync(credentialFile)){
-        fs.unlinkSync(credentialFile);
-      }}
       avaterImg = Object.values(data)[2]
-      // let doc = document.getElementById("avater");
-      // doc.innerHTML = "";
-      // var elem = document.createElement("img");
-      // elem.width = 40;
-      // elem.height = 40;
-      // elem.src = avaterImg;
-      // doc.appendChild(elem);
-      // doc = document.getElementById("log");
-      // doc.innerHTML = 'sign out';
       document.getElementById("githubname").innerHTML = data["login"]
-      var docGitUser = document.getElementById("githubname");
-      //docGitUser.innerHTML = Object.values(data)[0];
-
-      let doc = document.getElementById("avatar");
-      //doc.innerHTML = 'Sign out'; //HAD TO REMOVE THIS LINE OR THE PROGRAM BROKE.
           signed = 1;
 
       callback();
@@ -315,24 +278,16 @@ function cloneRepo() {
   switchToMainPanel();
 }
 
-function signInOrOut() {
-  let doc = document.getElementById("avatar");
-  if(doc.innerHTML === "Sign In"){
-    doc.innerHTML = "";
-  }
-  else if(doc.innerHTML === ""){
-      doc.innerHTML = "Sign In";
-  }
-
-  if (doc.innerHTML === "Sign out") {
-    $("#avatar").removeAttr("data-toggle");
-
-    if (changes == 1) {
-      $("#modalW2").modal();
-    } else {
-      redirectToHomePage();
-    }
-  }
+function signOut() {
+  let win = new BrowserWindow({ show: false });
+  win.loadURL('https://github.com/logout');
+  win.once('ready-to-show', () => {
+    win.show()
+});
+  win.on('closed', () => {
+    removeToken();
+    redirectToHomePage();
+  });
 }
 
 function redirectToHomePage() {
@@ -443,12 +398,8 @@ function createIssue() {
   repoName = document.getElementById("repo-name").innerHTML
   githubName = document.getElementById("githubname").innerHTML
   if (repoName != "repository" && theArray != null) {
-      encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
-      cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
-      client = github.client({
-          username: getUsernameTemp(),
-          password: getPasswordTemp()
-      });
+      cred = createCredentials();
+      client = github.client(getOauthToken());
       var ghme = client.me();
       var ghrepo = client.repo(githubName + '/' + repoName);
       ghrepo.issue({
@@ -480,15 +431,9 @@ function displayIssues() {
 
           ul.innerHTML = ''; // clears the dropdown menu which shows all the issues
 
-          // Gets users name and password
-          encryptTemp(document.getElementById("username").value, document.getElementById("password").value);
+          cred = createCredentials();
 
-          cred = Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
-
-          client = github.client({
-              username: getUsernameTemp(),
-              password: getPasswordTemp()
-          });
+          client = github.client(getOauthToken());
 
           var ghme = client.me();
           var ghrepo = client.repo(githubName + '/' + repoName);
@@ -502,3 +447,11 @@ function displayIssues() {
           });
       }
     }
+function getUsername() {
+  if (!account) {
+    console.log("Could not retrieve username, account stored is invalid")
+    return null;
+  }
+  //the 'login' is the username
+  return account.login;
+}

@@ -6,6 +6,7 @@ let inTheApp = false;
 
 let showUsername = true;
 let previousWindow = "repoPanel";
+var fs = require("fs");
 
 function collapseSignPanel() {
   $("#nav-collapse1").collapse("hide");
@@ -72,10 +73,8 @@ function switchToAddRepositoryPanelWhenNotSignedIn() {
 }
 
 function switchToAddRepositoryPanel() {
-
   window.dispatchEvent(new Event('loadRecentRepos'));
 
-  document.getElementById("Button_Sign_out").style.display = "block";
   inTheApp = true
   console.log("Switching to add repo panel");
   hideAuthenticatePanel();
@@ -92,7 +91,7 @@ function switchToAddRepositoryPanel() {
   }else{
     $("#nav-collapse1").collapse("hide");
     document.getElementById("Button_Sign_out").style.display = "none";
-    document.getElementById("Button_Sign_in").style.display = "block";
+    //document.getElementById("Button_Sign_in").style.display = "block";
   }
   let repoOpen = <HTMLInputElement>document.getElementById("repoOpen");
   if (repoOpen != null){
@@ -101,7 +100,15 @@ function switchToAddRepositoryPanel() {
 }
 
 function hideSignInButton():void{
-  document.getElementById("Button_Sign_in").style.display = "none";
+  let file = "token.json";
+  fs.access(file, fs.constants.F_OK, (err) => {
+    displayModal("Token detected, please log out first if you want to continue without sign in! ");
+    console.log(`${file} ${err ? 'does not exist' : 'exists'}`);
+  });
+  if (getOauthToken()) {
+    document.getElementById("Button_Sign_in").style.display = "none";
+  }
+
   if(previousWindow!="repoPanel"){
     switchToMainPanel();
   }
@@ -405,16 +412,4 @@ function disableDiffPanelEditOnHide() {
   if (doc != null) {
     doc.contentEditable = "false";
   }
-}
-
-function useSavedCredentials() : boolean {
-  let file = 'data.json';
-  // check if the data.json file exists
-  if (fs.existsSync(file)) {
-    console.log('button has been pressed: logging in with saved credentials');
-    decrypt();
-    loginWithSaved(switchToMainPanel);
-    return true;
-  }
-  return false;
 }
