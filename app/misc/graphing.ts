@@ -335,6 +335,8 @@ function makeBasicNode(c, column: number) {
         }
     }
 
+    //TODO: Add flag to see if commit node label is 'stash' and recolor it to border: '#e07b16'
+
     if (flag) {
         id = basicNodeId++;
         let title = "Number of Commits: " + count;
@@ -460,6 +462,8 @@ function makeAbsNode(c, column: number) {
         }
     }
 
+    //TODO: Add flag to see if commit node label is 'stash' and recolor it to border: '#e07b16'
+
     if (flag) {
         let id = absNodeId++;
         let title = "Author: " + name + "<br>" + "Number of Commits: " + count;
@@ -570,6 +574,7 @@ function makeNode(c, column: number) {
     let title = "Author: " + name + "<br>" + "Message: " + c.message();
     let flag = false;
 
+    //TODO: Add flag to see if commit node label is 'stash' and recolor it to border: '#e07b16'
 
     // Need to store beginning hash and number of commits in the node to track the commits that belong to a node
     nodes.add({

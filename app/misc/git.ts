@@ -914,7 +914,11 @@ async function popStash(index) {
       refreshAll(repository);
      }, function(err) { //catch all errors thrown since beginning of function
          console.log("git.ts, func popStash(): update, could not pop stash, " + err);
-         updateModalText("Unexpected Error: " + err.message);
+         if(err.message == "reference 'refs/stash' not found"){
+           updateModalText("Success. No more stashes in list.");
+         }else{
+           updateModalText("Unexpected Error: " + err.message);
+         }
      });
 
 }
@@ -1026,7 +1030,7 @@ async function dropStash(index) {
         let ret = await Git.Stash.drop(repository, index)
           .then( (res) => {
             console.log("Drop resolved: " + res);
-            //should return error code but isn't
+            //should return error code but promise catches it
               updateModalText("Success! Stash at index " + index + " dropped from list.");
             return res;
           }, (err) => {
@@ -1090,11 +1094,10 @@ async function branchStash(index) {
   else if (modifiedFiles > 0){
     document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
 
+  //check if branch exists remotely
   }else if(branchExists){
-  // TODO: check for existing branch
-  // Check for existing branch
-  // else if ( <existing branch> ) {}
-    document.getElementById("branchErrorText").innerText = "Warning: Branch name already exists";
+
+    document.getElementById("branchErrorText").innerText = "Warning: Branch name already exists on remote repository";
 
   }else {
     let currentRepository;
@@ -1565,9 +1568,7 @@ async function createBranch() {
     document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
 
 
-  // TODO: check for existing branch
-  // Check for existing branch
-  // else if ( <existing branch> ) {}
+  //check if branch  exists remotely
   }else if(branchExists){
     document.getElementById("branchErrorText").innerText = "Warning: Branch name already exists on remote";
 
