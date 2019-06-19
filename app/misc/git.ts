@@ -993,9 +993,7 @@ function fetchStatus() {
         return repository.fetchAll({
           callbacks: {
             credentials: function () {
-              let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-              cred = user.credentials;
-              return cred;
+              return createCredentials();
             },
             certificateCheck: function () {
               return 1;
@@ -1029,44 +1027,42 @@ async function pullFromRemote() {
             addCommand("git pull");
             displayModal("Pulling new changes from the remote repository");
 
-            return repository.fetchAll({
-                callbacks: {
-                    credentials: function () {
-                        let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                        cred = user.credentials;
-                        return cred;
-                    },
-                    certificateCheck: function () {
-                        return 1;
-                    }
-                }
-            });
-        })
-        // Now that we're finished fetching, go ahead and merge our local branch
-        // with the new one
-        .then(function () {
-            return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
-        })
-        .then(function (oid) {
-            console.log("Looking up commit with id " + oid + " in all repositories");
-            return Git.AnnotatedCommit.lookup(repository, oid);
-        }, function (err) {
-            console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
-        })
-        .then(function (annotated) {
-            console.log("merging " + annotated + "with local forcefully");
-            Git.Merge.merge(repository, annotated, null, {
-                checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
-            });
-            theirCommit = annotated;
-        })
-        .then(function () {
-            let conflicsExist = false;
-            let tid = "";
-            if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
-                tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
-                conflicsExist = tid.indexOf("Conflicts") !== -1;
-            }
+      return repository.fetchAll({
+        callbacks: {
+          credentials: function () {
+            return createCredentials();
+          },
+          certificateCheck: function () {
+            return 1;
+          }
+        }
+      });
+    })
+    // Now that we're finished fetching, go ahead and merge our local branch
+    // with the new one
+    .then(function () {
+      return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
+    })
+    .then(function (oid) {
+      console.log("Looking up commit with id " + oid + " in all repositories");
+      return Git.AnnotatedCommit.lookup(repository, oid);
+    }, function (err) {
+      console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
+    })
+    .then(function (annotated) {
+      console.log("merging " + annotated + "with local forcefully");
+      Git.Merge.merge(repository, annotated, null, {
+        checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
+      });
+      theirCommit = annotated;
+    })
+    .then(function () {
+      let conflicsExist = false;
+      let tid = "";
+      if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
+        tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
+        conflicsExist = tid.indexOf("Conflicts") !== -1;
+      }
 
             if (conflicsExist) {
                 let conflictedFiles = tid.split("Conflicts:")[1];
@@ -1138,11 +1134,8 @@ async function createUpstreamPush() {
           repo.getRemote(remotes[0]).then((remote)=> {
             remote.push([localBranch+":"+localBranch], {
               callbacks: {
-                // obtain a new copy of cred every time when user push.
                 credentials: function () {
-                  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                  cred = user.credentials;
-                  return cred;
+                  return createCredentials();
                 }
               }
             }).then((result) => {
@@ -1229,34 +1222,44 @@ async function pushToRemote() {
           window.alert("Your branch is already up to date");
           return;
         } else {
-          // Do the Push
-          Git.Repository.open(repoFullPath).then(function (repo) {
-            displayModal("Pushing changes to remote...");
-            addCommand("git push");
-            repo.getRemotes().then(function (remotes) {
-              repo.getRemote(remotes[0]).then(function (remote) {
-                return remote.push(
-                    ["refs/heads/" + branch + ":refs/heads/" + branch],
-                    {
-                      callbacks: {
-                        // obtain a new copy of cred every time when user push.
-                        credentials: function () {
-                          let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                          cred = user.credentials;
-                          return cred;
-                        }
-                      }
-                    }
-                );
-              }, function (e) {
-                console.log(Error(e));
-              }).then(async function () {
-                window.onbeforeunload = Confirmed;
-                await refreshAll(repo);
-                updateModalText("Push successful");
-              });
-            }, function (e) {
-              console.log(Error(e));
+            // tells the user if their branch is up to date or behind the remote branch
+            getAheadBehindCommits(branch).then(function (aheadBehind) {
+                if (aheadBehind.behind !== 0) {
+                    window.alert("your branch is behind remote by " + aheadBehind.behind);
+                    return;
+
+                } else if (aheadBehind.ahead === 0) {
+                    window.alert("Your branch is already up to date");
+                    return;
+                } else {
+                    // Do the Push
+                    Git.Repository.open(repoFullPath).then(function (repo) {
+                        displayModal("Pushing changes to remote...");
+                        addCommand("git push");
+                        repo.getRemotes().then(function (remotes) {
+                            repo.getRemote(remotes[0]).then(function (remote) {
+                                return remote.push(
+                                    ["refs/heads/" + branch + ":refs/heads/" + branch],
+                                    {
+                                        callbacks: {
+                                            credentials: function () {
+                                                return createCredentials();
+                                            }
+                                        }
+                                    }
+                                );
+                            }, function (e) {
+                                console.log(Error(e));
+                            }).then(async function () {
+                                window.onbeforeunload = Confirmed;
+                                await refreshAll(repo);
+                                updateModalText("Push successful");
+                            });
+                        }, function (e) {
+                            console.log(Error(e));
+                        });
+                    });
+                }
             });
           });
         }
@@ -1407,9 +1410,7 @@ function deleteRemoteBranch() {
               {
                 callbacks: { // pass in user credentials as a parameter
                   credentials: function () {
-                    let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                    cred = user.credentials;
-                    return cred;
+                    return createCredentials();
                   }
                 }
               }).then(function () {

@@ -4,32 +4,44 @@ var jsonfile = require("jsonfile");
 var fs = require("fs");
 var file;
 
-var encryptedPassword;
-var encryptedUsername;
+var encryptedOauthToken;
 
-function decrypt() {
-  file = "data.json";
+/*
+  This function reads an encrypted Oauth token from data.json
+  and stores the value in memory
+*/
+function retrieveEncryptedToken() {
+  file = "token.json";
 
-  var objRead = jsonfile.readFileSync(file); //JSON Object containing credentials
+  // JSON object containg token
+  var objRead = jsonfile.readFileSync(file);
 
-  encryptedUsername = objRead.username;
-  encryptedPassword = objRead.password;
+  encryptedOauthToken = objRead.OauthToken;
 }
 
-function getUsername() {
-  if (encryptedUsername != null) {
-    var decryptedUsernameBytes = CryptoJS.AES.decrypt(
-      encryptedUsername.toString(),
+/*
+  This function retrieves and returns a valid Oauth token from the file system
+  returns null if no token exists
+*/
+function getOauthToken() {
+  retrieveEncryptedToken();
+  if (encryptedOauthToken != null) {
+    var decryptedTokenBytes = CryptoJS.AES.decrypt(
+      encryptedOauthToken.toString(),
       os.hostname()
     );
-    return decryptedUsernameBytes.toString(CryptoJS.enc.Utf8);
+    return decryptedTokenBytes.toString(CryptoJS.enc.Utf8);
   }
 }
 
-function getPassword() {
-  var decryptedPasswordBytes = CryptoJS.AES.decrypt(
-    encryptedPassword.toString(),
-    os.hostname()
-  );
-  return decryptedPasswordBytes.toString(CryptoJS.enc.Utf8);
+function removeToken() {
+  let file = "token.json";
+
+  try{
+    fs.unlinkSync(file);
+  }
+  catch(err) {
+    console.log(err);
+  }
+  encryptedOauthToken = null;
 }
