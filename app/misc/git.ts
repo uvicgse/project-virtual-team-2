@@ -1201,7 +1201,7 @@ function fetchStatus() {
         });
       }).then(function () {
         displayAheadBehind();
-        updateModalText("Local status is up to date");
+        updateModalText("Fetch complete!");
       });
 }
 
