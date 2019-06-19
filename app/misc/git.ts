@@ -1386,11 +1386,8 @@ async function createUpstreamPush() {
           repo.getRemote(remotes[0]).then(async (remote) => {
             await remote.push([localBranch + ":" + localBranch], {
               callbacks: {
-                // obtain a new copy of cred every time when user push.
                 credentials: function () {
-                  let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                  cred = user.credentials;
-                  return cred;
+                  return createCredentials();
                 }
               }
             });
