@@ -1933,8 +1933,12 @@ async function amendLastCommit(newMessage: string) {
     tree = await lastCommit.getTree();
     treeOid = tree.id();
     lastCommitOid = lastCommit.id();
-
-    await lastCommit.amend("HEAD", signature, signature, newMessage, newMessage, treeOid, lastCommitOid);
+    
+    // Amend the last local commit with the new message
+    await lastCommit.amend("HEAD", signature, signature, newMessage, newMessage, treeOid, lastCommitOid)
+      .then(() => {
+        refreshAll(repos);
+      });
     addCommand("git commit --amend -m " + '"' + newMessage + '"');
   } catch (error) {
     console.log(error);
