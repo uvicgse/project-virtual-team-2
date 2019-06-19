@@ -488,21 +488,38 @@ function makeNode(c, column: number) {
     let email = stringer.split("%")[1];
     let title = "Author: " + name + "<br>" + "Message: " + c.message();
     let flag = false;
-   
+    let tagName = "";
+    let count = 1;
 
-    // Need to store beginning hash and number of commits in the node to track the commits that belong to a node
-    nodes.add({
-        id: id,
-        shape: "circularImage",
-        title: title,
-        image: img4User(name),
-        physics: false,
-        fixed: false,
-        x: (column - 1) * spacingX,
-        y: (id - 1) * spacingY,
-        author: c.author(),
-        beginningSha: c.toString(),
-        count: 1
+    
+    
+    // you can access the result from the promise from getTags here
+    getTags(c.toString(), count).then((commitList) => {
+        let commit = commitList.find((commit) => {  
+            return commit.commitSha === c.toString();
+        })
+
+        tagName = (commit.hasTag) ? commit.tagName : "";
+        //console.log("HERE TAG: " + tagName;
+    }).then(() => {
+
+        // Need to store beginning hash and number of commits in the node to track the commits that belong to a node
+        nodes.add({
+            id: id,
+            shape: "circularImage",
+            title: title + "<br>" + ((tagName !== "") ? "Tag name: " + tagName : ""),
+            image: img4User(name),
+            physics: false,
+            fixed: false,
+            x: (column - 1) * spacingX,
+            y: (id - 1) * spacingY,
+            author: c.author(),
+            beginningSha: c.toString(),
+            count: 1
+        })
+    })
+    .catch(error => {
+        console.log(error);
     });
 
     if (c.toString() in bname) {
