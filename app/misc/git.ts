@@ -282,6 +282,7 @@ async function showStash(index){
   let deletions = 0;
   let msg = [""];
   msg.pop();
+
   let repository = await Git.Repository.open(repoFullPath).then(function(repoResult){
     return repoResult;
     console.log("found a repository");
@@ -329,7 +330,7 @@ async function showStash(index){
         });
       });
     })
-    .then(function(msg){
+    .then(function(){
       setTimeout(function(){
         msg.push(" " + filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)");
         console.log("Displaying diff...");
