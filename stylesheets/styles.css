@@ -562,7 +562,7 @@ body .footer .commit-panel .commit-button-wrapper .commit-button {
   position: static;
   display: block;
   margin: 8px;
-  
+
   height: 40px;
   border-radius: 10px;
   border: 0;
@@ -747,7 +747,7 @@ div.selected-commit-diff-panel{
 
 div.selected-commit-diff-panel .commit-diff-panel-body{
   overflow-y:scroll;
-  height:90%;
+  height:50%;
   width: 100%;
   border: 3px solid #ccc;
   background-color: #FFF;
@@ -1006,7 +1006,7 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 #graphNodeClickModal table td:nth-child(2){
   width:100%;
 }
-/* Added the display: inline-block 
+/* Added the display: inline-block
 
 Added the margin top and margin bottom to add space between each of the blackboxes
 
@@ -1029,7 +1029,7 @@ in the model that pops-up when you click on a node */
 
 #tagDiv table {
  margin:2px;
-} 
+}
 #tagDiv button {
   width: 65px;
   margin: 0 10px;

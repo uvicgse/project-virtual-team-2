@@ -8,7 +8,7 @@ let secP = null, fromNode = null, toNode;
 let GraphNodeID = 0;
 
 
- 
+
  function returnSelectedNodeValue():number{
     let returnValue = GraphNodeID;
     GraphNodeID = 0;
@@ -236,7 +236,7 @@ function drawGraph() {
             if (properties.nodes.length > 0) {
                 let clicknode = properties.nodes[0];
                 console.log('CLICKNODE');
-                
+
                 if (flag === 'node') {
                     clicknode = nodes.get(clicknode);
 					displaySelectedCommitDiffPanel(properties.nodes[0]);
@@ -275,16 +275,16 @@ function drawGraph() {
         })
 
         network.on("oncontext", function(params) {
-    
+
             if(GraphNodeID != 0){
               GraphNodeID = 0;
             }else{
               //console.log("Please right click and select the appropriate ID");
             }
           });
-        
-    
-        
+
+
+
           network.on("click", function (params) {
               GraphNodeID = parseInt(params.nodes.toString());
               console.log("Graph Node ID is: " + GraphNodeID);
@@ -356,6 +356,8 @@ function showDiff(commitId): void {
       commitPanel.style.height = "100vh";
       commitPanel.style.width = "100vw";
       commitPanel.style.zIndex = "10";
+      commitPanel.style.display = "block";
+
     }
 
     let bodyPanel = document.getElementById("commit-diff-panel-body");
