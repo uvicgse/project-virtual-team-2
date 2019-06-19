@@ -24,6 +24,8 @@ export class selectedCommitDiffPanelComponent {
         commitPanel.style.height = "0vh";
         commitPanel.style.width = "0vw";
         commitPanel.style.zIndex = "-10";
+        commitPanel.style.display = "none";
+
 
         let footer = document.getElementById("footer");
         if (footer != null) {
