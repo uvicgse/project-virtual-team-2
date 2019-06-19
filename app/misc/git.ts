@@ -657,7 +657,8 @@ async function addOrModifyTag(commit) {
       } else{
         console.log('tag failed');
       }
-      refreshAll(repository);
+  }).then(() => {
+    refreshAll(repository);
   })
   .catch ((err) => {
     console.log("Could not add/modify tag, Error:" + err);
@@ -679,12 +680,13 @@ async function deleteTag(tagName) {
           .then(() => {
             console.log(`${name} deleted`);
             addCommand('git tag -d '+ name);
-
           })
           .then((res) =>{
             resolve(res);
           })
-          .catch((err) => console.log(err));
+          .catch((err) => console.log(err));      
+      }).then(() => {
+        refreshAll(repository);
       })
       .catch((err) => console.log(err));
 
