@@ -997,8 +997,7 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
   color: black;
 }
 #graphNodeClickModal table td{
-  padding:2px;
-  margin: 2px;
+  padding:5px;
 }
 #graphNodeClickModal table td:first-child{
   width:40%;
@@ -1023,17 +1022,12 @@ in the model that pops-up when you click on a node */
 
 #tagDiv input{
   border-radius: 3px;
-  padding: 1px;
-  margin:1px;
+  padding: 2px;
 }
 
 #tagDiv table {
  margin:2px;
 } 
-#tagDiv button {
-  width: 65px;
-  margin: 0 10px;
-}
 .error {
   background-color: #fce4e4;
   border: 1px solid #cc0033;
@@ -1252,11 +1246,84 @@ body .pull-request-panel {
   margin-left: 10px;
 }
 
-#stash-actions button{
-  margin-right: 6px;
+#stash-item {
+  display: inline-flex;
+  align-items: center;
+  background: #efefef;
+  padding: 5px;
+  margin: 3px;
+  width: 100%;
 }
 
-#stash-item {
-  display: flex;
-  align-items: center;
+#stash-id {
+  width: 100%;
 }
+
+/* stash-item dropdown menu styles START */
+.icons li {
+    background: none repeat scroll 0 0 #828282;
+    height: 3px;
+    width: 3px;
+    line-height: 0;
+    list-style: none outside none;
+    margin-top: 3px;
+    border-radius:50%;
+    pointer-events: none;
+}
+
+.dropbtn {
+    color: white;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    text-align: right;
+    margin-top: auto;
+    margin-right: auto;
+    margin-bottom: auto;
+}
+
+.dropdown {
+    position: absolute;
+    display: inline-block;
+    right: 0.4em;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown a:hover {background-color: #f1f1f1}
+
+.show {display:block;}
+/* stash-item dropdown menu styles END */
+
+/* Stash-functions START */
+.stash-functions textarea {
+    resize: none;
+    width: 95%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    height: 50px;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.stash-function-buttons {
+  text-align: center;
+}
+/* Stash-functions END */
