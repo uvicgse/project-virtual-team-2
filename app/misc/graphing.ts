@@ -314,6 +314,7 @@ function makeBranchColor(oldResult) {
 
 function makeBasicNode(c, column: number) {
     let reference;
+    let recolorFlag;
     let name = getName(c.author().toString());
     let stringer = c.author().toString().replace(/</, "%").replace(/>/, "%");
     let flag = true;
@@ -333,6 +334,8 @@ function makeBasicNode(c, column: number) {
             break;
         }
     }
+
+    //TODO: Add flag to see if commit node label is 'stash' and recolor it to border: '#e07b16'
 
     if (flag) {
         id = basicNodeId++;
@@ -373,24 +376,63 @@ function makeBasicNode(c, column: number) {
             let bp = branchName.name().split("/");
             let shortName = bp[bp.length - 1];
             console.log(shortName + " sub-branch: " + branchName.isHead().toString());
+
+            if(branchName == "refs/stash"){ //color node orange if it is a stash
+                recolorFlag = true;
+            }else{
+                recolorFlag = false;
+            }
             if (branchName.isHead()) {
                 shortName = "*" + shortName;
             }
-            bsNodes.add({
-                id: id + numOfCommits * (i + 1),
-                shape: "box",
-                title: branchName,
-                label: shortName,
-                physics: false,
-                fixed: false,
-                x: (column - 0.6 * (i + 1)) * spacingX,
-                y: (id - 0.3) * spacingY,
-            });
 
-            bsEdges.add({
-                from: id + numOfCommits * (i + 1),
-                to: id
-            });
+            if(recolorFlag){
+
+                bsNodes.add({
+                    id: id + numOfCommits * (i + 1),
+                    shape: "box",
+                    title: branchName,
+                    label: shortName,
+                    physics: false,
+                    fixed: false,
+                    x: (column - 0.6 * (i + 1)) * spacingX,
+                    y: (id - 0.3) * spacingY,
+                    color: {
+                        border: "#e07b16",
+                        background: "#FFF",
+                        highlight: {
+                            border: "#FF0",
+                            background: "#FFF"
+                        },
+                        hover: {
+                            border: "#F00",
+                            background: "#FFF"
+                        },
+                    },
+                });
+
+                bsEdges.add({
+                    from: id + numOfCommits * (i + 1),
+                    to: id,
+                    color: "#e07b16",
+                });
+            }else{
+                bsNodes.add({
+                    id: id + numOfCommits * (i + 1),
+                    shape: "box",
+                    title: branchName,
+                    label: shortName,
+                    physics: false,
+                    fixed: false,
+                    x: (column - 0.6 * (i + 1)) * spacingX,
+                    y: (id - 0.3) * spacingY,
+                });
+
+                bsEdges.add({
+                    from: id + numOfCommits * (i + 1),
+                    to: id,
+                });
+            }
 
             branchIds[id] = id + numOfCommits * (i + 1);
         }
@@ -399,6 +441,7 @@ function makeBasicNode(c, column: number) {
 
 function makeAbsNode(c, column: number) {
     let reference;
+    let recolorFlag;
     let name = getName(c.author().toString());
     let stringer = c.author().toString().replace(/</, "%").replace(/>/, "%");
     let email = stringer.split("%")[1];
@@ -418,6 +461,8 @@ function makeAbsNode(c, column: number) {
             }
         }
     }
+
+    //TODO: Add flag to see if commit node label is 'stash' and recolor it to border: '#e07b16'
 
     if (flag) {
         let id = absNodeId++;
@@ -444,24 +489,63 @@ function makeAbsNode(c, column: number) {
                 let bp = branchName.name().split("/");
                 let shortName = bp[bp.length - 1];
                 console.log(shortName + " sub-branch: " + branchName.isHead().toString());
+
+                if (branchName == "refs/stash") { //color node orange if it is a stash
+                    recolorFlag = true;
+                }else{
+                    recolorFlag = false;
+                }
+
                 if (branchName.isHead()) {
                     shortName = "*" + shortName;
                 }
-                abNodes.add({
-                    id: id + numOfCommits * (i + 1),
-                    shape: "box",
-                    title: branchName,
-                    label: shortName,
-                    physics: false,
-                    fixed: false,
-                    x: (column - 0.6 * (i + 1)) * spacingX,
-                    y: (id - 0.3) * spacingY,
-                });
+                if(recolorFlag){
+                    abNodes.add({
+                        id: id + numOfCommits * (i + 1),
+                        shape: "box",
+                        title: branchName,
+                        label: shortName,
+                        physics: false,
+                        fixed: false,
+                        x: (column - 0.6 * (i + 1)) * spacingX,
+                        y: (id - 0.3) * spacingY,
+                        color: {
+                            border: "#e07b16",
+                            background: "#FFF",
+                            highlight: {
+                                border: "#FF0",
+                                background: "#FFF"
+                            },
+                            hover: {
+                                border: "#F00",
+                                background: "#FFF"
+                            },
+                        },
+                    });
 
-                abEdges.add({
-                    from: id + numOfCommits * (i + 1),
-                    to: id
-                });
+                    abEdges.add({
+                        from: id + numOfCommits * (i + 1),
+                        to: id,
+                        color: "#e07b16"
+                    });
+
+                }else{
+                    abNodes.add({
+                        id: id + numOfCommits * (i + 1),
+                        shape: "box",
+                        title: branchName,
+                        label: shortName,
+                        physics: false,
+                        fixed: false,
+                        x: (column - 0.6 * (i + 1)) * spacingX,
+                        y: (id - 0.3) * spacingY,
+                    });
+
+                    abEdges.add({
+                        from: id + numOfCommits * (i + 1),
+                        to: id
+                    });
+                }
             }
         }
 
@@ -483,12 +567,14 @@ function makeAbsNode(c, column: number) {
 function makeNode(c, column: number) {
     let id = nodeId++;
     let reference;
+    let recolorFlag;
     let name = getName(c.author().toString());
     let stringer = c.author().toString().replace(/</, "%").replace(/>/, "%");
     let email = stringer.split("%")[1];
     let title = "Author: " + name + "<br>" + "Message: " + c.message();
     let flag = false;
-   
+
+    //TODO: Add flag to see if commit node label is 'stash' and recolor it to border: '#e07b16'
 
     // Need to store beginning hash and number of commits in the node to track the commits that belong to a node
     nodes.add({
@@ -511,24 +597,64 @@ function makeNode(c, column: number) {
             let bp = branchName.name().split("/");
             let shortName = bp[bp.length - 1];
             console.log(shortName + " sub-branch: " + branchName.isHead().toString());
+
+            if (branchName == "refs/stash") { //color node orange if it is a stash
+                recolorFlag = true;
+            }else{
+                recolorFlag = false
+            }
+
             if (branchName.isHead()) {
                 shortName = "*" + shortName;
             }
-            nodes.add({
-                id: id + numOfCommits * (i + 1),
-                shape: "box",
-                title: branchName,
-                label: shortName,
-                physics: false,
-                fixed: false,
-                x: (column - 0.6 * (i + 1)) * spacingX,
-                y: (id - 0.3) * spacingY,
-            });
 
-            edges.add({
-                from: id + numOfCommits * (i + 1),
-                to: id
-            });
+            if(recolorFlag){
+                nodes.add({
+                    id: id + numOfCommits * (i + 1),
+                    shape: "box",
+                    title: branchName,
+                    label: shortName,
+                    physics: false,
+                    fixed: false,
+                    x: (column - 0.6 * (i + 1)) * spacingX,
+                    y: (id - 0.3) * spacingY,
+                    color: {
+                        border: "#e07b16",
+                        background: "#FFF",
+                        highlight: {
+                            border: "#FF0",
+                            background: "#FFF"
+                        },
+                        hover: {
+                            border: "#F00",
+                            background: "#FFF"
+                        },
+                    },
+                });
+
+                edges.add({
+                    from: id + numOfCommits * (i + 1),
+                    to: id,
+                    color: "#e07b16"
+                });
+            }else{
+
+                nodes.add({
+                    id: id + numOfCommits * (i + 1),
+                    shape: "box",
+                    title: branchName,
+                    label: shortName,
+                    physics: false,
+                    fixed: false,
+                    x: (column - 0.6 * (i + 1)) * spacingX,
+                    y: (id - 0.3) * spacingY,
+                });
+
+                edges.add({
+                    from: id + numOfCommits * (i + 1),
+                    to: id
+                });
+            }
         }
         flag = true;
     }
