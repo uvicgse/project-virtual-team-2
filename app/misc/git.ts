@@ -24,15 +24,17 @@ let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
-export class TagItem {
+export class CommitItem {
   public tagName: string;
+  public oldTagName: string;
   public commitMsg: string;
   public tagMsg: string;
   public commitSha: string;
   public hasTag: boolean;
 
   constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string, hasTag:boolean){
-
+    this.oldTagName = tagName;
+    this.hasTag = hasTag;
     this.tagName = tagName;
     this.commitMsg = commitMsg;
     this.tagMsg = tagMsg;
@@ -47,7 +49,7 @@ export class TagItem {
 export async function getTags(beginningHash, numCommit){
   let commitList
   let tags;
-
+  console.log('TESTLKSJEJFKDLSFJKLDSJDFKLSJFKLSJFKLDSJ');
   let sharedRepo, sharedRefs;
   // get repo and refs in order
   await Git.Repository.open(repoFullPath).then(function(repo){
@@ -76,25 +78,27 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of tagItems based on size of commitList
+// Returns an array of CommitItems based on size of commitList
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
   let tItems;
   let found = false;
   let tags;
-  // Create array of tags
-  tItems = await Promise.all(sharedRefs.map(async (ref) => {
-    if (ref.isTag()) {
-      tag = await getRefObject(repo, ref);
-      commit = await getCommit(repo, ref);
-      return new TagItem(tag.name(), commit.message(), tag.message(), commit.sha());
-    }
-  }));
+  let temp;
+// Create array of tags
+tItems = await Promise.all(sharedRefs.map(async (ref) => {
+  if (ref.isTag()) {
+    console.log(ref);
+    temp = await getRefObject(repo, ref);
+    tag = temp.tag;
+    commit = temp.commit;
+    return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
+  }
+}));
 
-  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
+  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem. 
   // If unable to match a tag with a commit, return CommitItem without tag name and message
-
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
       if (tItems[j]) {
@@ -103,10 +107,13 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
         }
       }
     }
-    return new TagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
+    return new CommitItem("", commit.message(), "", commit.sha(), false);
   }));
 
-  return tags;
+  // return tags;
+  return await new Promise(resolve=> {
+    resolve(tags);
+  });
 }
 
 // get each commit's sha for a graph node
@@ -1435,14 +1442,45 @@ function displayAheadBehind() {
 }
 
 //returns the name of the current branch
-function getBranchName() {
-    return Git.Repository.open(repoFullPath).then((repo) => {
-        return repo.getCurrentBranch().then((currBranch) => {
-            return Branch.name(currBranch).then((branchName) => {
-                return branchName;
-            });
-        });
-    });
+// function getBranchName() {
+//     return Git.Repository.open(repoFullPath).then((repo) => {
+//         return repo.getCurrentBranch().then((currBranch) => {
+//             return Branch.name(currBranch).then((branchName) => {
+//                 return branchName;
+//             });
+//         });
+//     });
+// }
+//returns the name of the current branch
+async function getBranchName() {
+  let repo;
+  let currentBranch;
+  let branchName;
+  let tempPath;
+
+  // When repository is initially opened, repoFullPath is not set, 
+  // therefore method can get repo path from element repoOpen.
+  // No need to use repoOpen if repoFullPath is set.
+  if (!repoFullPath) {
+    if (document.getElementById("repoOpen").value == null) {
+      return
+    } else {
+      console.log(document.getElementById("repoOpen").value);
+      tempPath = document.getElementById("repoOpen").value;
+    }
+  } else {
+    tempPath = repoFullPath;
+  }
+
+  repo = await Git.Repository.open(tempPath);
+
+  currentBranch = await repo.getCurrentBranch();
+
+  branchName = await Branch.name(currentBranch);
+
+  return new Promise(resolve=> {
+    resolve(branchName);
+  });
 }
 
 
@@ -1836,6 +1874,83 @@ function resetCommit(name: string) {
     }, function (err) {
       updateModalText(err);
     });
+}
+
+// Method will return true/false if current branch has one or more local commits
+async function checkIfExistLocalCommit() {
+  let branch;
+  let remoteBranchExist;
+  let aheadBehind;
+  let ret;
+
+  try {
+    // Get branch name 
+    branch = await getBranchName();
+  } catch (error) {
+    console.log(error);
+  }
+  
+  try {
+    remoteBranchExist = await checkIfExistOrigin(branch);
+  } catch (error) {
+    console.log(error);
+  }
+
+  // Check if the remote version of current branch exists
+  if (!remoteBranchExist) {
+    return false;
+  } 
+
+  try {
+    aheadBehind = await getAheadBehindCommits(branch);
+  } catch (error) {
+    console.log(error);
+  }
+  
+  // Return true if local branch is ahead. Else, local branch is not ahead so return false.
+  if (aheadBehind.ahead > 0) {
+    return true;
+  } else {
+    return false
+  }
+
+}
+
+// Method takes the new commit message and amends the last commit in the current branch
+async function amendLastCommit(newMessage: string) {
+  let repo;
+  let revwalk;
+  let commitArray;
+  let lastCommit;
+  let lastCommitOid;
+  let signature;
+  let tree;
+  let treeOid;
+
+  repo = await Git.Repository.open(repoFullPath);
+  revwalk = Git.Revwalk.create(repo);
+  // Points revwalk to last commit
+  revwalk.pushHead();
+  // Get the last commit
+  commitArray = await revwalk.getCommits(1);
+  lastCommit = commitArray[0];
+
+  try {
+    signature = repo.defaultSignature();
+    tree = await lastCommit.getTree();
+    treeOid = tree.id();
+    lastCommitOid = lastCommit.id();
+    
+    // Amend the last local commit with the new message
+    await lastCommit.amend("HEAD", signature, signature, newMessage, newMessage, treeOid, lastCommitOid)
+      .then(() => {
+        refreshAll(repo);
+      });
+    addCommand("git commit --amend -m " + '"' + newMessage + '"');
+  } catch (error) {
+    console.log(error);
+    window.alert('Unable to amend last commit');
+  }
 }
 
 function revertCommit() {

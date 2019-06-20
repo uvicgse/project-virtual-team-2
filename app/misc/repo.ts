@@ -338,6 +338,7 @@ function openRepository() {
     document.getElementById('spinner').style.display = 'block';
     let branch;
     bname = [];
+    checkAmendButton();
     //Get the current branch from the repo
     repository.getCurrentBranch()
       .then(function (reference) {
