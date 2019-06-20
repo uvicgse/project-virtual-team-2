@@ -440,3 +440,33 @@
     </div>
   </div>
 </div>
+
+<!-- Modal for creating a remote branch when none exists -->
+<div id="modalW4" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">Warning!</h4>
+            </div>
+            <div class="modal-body" id="modal-text-box">
+                <p style="color:black">Console Log:</p>
+
+                <p><code>fatal: The current branch has no upstream branch.
+                    To push the current branch and set the remote as upstream, use</code></p>
+
+                <p><code>git push --set-upstream origin [branch name]</code></p>
+
+              <p style="color:black">There is no upstream for the current branch. Would you like to run:</p>
+              <p><code>git push --set-upstream origin [branch name]</code></p><p style="color:black">to create one?</p>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="createUpstreamPush()">Run Command</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Back</button>
+            </div>
+        </div>
+    </div>
+</div>
