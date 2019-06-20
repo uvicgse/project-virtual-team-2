@@ -95,23 +95,21 @@ export class AddRepositoryComponent {
     switchToMainPanel();
   }
 
+  /* commented out because this loads the graph while using stage/unstage drag/drop
+    prepareDontMissDND :  function() {
 
-  prepareDontMissDND :  function() {
+        $(document.body).bind("dragover", function(e) {
+            e.preventDefault();
+            return false;
+        });
 
-      $(document.body).bind("dragover", function(e) {
-          e.preventDefault();
-          return false;
-      });
-
-      $(document.body).bind("drop", function(e){
-          e.preventDefault();
-          fileUpload(e);
-          return false;
-      });
-
-
-  
-}
+        $(document.body).bind("drop", function(e){
+            e.preventDefault();
+            fileUpload(e);
+            return false;
+        });
+  }
+  */
 
 function fileUpload(ev){
   if(checkIfInTheApp()){
