@@ -1514,7 +1514,7 @@ async function openBranchModal(stashIndex) {
   if (stashIndex == null) stashIndex = 0;
 
   let stashBranchFooter =
-    '<button type="button" class="btn btn-primary" id="createBranchButton" onclick="createBranch()">Create</button>' +
+    '<button type="button" class="btn btn-primary" id="createBranchButton" onclick="createBranch(0)">Create</button>' +
     '<button type="button" class="btn btn-primary" id="branchFromStashButton" onclick="branchStash(' + stashIndex + ')">Create from Stash{' + stashIndex + '}</button>'
     ;
 
