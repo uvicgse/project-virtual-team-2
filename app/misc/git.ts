@@ -1537,12 +1537,12 @@ async function pushToRemote() {
                     });
                 }
             });
-          });
-        }
-      });
-    }
-  });
-}
+          }
+        });
+      }
+    });
+  }
+
 
 function commitModal() {
   // TODO: implement commit modal
