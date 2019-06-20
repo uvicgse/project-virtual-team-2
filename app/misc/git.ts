@@ -1133,10 +1133,9 @@ async function createUpstreamPush() {
   addCommand("git push -u origin " + branch);
   Git.Repository.open(repoFullPath).then((repo) => {
       repo.getCurrentBranch().then((ref) => {
-        console.log("HERE");
         repo.getRemotes().then((remotes) => {
-          repo.getRemote(remotes[0]).then((remote)=> {
-            remote.push([localBranch+":"+localBranch], {
+          repo.getRemote(remotes[0]).then(async (remote) => {
+            await remote.push([localBranch + ":" + localBranch], {
               callbacks: {
                 // obtain a new copy of cred every time when user push.
                 credentials: function () {
@@ -1145,18 +1144,10 @@ async function createUpstreamPush() {
                   return cred;
                 }
               }
-            }).then((result) => {
-              //link to local branch
-              Branch.setUpstream(ref, remoteBranchName).then((setRemoteResult) => {
-                updateModalText("Set upstream success");
-              }), function(e) {
-                updateModalText("Something went wrong");
-                console.log(Error(e));
-              }
-            }), function(e) {
-              updateModalText("Something went wrong");
-              console.log(Error(e));
-            }
+            });
+            //link to local branch
+            await Branch.setUpstream(ref, remoteBranchName);
+            updateModalText("Set upstream success");
           });
         }), function(e) {
             updateModalText("Something went wrong");
