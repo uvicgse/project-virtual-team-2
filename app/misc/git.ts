@@ -24,15 +24,17 @@ let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
-export class TagItem {
+export class CommitItem {
   public tagName: string;
+  public oldTagName: string;
   public commitMsg: string;
   public tagMsg: string;
   public commitSha: string;
   public hasTag: boolean;
 
   constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string, hasTag:boolean){
-
+    this.oldTagName = tagName;
+    this.hasTag = hasTag;
     this.tagName = tagName;
     this.commitMsg = commitMsg;
     this.tagMsg = tagMsg;
@@ -47,7 +49,7 @@ export class TagItem {
 export async function getTags(beginningHash, numCommit){
   let commitList
   let tags;
-
+  console.log('TESTLKSJEJFKDLSFJKLDSJDFKLSJFKLSJFKLDSJ');
   let sharedRepo, sharedRefs;
   // get repo and refs in order
   await Git.Repository.open(repoFullPath).then(function(repo){
@@ -76,25 +78,27 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of tagItems based on size of commitList
+// Returns an array of CommitItems based on size of commitList
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
   let tItems;
   let found = false;
   let tags;
-  // Create array of tags
-  tItems = await Promise.all(sharedRefs.map(async (ref) => {
-    if (ref.isTag()) {
-      tag = await getRefObject(repo, ref);
-      commit = await getCommit(repo, ref);
-      return new TagItem(tag.name(), commit.message(), tag.message(), commit.sha());
-    }
-  }));
+  let temp;
+// Create array of tags
+tItems = await Promise.all(sharedRefs.map(async (ref) => {
+  if (ref.isTag()) {
+    console.log(ref);
+    temp = await getRefObject(repo, ref);
+    tag = temp.tag;
+    commit = temp.commit;
+    return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
+  }
+}));
 
-  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
+  // Check to see if commits match with any tags, if so, include tag name and message in CommitItem. 
   // If unable to match a tag with a commit, return CommitItem without tag name and message
-
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
       if (tItems[j]) {
@@ -103,10 +107,13 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
         }
       }
     }
-    return new TagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
+    return new CommitItem("", commit.message(), "", commit.sha(), false);
   }));
 
-  return tags;
+  // return tags;
+  return await new Promise(resolve=> {
+    resolve(tags);
+  });
 }
 
 // get each commit's sha for a graph node
