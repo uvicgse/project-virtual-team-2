@@ -1491,15 +1491,13 @@ async function pushToRemote() {
                         }, function (e) {
                             console.log(Error(e));
                         });
-                    });
-                }
+                  });
+              }
             });
-
-          }
-        });
-      }
+        }
     });
-  }
+}
+
 
 
 function commitModal() {
