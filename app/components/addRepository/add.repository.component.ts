@@ -95,24 +95,14 @@ export class AddRepositoryComponent {
     switchToMainPanel();
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   /* commented out because this loads the graph while using stage/unstage drag/drop
     prepareDontMissDND :  function() {
-=======
-/*
-=======
-/* commented out because this loads the graph while using stage/unstage drag/drop
->>>>>>> Drag and drop functionality working
-  prepareDontMissDND :  function() {
->>>>>>> drag and drop working, need to fix graph loading
 
         $(document.body).bind("dragover", function(e) {
             e.preventDefault();
             return false;
         });
 
-<<<<<<< HEAD
         $(document.body).bind("drop", function(e){
             e.preventDefault();
             fileUpload(e);
@@ -120,14 +110,6 @@ export class AddRepositoryComponent {
         });
   }
   */
-=======
-      $(document.body).bind("drop", function(e){
-          e.preventDefault();
-          fileUpload(e);
-          return false;
-      });
-} */
->>>>>>> drag and drop working, need to fix graph loading
 
 function fileUpload(ev){
   if(checkIfInTheApp()){
