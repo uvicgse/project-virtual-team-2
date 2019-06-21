@@ -729,11 +729,6 @@ function openRepository() {
     $('#modal').modal('show');
   }
 
-  function displayPushToRemoteModal() { //modal displayed when push attempted to remote branch that doesnt exist
-
-    $('#modalW4').modal('show');
-  }
-
   function updateModalText(text) {
     document.getElementById("modal-text-box").innerHTML = text;
     $('#modal').modal('show');

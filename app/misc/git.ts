@@ -1189,13 +1189,16 @@ function getAllCommits(callback) {
   let aclist = [];
   let singleReference;
   let name;
+  console.log("Finding all commits");
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
       repos = repo;
+      console.log("fetching all remote repositories");
       return repo.getReferences(Git.Reference.TYPE.LISTALL);
     })
     .then(function (refs) {
       let count = 0;
+      console.log("getting " + refs.length + " remote repositories");
       async.whilst(
         function () {
           return count < refs.length;
@@ -1204,6 +1207,7 @@ function getAllCommits(callback) {
         function (cb) {
           // Remove tag references or because getReferenceCommit does not recognize tag references
           if (!refs[count].isTag() && !refs[count].isRemote()) {
+            console.log("referenced branch exists on remote repository");
             repos.getReferenceCommit(refs[count])
             .then(function (commit) {
               let history = commit.history(Git.Revwalk.SORT.Time);
@@ -1215,6 +1219,7 @@ function getAllCommits(callback) {
                   }
                 }
                 count++;
+                console.log(count + " out of " + allCommits.length + " commits");
                 cb();
               });
 
@@ -1223,6 +1228,7 @@ function getAllCommits(callback) {
               console.log(err);
             });
           } else {
+            console.log('current branch does not exist on remote');
             count++;
             cb();
           }
@@ -1364,49 +1370,6 @@ function checkIfExistOrigin(branchName) {
     });
 }
 
-//push function to remote branch, we need to push to remote and then link that to the local branch
-async function createUpstreamPush() {
-    displayModal("Pushing changes to remote... and setting upstream branch");
-
-  let branch = "";
-  await getBranchName().then((branchName) => {
-    branch = branchName;
-  });
-
-  let remoteDirectory = "refs/remotes/origin";
-  let localDirectory = "refs/heads";
-
-  let remoteBranchName = path.join(remoteDirectory,branch);
-  let localBranch = path.join(localDirectory, branch);
-
-  addCommand("git push -u origin " + branch);
-  Git.Repository.open(repoFullPath).then((repo) => {
-      repo.getCurrentBranch().then((ref) => {
-        repo.getRemotes().then((remotes) => {
-          repo.getRemote(remotes[0]).then(async (remote) => {
-            await remote.push([localBranch + ":" + localBranch], {
-              callbacks: {
-                credentials: function () {
-                  return createCredentials();
-                }
-              }
-            });
-            //link to local branch
-            await Branch.setUpstream(ref, remoteBranchName);
-            updateModalText("Set upstream success");
-          });
-        }), function(e) {
-            updateModalText("Something went wrong");
-          console.log(Error(e));
-        }
-      }), function(e) {
-          updateModalText("Something went wrong");
-        console.log(Error(e));
-      }
-  })
-
-}
-
 
 //calls getAheadBedhindCommits to display status of local repo to user
 function displayAheadBehind() {
@@ -1478,25 +1441,18 @@ async function getBranchName() {
 
 
 async function pushToRemote() {
-  let branch = "";
-  await getBranchName().then((branchName) => {
-    branch = branchName;
-  });
-  //checks if the remote version of your current branch exist
-  checkIfExistOrigin(branch).then(function (remoteBranchExist) {
-    if (!remoteBranchExist) {
-      displayPushToRemoteModal();
-      return;
-    } else {
-      // tells the user if their branch is up to date or behind the remote branch
-      getAheadBehindCommits(branch).then(function (aheadBehind) {
-        if (aheadBehind.behind !== 0) {
-          window.alert("your branch is behind remote by " + aheadBehind.behind);
-          return;
-
-        } else if (aheadBehind.ahead === 0) {
-          window.alert("Your branch is already up to date");
-          return;
+    let branch = "";
+    await getBranchName().then((branchName) => {
+        branch = branchName;
+    });
+    //checks if the remote version of your current branch exist
+    checkIfExistOrigin(branch).then(function (remoteBranchExist) {
+        if (!remoteBranchExist) {
+            window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
+                "To push the current branch and set the remote as upstream, use\n" +
+                "\n" +
+                "    git push --set-upstream origin test-branch");
+            return;
         } else {
             // tells the user if their branch is up to date or behind the remote branch
             getAheadBehindCommits(branch).then(function (aheadBehind) {
@@ -1518,6 +1474,7 @@ async function pushToRemote() {
                                     ["refs/heads/" + branch + ":refs/heads/" + branch],
                                     {
                                         callbacks: {
+
                                             credentials: function () {
                                                 return createCredentials();
                                             }
@@ -1537,6 +1494,7 @@ async function pushToRemote() {
                     });
                 }
             });
+
           }
         });
       }
