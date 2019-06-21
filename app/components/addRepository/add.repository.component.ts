@@ -111,7 +111,7 @@ export class AddRepositoryComponent {
   }
   */
 
-function fileUpload(ev){
+fileUpload(ev){
   if(checkIfInTheApp()){
     ev.dataTransfer = ev.originalEvent.dataTransfer;
     if (ev.dataTransfer.items) {
