@@ -517,25 +517,36 @@ function openRepository() {
     if (id == "branch-dropdown") {
       let isLocal = 0;
       let isRemote = 0;
+
+
+      /*Add a remote branch icon for remote branches
+      Git.Repository.open(repoFullPath)
+        .then(function (repo) {
+          Git.Reference.list(repo).then(function (array) {
+            if (array.includes("refs/remotes/origin/" + name)) {
+              console.log("0")
+              console.log(array)
+              a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
+              branchesTab.appendChild(a)
+              isRemote = 1
+            }
+          })
+        })
+      */
+
       // Add a local branch icon for local branches
       Git.Repository.open(repoFullPath)
         .then(function (repo) {
           Git.Reference.list(repo).then(function (array) {
             // Remote
             if (array.includes("refs/remotes/origin/" + name)) {
-              // if name has already been found as local make both otherwise remote
-              if(quickBranchTagReload.some(b => b.name == name)) {
-                const thisIndex = quickBranchTagReload.findIndex(b => b.name == name);
-                quickBranchTagReload[thisIndex].type = "both"
-                quickBranchTagReload[thisIndex].html = "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'><img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>"
-                a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
-              } else {
-                a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
-                let remoteObj = {html: "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>", type: "remote", name: name}
-                this.quickBranchTagReload.push(remoteObj)
-                // Do Not add delete button for master
-                branchesTab.appendChild(a)
-              }
+              let remoteObj = {html: "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>", type: "remote", name: name}
+              //console.log("fire0")
+              console.log(remoteObj)
+              //onsole.log(this.quickBranchTagReload)
+              this.quickBranchTagReload.push(remoteObj)
+              a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
+              branchesTab.appendChild(a)
               isRemote = 1
               
               
@@ -571,7 +582,41 @@ function openRepository() {
           }
         })
         
+      // Adding a delete button for each branch
+      if (name.toLowerCase() != "master") {
+        var button = document.createElement("Button");
+        button.innerHTML = "Delete";
+        button.classList.add('btn-danger');
+        
+        
+        $(button).click(function () {
+          
+          // Only show valid delete branch button(s)
+          if (isRemote && !isLocal) {
+            document.getElementById("localDeleteButton").style.display = 'none';
+            document.getElementById("remoteDeleteButton").style.display = '';
+            
+          }
+          else if (isLocal && !isRemote) {
+            document.getElementById("remoteDeleteButton").style.display = 'none';
+            document.getElementById("localDeleteButton").style.display = '';
+            
+          }
+          else {
+            document.getElementById("localDeleteButton").style.display = '';
+            document.getElementById("remoteDeleteButton").style.display = '';
+            
+          }
+
+          $('#branch-to-delete').val(name);
+          document.getElementById("displayedBranchName").innerHTML = name;
+          $('#delete-branch-modal').modal(); // Display delete branch warning modal
+         });
+        li.appendChild(button); // Add delete button to the branch dropdown list
+        }
+      
     }
+    ul.appendChild(li);
   }
 
   
@@ -603,14 +648,23 @@ function openRepository() {
           a.setAttribute("class", "list-group-item");
           a.setAttribute("onclick", onclick + ";event.stopPropagation()");
           a.appendChild(document.createTextNode(name));
-         a.innerHTML = BT.name;
-          if(BT.type == "remote" || BT.type == "local" || BT.type == "both"){
-            if (name.toLowerCase() != "master") {
-              a.innerHTML += button.outerHTML
-            }
-            a.innerHTML += BT.html;
-            
+          a.innerHTML = BT.name;
+          li.appendChild(a);
+          let isRemote = false;
+
+          
+          
+          if(BT.type == "remote" && isRemote == false){
+            a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
             branchesTab.appendChild(a)
+            isRemote = true
+          } else if(BT.type == "tag"){
+            a.innerHTML += "<img src='./assets/tag-icon.png' width='20' height='20' align='right' title='Local'>";
+            tagsTab.appendChild(a)
+          } else if(isRemote == false && BT.type == "both"){
+            a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
+            branchesTab.appendChild(a)
+            isRemote = true
           }
           if(BT.type == "tag"){
             if (name.toLowerCase() != "master") {
