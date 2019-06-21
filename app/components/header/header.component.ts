@@ -13,6 +13,8 @@ export class HeaderComponent   {
   repoName: string = "Repo name";
   repoBranch: string = "Repo branch";
   repository: any;
+  showBranches: boolean = true;
+  showTags: boolean = false;
 
   promptUserToAddRepository(): void {
     switchToAddRepositoryPanel();
@@ -82,6 +84,18 @@ export class HeaderComponent   {
       document.getElementById('Password1').classList.remove('error');
       document.getElementById('password-error-icon').style.visibility = 'hidden';
     }
+  }
+
+  displayBranches(): void {
+    document.getElementById('branchesTab').style.display = 'block'
+    document.getElementById('tagsTab').style.display = 'none'
+    console.log('branches')
+  }
+
+  displayTags(): void {
+    document.getElementById('branchesTab').style.display = 'none'
+    document.getElementById('tagsTab').style.display = 'block'
+    console.log('tags')
   }
 
 }

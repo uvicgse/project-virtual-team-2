@@ -136,7 +136,7 @@ body .navbar {
 body .navbar .dropdown-menu {
   z-index: 300;
   background-color: #282828;
-  width: 250px;
+  width: 400px;
   color: #ffffff;
 }
 
