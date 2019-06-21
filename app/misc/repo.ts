@@ -127,7 +127,7 @@ function downloadFunc(cloneURL, fullLocalPath) {
           return 1;
         },
         credentials: function () {
-          return Git.Cred.userpassPlaintextNew(getUsernameTemp(), getPasswordTemp());
+          return createCredentials();
         },
         transferProgress: function (data) {
           let bytesRatio = data.receivedObjects() / data.totalObjects();
@@ -227,7 +227,7 @@ function openRepository() {
             url: "https://api.github.com/repos/" + repoOwner + "/" + repoName + "/contributors",
             type: "GET",
             beforeSend: function (xhr) {
-              xhr.setRequestHeader('Authorization', make_base_auth(getUsername(), getPassword()));
+              xhr.setRequestHeader('Authorization','token' + getOauthToken());
             },
             headers: {
               'Accept': 'application/vnd.github.v3+json'
@@ -338,6 +338,7 @@ function openRepository() {
     document.getElementById('spinner').style.display = 'block';
     let branch;
     bname = [];
+    checkAmendButton();
     //Get the current branch from the repo
     repository.getCurrentBranch()
       .then(function (reference) {

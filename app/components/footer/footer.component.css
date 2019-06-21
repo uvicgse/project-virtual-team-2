@@ -1,0 +1,10 @@
+.commit-input-button-wrapper { 
+    margin-left:10px; 
+}
+
+.modal-body-input {
+    border-radius: 3px;
+    padding: 4px;
+    margin: 16px;
+    width: 60%;
+  }

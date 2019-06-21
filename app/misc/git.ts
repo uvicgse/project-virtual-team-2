@@ -24,15 +24,17 @@ let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
-export class TagItem {
+export class CommitItem {
   public tagName: string;
+  public oldTagName: string;
   public commitMsg: string;
   public tagMsg: string;
   public commitSha: string;
   public hasTag: boolean;
 
   constructor(tagName:string, commitMsg:string, tagMsg:string, commitSha:string, hasTag:boolean){
-
+    this.oldTagName = tagName;
+    this.hasTag = hasTag;
     this.tagName = tagName;
     this.commitMsg = commitMsg;
     this.tagMsg = tagMsg;
@@ -47,7 +49,7 @@ export class TagItem {
 export async function getTags(beginningHash, numCommit){
   let commitList
   let tags;
-
+  console.log('TESTLKSJEJFKDLSFJKLDSJDFKLSJFKLSJFKLDSJ');
   let sharedRepo, sharedRefs;
   // get repo and refs in order
   await Git.Repository.open(repoFullPath).then(function(repo){
@@ -76,25 +78,27 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of tagItems based on size of commitList
+// Returns an array of CommitItems based on size of commitList
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
   let tItems;
   let found = false;
   let tags;
-  // Create array of tags
-  tItems = await Promise.all(sharedRefs.map(async (ref) => {
-    if (ref.isTag()) {
-      tag = await getRefObject(repo, ref);
-      commit = await getCommit(repo, ref);
-      return new TagItem(tag.name(), commit.message(), tag.message(), commit.sha());
-    }
-  }));
+  let temp;
+// Create array of tags
+tItems = await Promise.all(sharedRefs.map(async (ref) => {
+  if (ref.isTag()) {
+    console.log(ref);
+    temp = await getRefObject(repo, ref);
+    tag = temp.tag;
+    commit = temp.commit;
+    return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
+  }
+}));
 
   // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
   // If unable to match a tag with a commit, return CommitItem without tag name and message
-
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
       if (tItems[j]) {
@@ -103,10 +107,13 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
         }
       }
     }
-    return new TagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
+    return new CommitItem("", commit.message(), "", commit.sha(), false);
   }));
 
-  return tags;
+  // return tags;
+  return await new Promise(resolve=> {
+    resolve(tags);
+  });
 }
 
 // get each commit's sha for a graph node
@@ -1245,9 +1252,7 @@ function fetchStatus() {
         return repository.fetchAll({
           callbacks: {
             credentials: function () {
-              let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-              cred = user.credentials;
-              return cred;
+              return createCredentials();
             },
             certificateCheck: function () {
               return 1;
@@ -1281,44 +1286,42 @@ async function pullFromRemote() {
             addCommand("git pull");
             displayModal("Pulling new changes from the remote repository");
 
-            return repository.fetchAll({
-                callbacks: {
-                    credentials: function () {
-                        let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                        cred = user.credentials;
-                        return cred;
-                    },
-                    certificateCheck: function () {
-                        return 1;
-                    }
-                }
-            });
-        })
-        // Now that we're finished fetching, go ahead and merge our local branch
-        // with the new one
-        .then(function () {
-            return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
-        })
-        .then(function (oid) {
-            console.log("Looking up commit with id " + oid + " in all repositories");
-            return Git.AnnotatedCommit.lookup(repository, oid);
-        }, function (err) {
-            console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
-        })
-        .then(function (annotated) {
-            console.log("merging " + annotated + "with local forcefully");
-            Git.Merge.merge(repository, annotated, null, {
-                checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
-            });
-            theirCommit = annotated;
-        })
-        .then(function () {
-            let conflicsExist = false;
-            let tid = "";
-            if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
-                tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
-                conflicsExist = tid.indexOf("Conflicts") !== -1;
-            }
+      return repository.fetchAll({
+        callbacks: {
+          credentials: function () {
+            return createCredentials();
+          },
+          certificateCheck: function () {
+            return 1;
+          }
+        }
+      });
+    })
+    // Now that we're finished fetching, go ahead and merge our local branch
+    // with the new one
+    .then(function () {
+      return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
+    })
+    .then(function (oid) {
+      console.log("Looking up commit with id " + oid + " in all repositories");
+      return Git.AnnotatedCommit.lookup(repository, oid);
+    }, function (err) {
+      console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
+    })
+    .then(function (annotated) {
+      console.log("merging " + annotated + "with local forcefully");
+      Git.Merge.merge(repository, annotated, null, {
+        checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
+      });
+      theirCommit = annotated;
+    })
+    .then(function () {
+      let conflicsExist = false;
+      let tid = "";
+      if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
+        tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
+        conflicsExist = tid.indexOf("Conflicts") !== -1;
+      }
 
             if (conflicsExist) {
                 let conflictedFiles = tid.split("Conflicts:")[1];
@@ -1367,6 +1370,7 @@ function checkIfExistOrigin(branchName) {
     });
 }
 
+
 //calls getAheadBedhindCommits to display status of local repo to user
 function displayAheadBehind() {
   let branch = document.getElementById("branch-name").innerText;
@@ -1394,14 +1398,45 @@ function displayAheadBehind() {
 }
 
 //returns the name of the current branch
-function getBranchName() {
-    return Git.Repository.open(repoFullPath).then((repo) => {
-        return repo.getCurrentBranch().then((currBranch) => {
-            return Branch.name(currBranch).then((branchName) => {
-                return branchName;
-            });
-        });
-    });
+// function getBranchName() {
+//     return Git.Repository.open(repoFullPath).then((repo) => {
+//         return repo.getCurrentBranch().then((currBranch) => {
+//             return Branch.name(currBranch).then((branchName) => {
+//                 return branchName;
+//             });
+//         });
+//     });
+// }
+//returns the name of the current branch
+async function getBranchName() {
+  let repo;
+  let currentBranch;
+  let branchName;
+  let tempPath;
+
+  // When repository is initially opened, repoFullPath is not set,
+  // therefore method can get repo path from element repoOpen.
+  // No need to use repoOpen if repoFullPath is set.
+  if (!repoFullPath) {
+    if (document.getElementById("repoOpen").value == null) {
+      return
+    } else {
+      console.log(document.getElementById("repoOpen").value);
+      tempPath = document.getElementById("repoOpen").value;
+    }
+  } else {
+    tempPath = repoFullPath;
+  }
+
+  repo = await Git.Repository.open(tempPath);
+
+  currentBranch = await repo.getCurrentBranch();
+
+  branchName = await Branch.name(currentBranch);
+
+  return new Promise(resolve=> {
+    resolve(branchName);
+  });
 }
 
 
@@ -1439,11 +1474,9 @@ async function pushToRemote() {
                                     ["refs/heads/" + branch + ":refs/heads/" + branch],
                                     {
                                         callbacks: {
-                                            // obtain a new copy of cred every time when user push.
+
                                             credentials: function () {
-                                                let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                                                cred = user.credentials;
-                                                return cred;
+                                                return createCredentials();
                                             }
                                         }
                                     }
@@ -1461,9 +1494,13 @@ async function pushToRemote() {
                     });
                 }
             });
-        }
+
+          }
+        });
+      }
     });
-}
+  }
+
 
 function commitModal() {
   // TODO: implement commit modal
@@ -1625,9 +1662,7 @@ function deleteRemoteBranch() {
               {
                 callbacks: { // pass in user credentials as a parameter
                   credentials: function () {
-                    let user = new createCredentials(getUsernameTemp(), getPasswordTemp());
-                    cred = user.credentials;
-                    return cred;
+                    return createCredentials();
                   }
                 }
               }).then(function () {
@@ -1798,6 +1833,83 @@ function resetCommit(name: string) {
     }, function (err) {
       updateModalText(err);
     });
+}
+
+// Method will return true/false if current branch has one or more local commits
+async function checkIfExistLocalCommit() {
+  let branch;
+  let remoteBranchExist;
+  let aheadBehind;
+  let ret;
+
+  try {
+    // Get branch name
+    branch = await getBranchName();
+  } catch (error) {
+    console.log(error);
+  }
+
+  try {
+    remoteBranchExist = await checkIfExistOrigin(branch);
+  } catch (error) {
+    console.log(error);
+  }
+
+  // Check if the remote version of current branch exists
+  if (!remoteBranchExist) {
+    return false;
+  }
+
+  try {
+    aheadBehind = await getAheadBehindCommits(branch);
+  } catch (error) {
+    console.log(error);
+  }
+
+  // Return true if local branch is ahead. Else, local branch is not ahead so return false.
+  if (aheadBehind.ahead > 0) {
+    return true;
+  } else {
+    return false
+  }
+
+}
+
+// Method takes the new commit message and amends the last commit in the current branch
+async function amendLastCommit(newMessage: string) {
+  let repo;
+  let revwalk;
+  let commitArray;
+  let lastCommit;
+  let lastCommitOid;
+  let signature;
+  let tree;
+  let treeOid;
+
+  repo = await Git.Repository.open(repoFullPath);
+  revwalk = Git.Revwalk.create(repo);
+  // Points revwalk to last commit
+  revwalk.pushHead();
+  // Get the last commit
+  commitArray = await revwalk.getCommits(1);
+  lastCommit = commitArray[0];
+
+  try {
+    signature = repo.defaultSignature();
+    tree = await lastCommit.getTree();
+    treeOid = tree.id();
+    lastCommitOid = lastCommit.id();
+
+    // Amend the last local commit with the new message
+    await lastCommit.amend("HEAD", signature, signature, newMessage, newMessage, treeOid, lastCommitOid)
+      .then(() => {
+        refreshAll(repo);
+      });
+    addCommand("git commit --amend -m " + '"' + newMessage + '"');
+  } catch (error) {
+    console.log(error);
+    window.alert('Unable to amend last commit');
+  }
 }
 
 function revertCommit() {
@@ -2007,6 +2119,34 @@ function displayModifiedFiles() {
 
           fileElement.appendChild(filePath);
           fileElement.id = file.filePath;
+          fileElement.draggable="true";
+
+          /* Functions for handling Drag and Drop - From unstage to stage*/
+          function handleDragStart(e){
+            e.dataTransfer.setData("text", e.target.id);
+          }
+          function handleDragEnd(e) {
+            e.preventDefault();
+            const filepanel = document.querySelector("div.file-panel");
+            const stagepanel = document.querySelector("div.staged-files-header");
+            // create top and bottom boundary for drag release
+            const topboundary = stagepanel.getBoundingClientRect();
+            const bottomboundary = filepanel.getBoundingClientRect();
+
+            // mouse pointer location while dragging
+            var x_axis = e.clientX;
+            var y_axis = e.clientY;
+
+            // check if the drag ends within the boundary
+            if((x_axis >= bottomboundary.left && x_axis <= bottomboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.bottom)){
+              checkbox.click();
+              e.stopPropagation();
+            }
+          }
+
+          // Activate function on mouse drag start and end
+          fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
@@ -2023,7 +2163,6 @@ function displayModifiedFiles() {
           fileElement.appendChild(checkbox);
 
           document.getElementById("files-changed").appendChild(fileElement);
-
 
           fileElement.onclick = function () {
             let doc = document.getElementById("diff-panel");
@@ -2095,7 +2234,35 @@ function displayModifiedFiles() {
           }
 
           fileElement.id = fileId;
+          fileElement.draggable="true";
           fileElement.appendChild(filePath);
+
+          /* Functions for handling Drag and Drop - From stage to unstage*/
+          function handleDragStart(e){
+            e.dataTransfer.setData("text", e.target.id);
+          }
+          function handleDragEnd(e) {
+            e.preventDefault();
+            const filepanel = document.querySelector("div.file-panel");
+            const stagepanel = document.querySelector("div.staged-files-header");
+            // create top and bottom boundary for drag release
+            const bottomboundary = stagepanel.getBoundingClientRect();
+            const topboundary = filepanel.getBoundingClientRect();
+
+            // mouse pointer location while dragging
+            var x_axis = e.clientX;
+            var y_axis = e.clientY;
+
+            // check if the drag ends within the boundary
+            if((x_axis >= topboundary.left && x_axis <= topboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.top)){
+              checkbox.click();
+              e.stopPropagation();
+            }
+          }
+
+          // Activate function on mouse drag start and end
+          fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
           checkbox.type = "checkbox";
@@ -2177,85 +2344,86 @@ function displayModifiedFiles() {
         });
       }
 
-        function printFileDiff(filePath) {
-          repo.getHeadCommit().then(function (commit) {
-            getCurrentDiff(commit, filePath, function (line) {
-              formatLine(line);
-            });
+      function printFileDiff(filePath) {
+        repo.getHeadCommit().then(function (commit) {
+          getCurrentDiff(commit, filePath, function (line) {
+            formatLine(line);
           });
-        }
+        });
+      }
 
-        function getCurrentDiff(commit, filePath, callback) {
-          commit.getTree().then(function (tree) {
-            Git.Diff.treeToWorkdir(repo, tree, null).then(function (diff) {
-              diff.patches().then(function (patches) {
-                patches.forEach(function (patch) {
-                  patch.hunks().then(function (hunks) {
-                    hunks.forEach(function (hunk) {
-                      hunk.lines().then(function (lines) {
-                        let oldFilePath = patch.oldFile().path();
-                        let newFilePath = patch.newFile().path();
-                        if (newFilePath === filePath) {
-                          lines.forEach(function (line) {
-                            // Catch the "no newline at end of file" lines created by git
-                            if (line.origin() != 62) {
+      function getCurrentDiff(commit, filePath, callback) {
+        commit.getTree().then(function (tree) {
+          Git.Diff.treeToWorkdir(repo, tree, null).then(function (diff) {
+            diff.patches().then(function (patches) {
+              patches.forEach(function (patch) {
+                patch.hunks().then(function (hunks) {
+                  hunks.forEach(function (hunk) {
+                    hunk.lines().then(function (lines) {
+                      let oldFilePath = patch.oldFile().path();
+                      let newFilePath = patch.newFile().path();
+                      if (newFilePath === filePath) {
+                        lines.forEach(function (line) {
 
-                              // include linenumbers and change type
-                              callback(String.fromCharCode(line.origin())
-                                + (line.oldLineno() != -1 ? line.oldLineno() : "")
-                                + "\t" + (line.newLineno() != -1 ? line.newLineno() : "")
-                                + "\t" + String.fromCharCode(line.origin())
-                                + "\t" + line.content());
-                            }
-                          });
-                        }
-                      });
+                          // Catch the "no newline at end of file" lines created by git
+                          if (line.origin() != 62) {
+
+                            // include linenumbers and change type
+                            callback(String.fromCharCode(line.origin())
+                              + (line.oldLineno() != -1 ? line.oldLineno() : "")
+                              + "\t" + (line.newLineno() != -1 ? line.newLineno() : "")
+                              + "\t" + String.fromCharCode(line.origin())
+                              + "\t" + line.content());
+                          }
+                        });
+                      }
                     });
                   });
                 });
               });
             });
           });
+        });
+      }
+
+      function formatLine(line) {
+        let element = document.createElement("div");
+
+        if (line.charAt(0) === "+") {
+          element.style.backgroundColor = "#84db00";
+        } else if (line.charAt(0) === "-") {
+          element.style.backgroundColor = "#ff2448";
         }
 
-        function formatLine(line) {
-          let element = document.createElement("div");
+        // If not a changed line, origin will be a space character, so still need to slice
+        line = line.slice(1, line.length);
+        element.innerText = line;
 
-          if (line.charAt(0) === "+") {
-            element.style.backgroundColor = "#84db00";
-          } else if (line.charAt(0) === "-") {
-            element.style.backgroundColor = "#ff2448";
-          }
+        // The spacer is needed to pad out the line to highlight the whole row
+        let spacer = document.createElement("spacer");
+        spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
+        element.appendChild(spacer);
 
-          // If not a changed line, origin will be a space character, so still need to slice
-          line = line.slice(1, line.length);
-          element.innerText = line;
+        document.getElementById("diff-panel-body")!.appendChild(element);
+      }
 
-          // The spacer is needed to pad out the line to highlight the whole row
-          let spacer = document.createElement("spacer");
-          spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
-          element.appendChild(spacer);
+      function formatNewFileLine(text) {
+        let element = document.createElement("div");
+        element.style.backgroundColor = green;
+        element.innerHTML = text;
 
-          document.getElementById("diff-panel-body")!.appendChild(element);
-        }
+        // The spacer is needed to pad out the line to highlight the whole row
+        let spacer = document.createElement("spacer");
+        spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
+        element.appendChild(spacer);
 
-        function formatNewFileLine(text) {
-          let element = document.createElement("div");
-          element.style.backgroundColor = green;
-          element.innerHTML = text;
-
-          // The spacer is needed to pad out the line to highlight the whole row
-          let spacer = document.createElement("spacer");
-          spacer.style.width = document.getElementById("diff-panel-body")!.scrollWidth + "px";
-          element.appendChild(spacer);
-
-          document.getElementById("diff-panel-body")!.appendChild(element);
-        }
-      });
-    },
-      function (err) {
-        console.log("waiting for repo to be initialised");
-      });
+        document.getElementById("diff-panel-body")!.appendChild(element);
+      }
+    });
+  },
+  function (err) {
+    console.log("waiting for repo to be initialised");
+  });
 }
 
 // Find HOW the file has been modified

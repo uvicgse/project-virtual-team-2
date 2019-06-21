@@ -21,7 +21,7 @@ export class AddRepositoryComponent {
   }
 
   // Custom event listener that is called whenever addRepository component is displayed
-  @HostListener('window:loadRecentRepos', ['$event']) 
+  @HostListener('window:loadRecentRepos', ['$event'])
   updateRepos(event) {
     this.recentRepos = loadMostRecentRepos();
     this.recentRepos.reverse()
@@ -30,20 +30,20 @@ export class AddRepositoryComponent {
     }
   }
 
-  // Open user selected recently opened repo 
+  // Open user selected recently opened repo
   openRecentRepository(repo): void {
     console.log(repo);
     (<HTMLInputElement>document.getElementById("repoOpen")).value = repo;
     openRepository();
     switchToMainPanel();
   }
-  
+
   selectClone(): void {
     if (document.getElementById("repoClone").value == null || document.getElementById("repoClone").value == "") {
       window.alert("Please enter the URL of the repository you wish to clone");
     } else if (document.getElementById("repoSave").value == null || document.getElementById("repoSave").value == "") {
       updateLocalPath();
-    
+
     } else {
       // If directory is specified, continue as normal
       this.addRepository();
@@ -95,25 +95,23 @@ export class AddRepositoryComponent {
     switchToMainPanel();
   }
 
+  /* commented out because this loads the graph while using stage/unstage drag/drop
+    prepareDontMissDND :  function() {
 
-  prepareDontMissDND :  function() {
+        $(document.body).bind("dragover", function(e) {
+            e.preventDefault();
+            return false;
+        });
 
-      $(document.body).bind("dragover", function(e) {
-          e.preventDefault();
-          return false;
-      });
+        $(document.body).bind("drop", function(e){
+            e.preventDefault();
+            fileUpload(e);
+            return false;
+        });
+  }
+  */
 
-      $(document.body).bind("drop", function(e){
-          e.preventDefault();
-          fileUpload(e);
-          return false;
-      });
-
-
-  
-}
-
-function fileUpload(ev){
+fileUpload(ev){
   if(checkIfInTheApp()){
     ev.dataTransfer = ev.originalEvent.dataTransfer;
     if (ev.dataTransfer.items) {

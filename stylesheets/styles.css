@@ -545,7 +545,6 @@ body .footer .commit-panel .commit-message-input {
   color:rgb(158, 158, 158);
 }
 
-
 body .footer .commit-panel .commit-button-wrapper {
   /* positioned relative to its normal position(bottom left corner) */
   position: relative;

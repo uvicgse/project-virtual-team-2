@@ -2,10 +2,12 @@ import { Component } from "@angular/core";
 
 @Component({
   selector: "app-footer",
-  templateUrl: 'app/components/footer/footer.component.html'
+  templateUrl: 'app/components/footer/footer.component.html',
+  styleUrls: ['app/components/footer/footer.component.css']
 })
 
 export class FooterComponent {
+
   displayFileEditor(): void {
     let editor = document.getElementById("editor-panel");
 
@@ -23,5 +25,10 @@ export class FooterComponent {
       issue.style.width = "100vw"
       issue.style.zIndex = "10";
     } 
+  }
+
+/* This function is executed when amend button is clicked */
+  async amendLastCommit(amend): void {
+    await amendLastCommit(amend);
   }
 }

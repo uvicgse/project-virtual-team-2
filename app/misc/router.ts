@@ -3,9 +3,9 @@ let blue = "#39c0ba";
 let gray = "#5b6969";
 let continuedWithoutSignIn = false;
 let inTheApp = false;
-
 let showUsername = true;
 let previousWindow = "repoPanel";
+var fs = require("fs");
 
 function collapseSignPanel() {
   $("#nav-collapse1").collapse("hide");
@@ -72,10 +72,8 @@ function switchToAddRepositoryPanelWhenNotSignedIn() {
 }
 
 function switchToAddRepositoryPanel() {
-
   window.dispatchEvent(new Event('loadRecentRepos'));
 
-  document.getElementById("Button_Sign_out").style.display = "block";
   inTheApp = true
   console.log("Switching to add repo panel");
   hideAuthenticatePanel();
@@ -92,7 +90,7 @@ function switchToAddRepositoryPanel() {
   }else{
     $("#nav-collapse1").collapse("hide");
     document.getElementById("Button_Sign_out").style.display = "none";
-    document.getElementById("Button_Sign_in").style.display = "block";
+    //document.getElementById("Button_Sign_in").style.display = "block";
   }
   let repoOpen = <HTMLInputElement>document.getElementById("repoOpen");
   if (repoOpen != null){
@@ -101,7 +99,15 @@ function switchToAddRepositoryPanel() {
 }
 
 function hideSignInButton():void{
-  document.getElementById("Button_Sign_in").style.display = "none";
+  let file = "token.json";
+  fs.access(file, fs.constants.F_OK, (err) => {
+    displayModal("Token detected, please log out first if you want to continue without sign in! ");
+    console.log(`${file} ${err ? 'does not exist' : 'exists'}`);
+  });
+  if (getOauthToken()) {
+    document.getElementById("Button_Sign_in").style.display = "none";
+  }
+
   if(previousWindow!="repoPanel"){
     switchToMainPanel();
   }
@@ -166,7 +172,47 @@ function displayFilePanel() {
   if (fileEditButton != null){
     fileEditButton.style.visibility = "visible";
   }
+  checkAmendButton();
+  // let amendCommitButton = document.getElementById("amend-commit-button");
+  // let ahead;
+  // console.log('test');
+  
+  // ahead = await checkIfExistLocalCommit();
+  // console.log('AHEAD', ahead);
+  // if (amendCommitButton != null){
+  //   amendCommitButton.style.visibility = "visible";
+  //   if (!ahead) {
+  //     amendCommitButton.style.cursor = "not-allowed";
+  //     amendCommitButton.style['pointer-events'] = "none";
+  //   } else {
+  //     amendCommitButton.style.cursor = "pointer";
+  //     amendCommitButton.style['pointer-events'] = "auto";
+  //   }
+  // }
+
+  
+  
   document.getElementById("Issues-button").style="visiblity: visible";
+}
+
+function checkAmendButton() {
+  // Method checking whether to make amend button clickable. Button will be clickable if there is more than 
+  // one unpushed commit
+  let amendCommitButton = document.getElementById("amend-commit-button");
+  let ahead;
+  checkIfExistLocalCommit().then((ahead) => {
+    console.log('AHEAD', ahead);
+    if (amendCommitButton != null){
+      amendCommitButton.style.visibility = "visible";
+      if (!ahead) {
+        amendCommitButton.style.cursor = "not-allowed";
+        amendCommitButton.style['pointer-events'] = "none";
+      } else {
+        amendCommitButton.style.cursor = "pointer";
+        amendCommitButton.style['pointer-events'] = "auto";
+      }
+    }
+  });
 }
 
 function displayPullRequestPanel() {
@@ -227,6 +273,11 @@ function hideFilePanel() {
   let fileEditButton = document.getElementById("fileEdit-button");
   if (fileEditButton != null){
     fileEditButton.style.visibility = "hidden";
+  }
+
+  let amendCommitButton = document.getElementById("amend-commit-button");
+  if (amendCommitButton != null){
+    amendCommitButton.style.visibility = "hidden";
   }
 
   document.getElementById("Issues-button").style="visibility: hidden";
@@ -405,16 +456,4 @@ function disableDiffPanelEditOnHide() {
   if (doc != null) {
     doc.contentEditable = "false";
   }
-}
-
-function useSavedCredentials() : boolean {
-  let file = 'data.json';
-  // check if the data.json file exists
-  if (fs.existsSync(file)) {
-    console.log('button has been pressed: logging in with saved credentials');
-    decrypt();
-    loginWithSaved(switchToMainPanel);
-    return true;
-  }
-  return false;
 }
