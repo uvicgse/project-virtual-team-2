@@ -34,6 +34,7 @@ function getOauthToken() {
   }
 }
 
+// Function removes Oauth token from file system
 function removeToken() {
   let file = "token.json";
 
