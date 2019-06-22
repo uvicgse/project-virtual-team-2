@@ -149,6 +149,7 @@ function drawGraph() {
     };
     network = new vis.Network(container, bsData, options);
     getAllCommits(function(commits) {
+        console.log('testsejflkdfjkdljfskljl');
         processGraph(commits);
 
         network.on("stabilizationIterationsDone", function () {

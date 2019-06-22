@@ -42,9 +42,10 @@ export class TagItem {
 }
 
 
-//
-// Abstract from issue 40
-//
+/* Function finds equal number of commits and corresponding tags (if exist) based on beginningHash and numCommits
+@param beginningHash (the SHA of a commit or a first commit SHA in a series of commits)
+@param numCommit (the number of commits being considered)
+@returns array of CommitItem equal to numCommit */
 export async function getTags(beginningHash, numCommit){
   let commitList
   let tags;
@@ -68,7 +69,7 @@ export async function getTags(beginningHash, numCommit){
 
 }
 
-// Return an array of commit objects from array of commit shas
+// Return an array of nodegit commit objects from array of commit shas
 async function getCommitFromShaList(commitList, repo) {
   return await Promise.all(commitList.map(async (sha) => {
     const commit = await repo.getCommit(sha);
@@ -76,7 +77,12 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of tagItems based on size of commitList
+/* For each element in commitList, this function either creates a CommitItem that includes a
+tag information or creates a CommitItem without a tag information (because commit does not have a tag)
+@param commitList contains an array of nodegit commit objects
+@param sharedRefs contains an array of references in the repository
+@returns an array of CommitItem based on length of commitList
+*/
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
@@ -84,16 +90,16 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let found = false;
   let tags;
   let temp;
-// Create array of tags
-tItems = await Promise.all(sharedRefs.map(async (ref) => {
-  if (ref.isTag()) {
-    console.log(ref);
-    temp = await getRefObject(repo, ref);
-    tag = temp.tag;
-    commit = temp.commit;
-    return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
-  }
-}));
+  // Create array of tags
+  tItems = await Promise.all(sharedRefs.map(async (ref) => {
+    if (ref.isTag()) {
+      console.log(ref);
+      temp = await getRefObject(repo, ref);
+      tag = temp.tag;
+      commit = temp.commit;
+      return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
+    }
+  }));
 
   // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
   // If unable to match a tag with a commit, return CommitItem without tag name and message
@@ -115,7 +121,12 @@ tItems = await Promise.all(sharedRefs.map(async (ref) => {
   });
 }
 
-// get each commit's sha for a graph node
+
+/* Function gets desired number of commit SHAs from current branch based on function params
+@param beginningHash: first commit SHA of numCommit number of commits being considered
+@param numCommit: number of commits that are being considered
+@returns an array of commit SHAs of length numCommit
+*/
 async function getCommitShaFromNode(repo, beginningHash, numCommit) {
   let commitList = [];
   let commitListRet = [];
@@ -170,7 +181,7 @@ async function getCommitShaFromNode(repo, beginningHash, numCommit) {
   });
 }
 
-// Get tag and commit object
+// Return tag and commit object for a given reference
 function getRefObject(repo, ref){
   let returnTag;
   return new Promise(resolve => {
@@ -195,7 +206,7 @@ function getRefObject(repo, ref){
   });
 }
 
-// get commit from tag reference
+// get nodegit commit object from tag reference 
 async function getCommit(repo, ref) {
   let c = await ref.peel(Git.Object.TYPE.COMMIT);
   let commit = await repo.getCommit(c);
@@ -334,13 +345,10 @@ async function showStash(index){
 
 }
 
-function passReferenceCommits(){
-  Git.Repository.open(repoFullPath)
-  .then(function(commits){
-    sortedListOfCommits(commits);
-  })
-}
 
+/* 
+Function takes array of commits and stores the commits in sorted order in variable commitHistory
+*/
 function sortedListOfCommits(commits){
 
     while (commits.length > 0) {
@@ -376,6 +384,7 @@ function cloneFromRemote() {
   switchToClonePanel();
 }
 
+// Change color scheme based on user's stored settings
 function refreshColor() {
   const userColorFilePath = ".settings/user_color.txt";
 
@@ -388,6 +397,7 @@ function refreshColor() {
   }
 }
 
+// Stages all the files stored in HTML element 'file'
 function stage() {
   let repository;
 
@@ -425,6 +435,9 @@ function stage() {
   }
 }
 
+// Function performs corresponding 'git add' and 'git commit' commands
+// If creating a commit is successful and tag name also exists, a tag is added to the commit that is created 
+// After creating a commit, clear staged files list, commit, and tag dialog boxes, and refresh VisualGit GUI
 function addAndCommit() {
   commitMessage = document.getElementById('commit-message-input').value;
   let tagMessage = document.getElementById('tag-message-input').value;
@@ -712,6 +725,10 @@ function addAndStash(options) {
 }
 
 // Add or modify tag
+// @params commit: CommitItem object
+// Function checks to see if commit param has a tag. If commit has a tag, tag is delete. Then, a new tag is created using the new tag name and tag message.
+// If commit param does not have a tag, function creates a new tag using the new tag name and new tag message.
+// Finally, function refreshes VisualGit's GUI
 async function addOrModifyTag(commit) {
   // A new tag must include a tag name or tag cannot be created
   if (commit.tagName == "") {
@@ -1070,7 +1087,7 @@ async function branchStash(index) {
   }
 }
 
-
+// Function clears the list of files in HTML element files-staged and adds user guidance text to files-staged
 function clearStagedFilesList() {
   let filePanel = document.getElementById("files-staged");
   while (filePanel.firstChild) {
@@ -1106,7 +1123,7 @@ function clearCommitMessage() {
 }
 
 
-
+// Function that returns an array of commits in local remote
 function getAllCommits(callback) {
   clearModifiedFilesList();
   let repos;
@@ -1160,7 +1177,7 @@ function getAllCommits(callback) {
     });
 }
 
-
+// Function returns the current status of the local repository (whether it is ahead or behind or up to date)
 function fetchStatus() {
   let repository;
   Git.Repository.open(repoFullPath)
@@ -1184,6 +1201,7 @@ function fetchStatus() {
       });
 }
 
+// Function operates a "git pull" command from remote repository
 async function pullFromRemote() {
   let branch;
   branch = await getBranchName();
@@ -1483,6 +1501,8 @@ function commitModal() {
   addAndCommit();
 }
 
+
+// Function opens a modal that displays current branch information 
 async function openBranchModal(stashIndex) {
 
   if (stashIndex == null) stashIndex = 0;
@@ -1506,6 +1526,8 @@ async function openBranchModal(stashIndex) {
     }
 }
 
+// Function creates branch based on branchName in HTML element branch-name-input.
+// 
 async function createBranch() {
   let branchName = document.getElementById("branch-name-input").value;
   let branchExists = await Git.Repository.open(repoFullPath).then(function(repo){
@@ -1540,7 +1562,7 @@ async function createBranch() {
     document.getElementById("branchErrorText").innerText = "Warning: Stash local changes before checking out a new branch. ";
 
 
-  //check if branch  exists remotely
+  //check if branch exists remotely
   }else if(branchExists){
     document.getElementById("branchErrorText").innerText = "Warning: Branch name already exists on remote";
 
@@ -1656,6 +1678,7 @@ function deleteRemoteBranch() {
     })
 }
 
+// Function merges local branches and refreshes VisualGit's GUI
 function mergeLocalBranches(element) {
   let bn = element.innerHTML;
   let fromBranch;
@@ -1695,6 +1718,9 @@ function mergeLocalBranches(element) {
     });
 }
 
+// Function attempts to merge commits. If merge conflict exist, function will display an merge conflict error.
+// If merge conflict does not exist, function will display success. 
+// Finally, function will refresh VisualGit's GUI
 function mergeCommits(from) {
   let repos;
   let index;
@@ -1727,6 +1753,8 @@ function mergeCommits(from) {
     });
 }
 
+// Function attemps to rebase commits 
+// Note: Function does not appear to be properly working
 function rebaseCommits(from: string, to: string) {
   let repos;
   let index;
@@ -1764,6 +1792,7 @@ function rebaseCommits(from: string, to: string) {
     });
 }
 
+// Function displays rebase modal
 function rebaseInMenu(from: string, to: string) {
   let p1 = document.getElementById("fromRebase");
   let p2 = document.getElementById("toRebase");
@@ -1774,6 +1803,7 @@ function rebaseInMenu(from: string, to: string) {
   $("#rebaseModal").modal('show');
 }
 
+
 function mergeInMenu(from: string) {
   let p1 = document.getElementById("fromMerge");
   let p3 = document.getElementById("mergeModalBody");
@@ -1782,6 +1812,7 @@ function mergeInMenu(from: string) {
   $("#mergeModal").modal('show');
 }
 
+// Function attempts to reset commits and will refresh VisualGit's GUI when reset is completed (or failed)
 function resetCommit(name: string) {
   let repos;
   Git.Repository.open(repoFullPath)
@@ -1888,6 +1919,7 @@ async function amendLastCommit(newMessage: string) {
   }
 }
 
+// Function reverts a single commit and refreshes VisualGit's GUI
 function revertCommit() {
 
   let repos;
@@ -1957,6 +1989,7 @@ function Reload() {
 }
 
 
+// Function is very complex. Note: do not think this function is ever called 
 function displayModifiedFiles() {
   modifiedFiles = [];
   let selectedFile = "";
@@ -2431,6 +2464,7 @@ function calculateModification(status) {
   }
 }
 
+// Function deletes file based on filePath parameter
 function deleteFile(filePath: string) {
   let newFilePath = filePath.replace(/\\/gi, "/");
   if (fs.existsSync(newFilePath)) {
@@ -2447,6 +2481,7 @@ function deleteFile(filePath: string) {
   }
 }
 
+// Function removes untracked files from git tree. The function mimics "git clean"
 function cleanRepo() {
   let fileCount = 0;
   Git.Repository.open(repoFullPath)

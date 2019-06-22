@@ -11,6 +11,7 @@ function collapseSignPanel() {
   $("#nav-collapse1").collapse("hide");
 }
 
+
 function switchToClonePanel() {
   console.log("switch to clone panel");
   hideAuthenticatePanel();
