@@ -447,6 +447,7 @@ function displayIssues() {
           });
       }
     }
+    
 function getUsername() {
   if (!account) {
     console.log("Could not retrieve username, account stored is invalid")
