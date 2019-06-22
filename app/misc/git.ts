@@ -92,16 +92,16 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let found = false;
   let tags;
   let temp;
-// Create array of tags
-tItems = await Promise.all(sharedRefs.map(async (ref) => {
-  if (ref.isTag()) {
-    console.log(ref);
-    temp = await getRefObject(repo, ref);
-    tag = temp.tag;
-    commit = temp.commit;
-    return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
-  }
-}));
+  // Create array of tags
+  tItems = await Promise.all(sharedRefs.map(async (ref) => {
+    if (ref.isTag()) {
+      console.log(ref);
+      temp = await getRefObject(repo, ref);
+      tag = temp.tag;
+      commit = temp.commit;
+      return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
+    }
+  }));
 
   // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
   // If unable to match a tag with a commit, return CommitItem without tag name and message
@@ -347,12 +347,6 @@ async function showStash(index){
 
 }
 
-function passReferenceCommits(){
-  Git.Repository.open(repoFullPath)
-  .then(function(commits){
-    sortedListOfCommits(commits);
-  })
-}
 
 /*
 Function takes array of commits and stores the commits in sorted order in variable commitHistory
