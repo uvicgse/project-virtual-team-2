@@ -54,7 +54,7 @@ export class GraphPanelComponent {
     this.asyncCall(beginnningHash, numCommit);
     //this.modal.nativeElement.contentWindow.location.reload(true);
   }
-
+  //Add  or modify tag when Add or Modify button is clicked in the model
   async addOrModifyTag(commit): void {
     await addOrModifyTag(commit);
     document.getElementById("onExit").click();

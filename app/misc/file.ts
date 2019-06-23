@@ -43,15 +43,15 @@ function generateFileContent(){
     });
     return content;
 }
-
+// This method is called to display the file saved message on the modal
 function saveSuccess(){
     displayModal("File saved!");
 }
-
+// This method simply exits the file editor panel
 function cancelEdit(){
     hideDiffPanel();
 }
-
+// This method is called to save the edited file in the file editor panel
 function saveEditedFile(filePath: string, content: string, callback: any): void {
     fs.writeFile(filePath, content, callback);
 }
