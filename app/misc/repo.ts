@@ -692,10 +692,6 @@ function openRepository() {
           .then(function () {
             refreshAll(repo);
           }, function (err) {
-<<<<<<< HEAD
-            console.log("repo.ts, checkoutLocalBranch(), cannot checkout local branch: " + err);
-            updateModalText("Cannot checkout local branch: "+err+" Please restart VisualGit");
-=======
             repo.checkoutBranch("refs/tags/" + bn)
               .then(function () {
                 refreshAll(repo);
@@ -703,7 +699,6 @@ function openRepository() {
                 console.log("repo.tx, line 271, cannot checkout local branch: " + err);
               });
             
->>>>>>> 7056cbf... fixed to open tag or head
           });
       })
   }
