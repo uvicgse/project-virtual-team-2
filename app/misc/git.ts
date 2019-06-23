@@ -1637,6 +1637,7 @@ function deleteLocalBranch() {
     }).then(function () {
       // refresh graph
       console.log("deleted the local branch")
+      updateModalText("The local branch: " + branchName + " has been deleted")
       refreshAll(repos);
     })
 }
@@ -1650,6 +1651,7 @@ function deleteRemoteBranch() {
 
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
+      let repos = repo;
       Git.Reference.list(repo).then(function (array) {
         if (array.includes("refs/remotes/origin/" + branchName)) {  // check if the branch is remote
           console.log("this is a remote branch")
@@ -1666,6 +1668,7 @@ function deleteRemoteBranch() {
               }).then(function () {
                 console.log("deleted the remote branch")
                 updateModalText("The remote branch: " + branchName + " has been deleted")
+                refreshAll(repos);
               });
           })
         }
