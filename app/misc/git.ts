@@ -776,8 +776,8 @@ function addAndStash(options) {
 
 // Add or modify tag
 async function addOrModifyTag(commit) {
-  // A new tag must include a tag name and tag message or tag cannot be created
-  if (commit.tagName == "" && commit.tagMsg != "") {
+  // A new tag must include a tag name or tag cannot be created
+  if (commit.tagName == "") {
     window.alert("Cannot create tag without a tag name. Please add a tag name before committing");
     return;
   }
@@ -788,7 +788,7 @@ async function addOrModifyTag(commit) {
     repository = repo;
     if(commit.hasTag) {
       console.log("MODIFY - Deleting Tag");
-      return deleteTag(commit.oldTagName);
+      return deleteTag(commit.oldTagName, false);
     }
   })
   .then(()=>{
@@ -814,7 +814,7 @@ async function addOrModifyTag(commit) {
 }
 
 // Delete tag based on tag name and display corresponding git command to footer in VisualGit
-async function deleteTag(tagName) {
+async function deleteTag(tagName, refresh = true) {
   let repository;
   console.log(repoFullPath);
   let name = tagName.split(path.sep);
@@ -834,7 +834,8 @@ async function deleteTag(tagName) {
           })
           .catch((err) => console.log(err));      
       }).then(() => {
-        refreshAll(repository);
+        if(refresh)
+          refreshAll(repository);
       })
       .catch((err) => console.log(err));
 
