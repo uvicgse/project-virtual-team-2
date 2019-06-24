@@ -1,3 +1,5 @@
+import { _ } from "core-js";
+
 let Git = require("nodegit");
 let repoFullPath;
 let repoLocalPath;
@@ -18,6 +20,7 @@ let jsonfile = require('jsonfile');
 let path = require('path');
 let settingsPath = path.join(__dirname, ".settings");
 const recentFiles = path.join(settingsPath, 'recent_repos.json');
+let quickBranchTagReload: any = []; 
 
 
 function downloadRepository() {
@@ -338,6 +341,7 @@ function openRepository() {
     document.getElementById('spinner').style.display = 'block';
     let branch;
     bname = [];
+    checkAmendButton();
     //Get the current branch from the repo
     repository.getCurrentBranch()
       .then(function (reference) {
@@ -392,17 +396,18 @@ function openRepository() {
       .then(function () {
         console.log("Updating the graph and the labels");
         drawGraph();
+        var newRepoLocalPath = "";
         let breakStringFrom;
         if (repoLocalPath.length > 20) {
           for (var i = 0; i < repoLocalPath.length; i++) {
-            if (repoLocalPath[i] == "/") {
+            if (repoLocalPath[i] == "/" || repoLocalPath[i] == "\\") {
               breakStringFrom = i;
             }
           }
-          repoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
+          newRepoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
         }
-        document.getElementById("repo-name").innerHTML = repoLocalPath;
-        document.getElementById("branch-name").innerHTML = branch + '<span class="caret"></span>';
+        document.getElementById("repo-name").innerHTML = newRepoLocalPath;
+        document.getElementById("branch-name").value = branch + '<span class="caret"></span>';
       }, function (err) {
         //If the repository has no commits, getCurrentBranch will throw an error.
         //Default values will be set for the branch labels
@@ -482,68 +487,148 @@ function openRepository() {
     ul.appendChild(li);
   }
 
+  function deleteBranchFromDropDown(name){
+    $('#branch-to-delete').val(name);
+    document.getElementById("displayedBranchName").innerHTML = name;
+    $('#delete-branch-modal').modal(); // Display delete branch warning modal
+  }
+
+  //
+  // Used to Initialize list of branches and list of tags
+  //
   function displayBranch(name, id, onclick) {
-    let ul = document.getElementById(id);
-    let li = document.createElement("li");
+    quickBranchTagReload = [];
+    // Stop click exit
+    $(document).on('click', '.dropdown-menu', function (e) {
+      e.stopPropagation();
+    });
+    // list elements set-up
+    let tr = document.createElement("tr");
+    let listTD = document.createElement("td");
     let a = document.createElement("a");
     a.setAttribute("href", "#");
     a.setAttribute("class", "list-group-item");
     a.setAttribute("onclick", onclick + ";event.stopPropagation()");
-    li.setAttribute("role", "presentation")
     a.appendChild(document.createTextNode(name));
-    a.innerHTML = name;
-    li.appendChild(a);
+    //a.innerHTML = name;
+    // existing check -> Not sure why??
     if (id == "branch-dropdown") {
-      var isLocal = 0;
-      var isRemote = 0;
-      // Add a remote branch icon for remote branches
+      // Loop through references
       Git.Repository.open(repoFullPath)
         .then(function (repo) {
           Git.Reference.list(repo).then(function (array) {
+            // Remote
             if (array.includes("refs/remotes/origin/" + name)) {
-              a.innerHTML += "<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>";
-              isRemote = 1
+              // already local -> make both
+              if(quickBranchTagReload.some(b => b.name == name)) {
+                const thisIndex = quickBranchTagReload.findIndex(b => b.name == name);
+                a.innerHTML = `${name}<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'><img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>`;
+                listTD.innerHTML = a.outerHTML
+                tr.innerHTML = listTD.outerHTML
+                quickBranchTagReload[thisIndex].type = "both"
+                quickBranchTagReload[thisIndex].html = tr.innerHTML
+                
+              // just remote so far
+              } else {
+                listTD.innerHTML = a.outerHTML
+                tr.innerHTML = listTD.outerHTML
+                a.innerHTML = `${name}<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'>`;
+                let remoteObj = {html: tr.innerHTML, type: "remote", name: name, onclick:onclick}
+                this.quickBranchTagReload.push(remoteObj)
+              }
+            }
+          })
+          repo.getBranch(name).then(function (branch) {
+            // Tag
+            if(branch.isTag()){
+              a.innerHTML = `${name}<img src='./assets/tag-icon.png' width='20' height='20' align='right' title='Tag'>`;
+              listTD.innerHTML = a.outerHTML
+              tr.innerHTML = listTD.outerHTML
+              let tagObj = {html: tr.outerHTML, type: "tag", name: name, onclick:onclick}
+              quickBranchTagReload.push(tagObj)
+              
+            // Local Branch
+            } else {
+              // already remote -> make both
+              if(quickBranchTagReload.some(b => b.name == name)) {
+                const thisIndex = quickBranchTagReload.findIndex(b => b.name == name);
+                a.innerHTML = `${name}<img src='./assets/remote-branch.png' width='20' height='20' align='right' title='Remote'><img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>`;
+                listTD.innerHTML = a.outerHTML
+                tr.innerHTML = listTD.outerHTML
+                quickBranchTagReload[thisIndex].type = "both"
+                quickBranchTagReload[thisIndex].html = tr.innerHTML
+                
+              // just local so far
+              } else {
+                a.innerHTML = `${name}<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>`;
+                listTD.innerHTML = a.outerHTML
+                tr.innerHTML = listTD.outerHTML
+                let localObj = {html: tr.innerHTML,type: "local", name: name, onclick:onclick}
+                quickBranchTagReload.push(localObj)    
+              }
             }
           })
         })
-      // Add a local branch icon for local branches
-      Git.Repository.open(repoFullPath)
-        .then(function (repo) {
-          repo.getBranch(name).then(function () {
-            a.innerHTML += "<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>";
-            isLocal = 1
-          })
-        })
+    }
+  }
 
-      // Adding a delete button for each branch
-      if (name.toLowerCase() != "master") {
+  //
+  // Used to populate branches and tags based on search input
+  //
+  function displayBranchesTags(){
+    // get input vlaue
+    let searchVal = document.getElementById('branchName').value;
+    // clear lists
+    let branchesTab = document.getElementById('branchesTab')
+    let tagsTab = document.getElementById('tagsTab')
+    branchesTab.innerHTML = ""
+    tagsTab.innerHTML = ""
+    // populate braches/tags
+    quickBranchTagReload.forEach(function(BT){
+      //add if contains search input
+      if(BT.name.indexOf(searchVal) >= 0){
+        // Delete Button
         var button = document.createElement("Button");
+        let buttonTD = document.createElement("td");
         button.innerHTML = "Delete";
-        button.classList.add('btn-danger');
+        button.classList.add('btn-danger')
+        $(button).css("position", "absolute")
+        $(button).css("right", "5px")
+        $(button).css("margin", "5px")
+        // row item
+        let tr = document.createElement("tr");
+          // add to remote and/or local list
+          if(BT.type == "remote" || BT.type == "local" || BT.type == "both"){
+            tr.innerHTML += BT.html;
+            //no delete button if master
+            if(BT.name.lowercase!="master"){
+              button.setAttribute("onclick", `deleteBranchFromDropDown("${BT.name}")`);
+              buttonTD.innerHTML += button.outerHTML
+              tr.innerHTML += buttonTD.outerHTML
+            }
+            branchesTab.appendChild(tr)
+          }
+          // add to tag list
+          if(BT.type == "tag"){
+            tr.innerHTML += BT.html;
+            button.setAttribute("onclick", `deleteTag("${BT.name}");removeBranchOrTagFromQuick("${BT.name}");event.stopPropagation()`);
+            buttonTD.innerHTML += button.outerHTML
+            tr.innerHTML += buttonTD.outerHTML
+            tagsTab.appendChild(tr)
+          } 
+      }
+    })
+  }
 
-        $(button).click(function () {
-          // Only show valid delete branch button(s)
-          if (isRemote && !isLocal) {
-            document.getElementById("localDeleteButton").style.display = 'none';
-            document.getElementById("remoteDeleteButton").style.display = '';
-          }
-          else if (isLocal && !isRemote) {
-            document.getElementById("remoteDeleteButton").style.display = 'none';
-            document.getElementById("localDeleteButton").style.display = '';
-          }
-          else {
-            document.getElementById("localDeleteButton").style.display = '';
-            document.getElementById("remoteDeleteButton").style.display = '';
-          }
-
-          $('#branch-to-delete').val(name);
-          document.getElementById("displayedBranchName").innerHTML = name;
-          $('#delete-branch-modal').modal(); // Display delete branch warning modal
-        });
-        li.appendChild(button); // Add delete button to the branch dropdown list
+  function removeBranchOrTagFromQuick(name){
+    let i = 0;
+    for(let i = 0; i < quickBranchTagReload.length; i++){
+      if(quickBranchTagReload[i].name == name){
+        quickBranchTagReload.splice(i, 1);
+        break;
       }
     }
-    ul.appendChild(li);
+    displayBranchesTags();
   }
 
   function createDropDownFork(name, id) {
@@ -607,7 +692,13 @@ function openRepository() {
           .then(function () {
             refreshAll(repo);
           }, function (err) {
-            console.log("repo.tx, line 271, cannot checkout local branch: " + err);
+            repo.checkoutBranch("refs/tags/" + bn)
+              .then(function () {
+                refreshAll(repo);
+              }, function (err) {
+                console.log("repo.tx, line 271, cannot checkout local branch: " + err);
+              });
+            
           });
       })
   }

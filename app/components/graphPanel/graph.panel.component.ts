@@ -1,4 +1,5 @@
 import { Component, HostListener, ViewChild, ElementRef} from "@angular/core";
+import { resolve } from "url";
 
 @Component({
   selector: "graph-panel",
@@ -10,7 +11,7 @@ export class GraphPanelComponent {
   commitList: any;
   showCommitList: boolean;
   @ViewChild('graphNodeClickModal') modal: ElementRef;
-
+  //
   // Listen for user click on graph and display if nodelclicked
   @HostListener('click', ['$event']) 
   async onClick() {
@@ -26,11 +27,13 @@ export class GraphPanelComponent {
     // remove if show class
     document.getElementById("graphNodeClickModal").classList.remove('loadTags');
   }
+
   
   // get all tags and commits information
   async asyncGetCommits(beginnningHash, endingHash) {
     this.commitList = await getTags(beginnningHash, endingHash);
   }
+
 
   mergeBranches(): void {
     let p1 = document.getElementById('fromMerge').innerHTML;
@@ -55,17 +58,6 @@ export class GraphPanelComponent {
     document.getElementById("onExit").click();
   }
 
-  // reloadTaglist(): void {
-  //   let beginnningHash = document.getElementById('commitHash').innerHTML;
-  //   let numCommit = document.getElementById('numCommit').innerHTML;
-  //   this.asyncGetCommits(beginnningHash, numCommit);
-  // }
-
 
   
 }
-
-
-
-
-

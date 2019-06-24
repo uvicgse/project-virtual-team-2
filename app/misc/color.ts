@@ -52,7 +52,6 @@ function changeColor(color) {
 
   if (color === 'white') {
     for (let i = 0; i < head.length; i++) {
-      console.log(head[i]);
       head[i].className = 'navbar navbar-white';
     }
     for (let i = 0; i < headButton.length; i++) {
@@ -102,7 +101,6 @@ function changeColor(color) {
   }
   else if (color === 'pink') {
     for (var i = 0; i < head.length; i++) {
-            console.log(head[i]);
             head[i].className = 'navbar navbar-pink';
         }
         for (var i = 0; i < headButton.length; i++) {
@@ -151,7 +149,6 @@ function changeColor(color) {
     }
     else if (color === 'blue') {
       for (var i = 0; i < head.length; i++) {
-              console.log(head[i]);
               head[i].className = 'navbar navbar-blue';
           }
           for (var i = 0; i < headButton.length; i++) {
@@ -200,7 +197,6 @@ function changeColor(color) {
     }
     else if (color === 'navy') {
       for (var i = 0; i < head.length; i++) {
-              console.log(head[i]);
               head[i].className = 'navbar navbar-navy';
           }
           for (var i = 0; i < headButton.length; i++) {
@@ -250,7 +246,6 @@ function changeColor(color) {
     }
     else if (color === 'green') {
       for (var i = 0; i < head.length; i++) {
-              console.log(head[i]);
               head[i].className = 'navbar navbar-green';
           }
           for (var i = 0; i < headButton.length; i++) {
@@ -299,7 +294,6 @@ function changeColor(color) {
   } 
   else if (color === 'default') {
     for (let i = 0; i < head.length; i++) {
-      console.log(head[i]);
       head[i].className = 'navbar navbar-inverse';
     }
     for (let i = 0; i < headButton.length; i++) {

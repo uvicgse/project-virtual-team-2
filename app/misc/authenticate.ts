@@ -29,8 +29,8 @@ let account;
 //TODO for production release use a web server to store this information
 //as client secret should not be available in application source code
 const OauthConfig = {
-  clientId: 'c2509d8769f5f1e46028',
-  clientSecret: 'e4717832659e95c2f8f4237a3390cf09013b94f7',
+  clientId: 'ea2b3605320a3ad0a629',
+  clientSecret: '7a3c17dd36b3fb36cfd46c44b406e6e9c8da10aa',
   authorizationUrl: 'https://github.com/login/oauth/authorize',
   tokenUrl: 'https://github.com/login/oauth/access_token',
   useBasicAuthorizationHeader: false,
