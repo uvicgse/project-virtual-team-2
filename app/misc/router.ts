@@ -12,7 +12,6 @@ function collapseSignPanel() {
 }
 
 function switchToClonePanel() {
-  console.log("switch to clone panel");
   hideAuthenticatePanel();
   hideFilePanel();
   hidePullRequestPanel();
@@ -75,7 +74,6 @@ function switchToAddRepositoryPanel() {
   window.dispatchEvent(new Event('loadRecentRepos'));
 
   inTheApp = true
-  console.log("Switching to add repo panel");
   hideAuthenticatePanel();
   hideFilePanel();
   hidePullRequestPanel();
@@ -102,7 +100,6 @@ function hideSignInButton():void{
   let file = "token.json";
   fs.access(file, fs.constants.F_OK, (err) => {
     displayModal("Token detected, please log out first if you want to continue without sign in! ");
-    console.log(`${file} ${err ? 'does not exist' : 'exists'}`);
   });
   if (getOauthToken()) {
     document.getElementById("Button_Sign_in").style.display = "none";
@@ -122,10 +119,8 @@ function wait(ms) {
 }
 
 function displayUsername() {
-  console.log("Display Username called");
   document.getElementById("Button_Sign_out").style.display = "block";
   showUsername = true;
-  console.log(getUsername());
   let githubname = document.getElementById("githubname");
   if (githubname != null){
     let existing_username = githubname.innerHTML;
@@ -175,7 +170,6 @@ function displayFilePanel() {
   checkAmendButton();
   // let amendCommitButton = document.getElementById("amend-commit-button");
   // let ahead;
-  // console.log('test');
   
   // ahead = await checkIfExistLocalCommit();
   // console.log('AHEAD', ahead);
@@ -201,7 +195,6 @@ function checkAmendButton() {
   let amendCommitButton = document.getElementById("amend-commit-button");
   let ahead;
   checkIfExistLocalCommit().then((ahead) => {
-    console.log('AHEAD', ahead);
     if (amendCommitButton != null){
       amendCommitButton.style.visibility = "visible";
       if (!ahead) {

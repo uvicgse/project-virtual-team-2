@@ -142,8 +142,6 @@ function searchRepoName() {
     for (let i = 0; i < data.length; i++) {
 
       let rep = Object.values(data)[i];
-      console.log("url of repo: " + rep['html_url']);
-
       // Searches from the text input and adds to the list if repo name is found
       if (parseInt(rep['forks_count']) == 0) {
         if (rep['full_name'].search(document.getElementById("searchRep").value) != -1) {
@@ -203,11 +201,8 @@ function processLogin(ghme, callback) {
     } else {
        displayUsername();
       document.getElementById("avatar").innerHTML = "Sign out";
-      console.log("number of repos: " + data.length);
       for (let i = 0; i < data.length; i++) {
         let rep = Object.values(data)[i];
-        console.log("url of repo: " + rep['html_url']);
-
         if(rep['fork'] == false) {
           if(parseInt(rep['forks_count']) == 0) {
             displayBranch(rep['full_name'], "repo-dropdown", "selectRepo(this)");
@@ -247,7 +242,6 @@ function selectRepo(ele) {
   if (butt.innerHTML != 'Clone'){
     butt.disabled = false;
   }
-  console.log("selected " + ele.innerHTML + " as repository");
 }
 
 function cloneRepo() {
@@ -258,13 +252,11 @@ function cloneRepo() {
 
   hidePRPanel();
 
-  console.log("cloning " + url);
   let splitUrl = url.split("/");
   let local;
   if (splitUrl.length >= 2) {
     local = splitUrl[splitUrl.length - 1];
   }
-  console.log("cloning " + local);
 
   if (local == null) {
     updateModalText("Error: could not define name of repo");

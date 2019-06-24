@@ -11,8 +11,6 @@ export class AuthenticateComponent implements OnInit {
   }
 
   switchToMainPanel(): void {
-    console.log("switchToMainPanel: Authenticate.component.ts");
-
     //If there is a token then sign in
     let file = 'token.json';
     // check if the data.json file exists

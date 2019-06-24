@@ -32,10 +32,7 @@ function downloadRepository() {
     fullLocalPath = document.getElementById("repoSave").value;
 
   } else {
-
     fullLocalPath = document.getElementById("dirPickerSaveNew").files[0].path;
-    console.log(repoFullPath)
-
   }
 
   let cloneURL = document.getElementById("repoClone").value;
@@ -116,8 +113,6 @@ function saveMostRecentRepos(fullLocalPath) {
 }
 
 function downloadFunc(cloneURL, fullLocalPath) {
-  console.log("Path of cloning repo: " + fullLocalPath);
-
   let progressDiv = document.getElementById("cloneProgressDiv");
   progressDiv.style.visibility = "visible";
 
@@ -140,12 +135,10 @@ function downloadFunc(cloneURL, fullLocalPath) {
     }
   };
 
-  console.log("cloning into " + fullLocalPath);
   let repository = Git.Clone.clone(cloneURL, fullLocalPath, options)
     .then(function (repository) {
       progressDiv.style.visibility = 'collapse';
       updateProgressBar(0);
-      console.log("Repo successfully cloned");
       document.getElementById('spinner').style.display = 'block';
       refreshAll(repository);
       updateModalText("Clone Successful, repository saved under: " + fullLocalPath);
@@ -159,7 +152,6 @@ function downloadFunc(cloneURL, fullLocalPath) {
     },
       function (err) {
         updateModalText("Clone Failed - " + err);
-        console.log("repo.ts, line 64, failed to clone repo: " + err); // TODO show error on screen
         switchToAddRepositoryPanel();
       });
 }
@@ -172,7 +164,6 @@ function updateProgressBar(ratio) {
 }
 
 function openRepository() {
-  console.log("Open Repository")
   if (document.getElementById("dirPickerOpenLocal").value === previousOpen && previousOpen != undefined) {
     return;
   }
@@ -195,8 +186,6 @@ function openRepository() {
         fullLocalPath = require("path").join(__dirname, localPath);
       }
     }
-
-    console.log("Trying to open repository at " + fullLocalPath);
     displayModal("Opening Local Repository...");
 
     Git.Repository.open(fullLocalPath).then(function (repository) {
@@ -204,7 +193,6 @@ function openRepository() {
       repoLocalPath = localPath;
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
-        console.log("current HEAD commit: " + tid);
       }
       //Reads the git config file and extracts info about the remote "origin" branch on GitHub
       if (readFile.exists(repoFullPath + "/.git/config")) {
@@ -245,7 +233,6 @@ function openRepository() {
                   "email": ""
                 }
               }
-              console.log("The contributors for this project are ", contributors)
             },
             error(xhr, status, error) {
               console.log("The XML Http Request of the GitHub API call is: ", xhr);
@@ -258,7 +245,6 @@ function openRepository() {
       }
       document.getElementById('spinner').style.display = 'block';
       refreshAll(repository);
-      console.log("Repo successfully opened");
       updateModalText("Repository successfully opened");
       saveMostRecentRepos(fullLocalPath);
     },
@@ -271,7 +257,6 @@ function openRepository() {
   }
 
   function createLocalRepository() {
-    //console.log("createLocalRepo")
     if (document.getElementById("repoCreate").value == null || document.getElementById("repoCreate").value == "") {
       document.getElementById("dirPickerCreateLocal").click();
       let localPath = document.getElementById("dirPickerCreateLocal").files[0].webkitRelativePath;
@@ -295,11 +280,7 @@ function openRepository() {
       }
     }
 
-    //console.log("pre-git check")
-    //console.log("fullLocalPath is " + fullLocalPath)
-    //console.log(require("path").join(fullLocalPath,".git"));
     if (checkFile.existsSync(require("path").join(fullLocalPath, ".git"))) {
-      //console.log("Is git repository already")
       updateModalText("This folder is already a git repository. Please try to open it instead.");
     } else {
       displayModal("creating repository at " + require("path").join(fullLocalPath, ".git"));
@@ -307,7 +288,6 @@ function openRepository() {
         repoFullPath = fullLocalPath;
         repoLocalPath = localPath;
         refreshAll(repository);
-        //console.log("Repo successfully created");
         updateModalText("Repository successfully created");
         document.getElementById("repoCreate").value = "";
         document.getElementById("dirPickerCreateLocal").value = null;
@@ -315,7 +295,6 @@ function openRepository() {
       },
         function (err) {
           updateModalText("Creating Failed - " + err);
-          //console.log("repo.ts, line 131, cannot open repository: "+err); // TODO show error on screen
         });
     }
   }
@@ -325,7 +304,6 @@ function openRepository() {
     elem.innerHTML = '';
     for (let i = 0; i < localBranches.length; i++) {
       if (localBranches[i] !== thisB) {
-        console.log("local branch: " + localBranches[i]);
         let li = document.createElement("li");
         let a = document.createElement("a");
         a.appendChild(document.createTextNode(localBranches[i]));
@@ -347,7 +325,6 @@ function openRepository() {
       .then(function (reference) {
         //Get the simplified name from the branch
         let branchParts = reference.name().split("/");
-        console.log("branch parts: " + branchParts);
         branch = branchParts[branchParts.length - 1];
       })
       .then(function () {
@@ -359,20 +336,17 @@ function openRepository() {
         clearBranchElement();
         //for each branch
         for (let i = 0; i < branchList.length; i++) {
-          console.log("branch name: " + branchList[i].name());
           //get simplified name
           let bp = branchList[i].name().split("/")[branchList[i].name().split("/").length - 1];
 
           Git.Reference.nameToId(repository, branchList[i].name()).then(function (oid) {
             // Use oid
-            console.log("old id " + oid);
             if (branchList[i].isRemote()) {
               // for remote branches add oid and branch name to remote branches map
               remoteName[bp] = oid;
             } else {
               //add branch name to the branch list
               branchCommit.push(branchList[i]);
-              console.log(bp + " adding to end of " + oid.tostrS());
               if (oid.tostrS() in bname) {
                 bname[oid.tostrS()].push(branchList[i]);
               } else {
@@ -394,7 +368,6 @@ function openRepository() {
         }
       })
       .then(function () {
-        console.log("Updating the graph and the labels");
         drawGraph();
         var newRepoLocalPath = "";
         let breakStringFrom;
@@ -414,8 +387,6 @@ function openRepository() {
         window.alert("Warning:\n" +
           "No branches have been found in this repository.\n" +
           "This is likely because there have been no commits made.");
-        console.log("No branches found. Setting default label values to master");
-        console.log("Updating the labels and graph");
         drawGraph();
         document.getElementById("repo-name").innerHTML = repoLocalPath;
         //default label set to master
@@ -433,14 +404,11 @@ function openRepository() {
       .then(function (branchList) {
         clearBranchElement();
         for (let i = 0; i < branchList.length; i++) {
-          console.log("branch discovered: " + branchList[i]);
           let bp = branchList[i].split("/");
           if (bp[1] !== "remotes") {
             displayBranch(bp[bp.length - 1], "branch-dropdown", "checkoutLocalBranch(this)");
           }
           Git.Reference.nameToId(repos, branchList[i]).then(function (oid) {
-            // Use oid
-            console.log("old id " + oid);
           });
         }
       });
@@ -463,7 +431,6 @@ function openRepository() {
       })
       .then(function (ref) {
         let name = ref.name().split("/");
-        console.log("merging remote branch with tracked local branch");
         clearBranchElement();
         for (let i = 0; i < list.length; i++) {
           let bp = list[i].split("/");
@@ -683,7 +650,6 @@ function openRepository() {
         bn = bn.substr(0, bn.lastIndexOf(img)) // remove remote branch <img> tag from branch name string
       }
     }
-    console.log("name of branch being checked out: " + bn);
     Git.Repository.open(repoFullPath)
       .then(function (repo) {
         document.getElementById('spinner').style.display = 'block';
@@ -717,7 +683,6 @@ function openRepository() {
         bn = bn.substr(0, bn.lastIndexOf(img))  // remove local branch <img> tag from branch name string
       }
     }
-    console.log("current branch name: " + bn);
     let repos;
     Git.Repository.open(repoFullPath)
       .then(function (repo) {
@@ -725,20 +690,16 @@ function openRepository() {
         addCommand("git fetch");
         addCommand("git checkout -b " + bn);
         let cid = remoteName[bn];
-        console.log("name of remote branch:  " + cid);
         return Git.Commit.lookup(repo, cid);
       })
       .then(function (commit) {
-        console.log("commiting");
         return Git.Branch.create(repos, bn, commit, 0);
       })
       .then(function (code) {
-        console.log("name of local branch " + bn);
         repos.mergeBranches(bn, "origin/" + bn)
           .then(function () {
             document.getElementById('spinner').style.display = 'block';
             refreshAll(repos);
-            console.log("Pull successful");
           });
       }, function (err) {
         console.log("repo.ts, line 306, could not pull from repository" + err);

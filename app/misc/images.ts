@@ -20,7 +20,6 @@ function imageForUser(name: string, email: string, callback) {
   let pic;
   githubAvatarUrl(name, function(err,avatarURL){
     if(!err) {
-      console.log("avatar url: avatarURL");
       pic = avatarURL;
     } else {
       let first = name.trim().charAt(0).toUpperCase();

@@ -10,13 +10,11 @@ function storeOauthToken(accessToken) {
   encryptOauthToken(accessToken);
 
   //Write to the JSON file
-  console.log("encrypted Oauth token is: " + encryptedOauthToken);
   var file = 'token.json';
   var obj = {'OauthToken': encryptedOauthToken.toString()};
 
   jsonfile.writeFile(file, obj, function (err) {
     if (err) throw err;
-    console.log('Oauth Token successfully saved');
   })
 
   return;

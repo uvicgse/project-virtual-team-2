@@ -375,8 +375,6 @@ function makeBasicNode(c, column: number) {
             let branchName = bname[c.toString()][i];
             let bp = branchName.name().split("/");
             let shortName = bp[bp.length - 1];
-            console.log(shortName + " sub-branch: " + branchName.isHead().toString());
-
             if(branchName == "refs/stash"){ //color node orange if it is a stash
                 recolorFlag = true;
             }else{
@@ -488,8 +486,6 @@ function makeAbsNode(c, column: number) {
                 let branchName = bname[c.toString()][i];
                 let bp = branchName.name().split("/");
                 let shortName = bp[bp.length - 1];
-                console.log(shortName + " sub-branch: " + branchName.isHead().toString());
-
                 if (branchName == "refs/stash") { //color node orange if it is a stash
                     recolorFlag = true;
                 }else{
@@ -596,8 +592,6 @@ function makeNode(c, column: number) {
             let branchName = bname[c.toString()][i];
             let bp = branchName.name().split("/");
             let shortName = bp[bp.length - 1];
-            console.log(shortName + " sub-branch: " + branchName.isHead().toString());
-
             if (branchName == "refs/stash") { //color node orange if it is a stash
                 recolorFlag = true;
             }else{
@@ -668,8 +662,6 @@ function makeNode(c, column: number) {
         reference: reference,
         branch: flag,
     });
-
-    console.log("commit: "+ id + ", message: " +commitList[id-1]['id']);
 }
 
 function makeEdge(sha: string, parentSha: string) {

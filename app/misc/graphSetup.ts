@@ -229,7 +229,6 @@ function drawGraph() {
             } else {
                 toNode = undefined;
             }
-            console.log("toNode:  " + toNode);
         });
 
         network.on('click', function (properties) {
@@ -247,8 +246,6 @@ function drawGraph() {
                 } else {
                     clicknode = undefined;
                 }
-                console.log('Node Clicked: ' + clicknode.label);
-
 
                 if (clicknode != undefined) {
                     // add class to modal for display
@@ -261,7 +258,6 @@ function drawGraph() {
                     if (clicknode.count) {
                         document.getElementById("numCommit")!.innerHTML = clicknode.count;
                     }
-                    console.log('in graph setup', clicknode.count);
                     document.getElementById("authorModalDetails")!.innerHTML = "Author Name: " + clicknode.author.toString() + "<br>" + "Email: " + email;
                     document.getElementById("authorModalProfileButton")!.onclick = function () {
                         window.open("https://github.com/" + name, "Author Profile");
@@ -274,7 +270,6 @@ function drawGraph() {
                 }
                 // open stash modal if stash branch label clicked
                 if (clicknode.shape == "box" && clicknode.label == "stash"){
-                    console.log("Opening stash modal from graph...");
                     refreshStashHistory();
                     $('#stash-modal').modal('show');
                 }
@@ -285,8 +280,6 @@ function drawGraph() {
 
             if(GraphNodeID != 0){
               GraphNodeID = 0;
-            }else{
-              //console.log("Please right click and select the appropriate ID");
             }
           });
 
@@ -294,7 +287,6 @@ function drawGraph() {
 
           network.on("click", function (params) {
               GraphNodeID = parseInt(params.nodes.toString());
-              console.log("Graph Node ID is: " + GraphNodeID);
           });
     })
 }
@@ -358,7 +350,6 @@ function showDiff(commitId): void {
       closeButton.style.display = "inline";
     }
     let commitPanel = document.getElementById("selected-commit-diff-panel");
-    console.log("inside display selected commit");
     if (commitPanel != null) {
       commitPanel.style.height = "100vh";
       commitPanel.style.width = "100vw";

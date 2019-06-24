@@ -32,7 +32,6 @@ export class AddRepositoryComponent {
 
   // Open user selected recently opened repo
   openRecentRepository(repo): void {
-    console.log(repo);
     (<HTMLInputElement>document.getElementById("repoOpen")).value = repo;
     openRepository();
     switchToMainPanel();
@@ -121,7 +120,6 @@ fileUpload(ev){
         if (ev.dataTransfer.items[i].kind === 'file') {
           var file = ev.dataTransfer.items[i].getAsFile();
           document.getElementById("repoOpen").value = ev.dataTransfer.files[i].path + "\\";
-          console.log('... file[' + i + '].name = ' + file.name);
         }
       }
     }
@@ -129,7 +127,6 @@ fileUpload(ev){
       // Use DataTransfer interface to access the file(s)
       for (var i = 0; i < ev.dataTransfer.files.length; i++) {
         document.getElementById("repoOpen").value = ev.dataTransfer.files[i].path + "\\";
-        console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
       }
     }
     openRepository()

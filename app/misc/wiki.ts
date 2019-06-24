@@ -19,7 +19,6 @@ function openWiki() {
     wikis.style.height = "100vh";
     wikis.style.zIndex = "15";
 
-    console.log(repoFullPath);
     if (!fs.existsSync(repoFullPath + "\\wiki")) {
         cloneWiki();
     } else {
@@ -27,7 +26,6 @@ function openWiki() {
     }
 
     let externalLinkButton = document.getElementById("wikiLinkButton")!;
-    console.log(getWikiUrl()!);
     externalLinkButton.setAttribute("href", getWikiUrl()! + "/wiki");
 }
 
@@ -48,10 +46,8 @@ function cloneWiki() {
     let cloneUrl = getWikiUrl() + ".wiki.git";
 
     let wikiPath = repoFullPath + "\\wiki";
-    console.log("The wiki path is: ", wikiPath);
     let repository = Git.Clone.clone(cloneUrl, wikiPath, options)
         .then(function (repository) {
-            console.log("Wiki successfully cloned")
 
             findPageNames(wikiPath, displayWiki)
 
@@ -70,8 +66,6 @@ function findPageNames(wikiPath: string, callback: () => void) {
     var EXTENSION = '.md';
     wikiContent = [];
     fs.readdir(wikiPath, function (err, files) {
-        console.log("The items are: ", files);
-
         var files = files.filter(function (file) {
             return path.extname(file).toLowerCase() === EXTENSION;
         });
@@ -102,10 +96,7 @@ function displayWiki() : void {
     while (wiki_content.firstChild){
         wiki_content.removeChild(wiki_content.firstChild);
     }
-
-    console.log("The entire content is: ",wikiContent);
     wikiContent.forEach(page => {
-        //console.log("Page names: ", page.pageName);
         let wiki_title_template =   document.createElement("div");
         wiki_title_template.className = "panel panel-default";
 
@@ -143,7 +134,6 @@ function updateWiki() {
     Git.Repository.open(localWikiPath)
         .then(function (repo) {
             repository = repo;
-            console.log("Pulling new changes from the remote repository");
             addCommand("git pull");
             displayModal("Pulling new changes from the remote repository");
 
@@ -164,13 +154,11 @@ function updateWiki() {
           return Git.Reference.nameToId(repository, "refs/remotes/origin/master");
         })
         .then(function(oid) {
-          console.log("Looking up commit with id " + oid + " in all wiki repositories");
           return Git.AnnotatedCommit.lookup(repository, oid);
         }, function(err) {
           console.log("Error is " + err);
         })
         .then(function(annotated) {
-          console.log("merging " + annotated + "with local forcefully");
           Git.Merge.merge(repository, annotated, null, {
             checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
           });
