@@ -12,8 +12,8 @@ export class DiffPanelComponent {
   private footerInstance: FooterComponent = new FooterComponent();
   private textEditorInstance: TextEditorComponent = new TextEditorComponent();
 
-  /* 
-    This function is called when the Open in Editor button is pressed in the diff panel. 
+  /*
+    This function is called when the Open in Editor button is pressed in the diff panel.
     It opens the file currently open in the diff panel in the file editor
   */
   openFromDiff(): void {
@@ -25,7 +25,7 @@ export class DiffPanelComponent {
     let fileName = doc.getElementsByTagName("P")[0].innerHTML;
 
     // Gets the full path of the file by adding it to the repo path
-    let fileLocation = repoFullPath + '/' + fileName;
+    let fileLocation = path.join(repoFullPath, fileName);
 
     // If the file exists, opens it in the file editor
     if (readFile.exists(fileLocation)) {
