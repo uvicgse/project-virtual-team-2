@@ -2435,6 +2435,18 @@ function displayModifiedFiles() {
           element.style.backgroundColor = "#84db00";
         } else if (line.charAt(0) === "-") {
           element.style.backgroundColor = "#ff2448";
+
+        /* Issue-2
+             Removes text saying < \ no newline at end of file in the diff-panel.
+            This will cause any newline at end of file to be omitted whether it
+            was created by git or not. What gets printed out is left up to the developer (shown below)
+          */
+        } else if (line.charAt(0) === "<") {
+            line = "";
+            //line = "end of file"
+            //line = "No newline at end of file"
+            //line = "Newline omitted"
+            //line can be anything the dev wants
         }
 
         // If not a changed line, origin will be a space character, so still need to slice
