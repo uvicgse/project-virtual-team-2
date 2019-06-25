@@ -4,7 +4,7 @@
   <head lang="en">
     <title>VisualGit</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" crossorigin="anonymous">
     <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.css" type="text/css">
     <link rel="stylesheet" href="node_modules/jquery-contextmenu/dist/jquery.contextMenu.min.css" type="text/css">
@@ -211,4 +211,16 @@ window.onclick = function(event) {
       return options;
     }
   });
+</script>
+
+<script>
+    function myFunction() {
+    var awidth = screen.availWidth / 6 * 3;
+    var aheight = screen.availHeight / 5 * 2;
+    var atop = (screen.availHeight - aheight) / 2;
+    var aleft = (screen.availWidth - awidth) / 2;
+    var param0 = "scrollbars=0,status=0,menubar=0,resizable=2,location=0";
+    var params = "top=" + atop + ",left=" + aleft + ",width=" + awidth + ",height=" + aheight + "," + param0;
+    window.open("./app/components/addRepository/add.repository.recentrepo.html", "", params);
+    }
 </script>

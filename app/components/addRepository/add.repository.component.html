@@ -58,14 +58,27 @@
         </div>
     </div>
     <div id="recent-repository" *ngIf="showRecent" (load)="loadMostRecentRepos()"> 
-      <div class="title"><h1>Recent Repositories</h1></div>
-      <div class="block" (window:loadRecentRepos)="updateRepos($event)">
+      <div class="title1"><h1>Recent Repositories</h1></div>
+      <div class="block1" style="width: 100%" (window:loadRecentRepos)="updateRepos($event)">
         <div class="left">&nbsp;</div>
         <div class="right">
-          <ul>
-            <li *ngFor="let repo of recentRepos; let i = index" [attr.data-index]="i"><button class="btn btn-default" (click)="openRecentRepository(repo)"><span class="badge">{{  i + 1 }}</span>{{ repo }}</button></li>
-          </ul>
+        
+        <div class="dropdown" style="position: relative">
+          <button class="dropbtn" style="width: 200px; height: 50px">Display Recent Repositories</button>
+          <div class="dropdown-content">
+            <ul>
+              <li *ngFor="let repo of recentRepos; let i = index" [attr.data-index]="i"><button class="btn btn-default" (click)="openRecentRepository(repo)"><span class="badge">{{  i + 1 }}</span>{{ repo }}</button></li>
+            </ul>
+          </div>
+        </div>
+
         </div>
       </div>
     </div>
+    <!--
+    <div class="title"><h1>Recent Repositories</h1></div>
+        <button onclick="myFunction()">Try it</button>
+    </div>
+    -->
 </div>
+

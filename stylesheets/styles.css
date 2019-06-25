@@ -1331,3 +1331,52 @@ body .pull-request-panel {
   text-align: center;
 }
 /* Stash-functions END */
+
+
+/*Recent Ropository Drop Down Menu*/
+.dropbtn {
+  width: 22500px;
+  background-color: #009aa5;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  bottom: 100%;
+}
+
+.dropdown-content a {
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  bottom: 100%;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: #017981;
+}
+
+#recent-repository .block1{
+  z-index: 1;
+  position: relative;
+}
+
+#create-local-repository .open-local-repository .title1{
+  z-index: 0;
+  position: relative;
+}
+/*end of drop down menu*/
