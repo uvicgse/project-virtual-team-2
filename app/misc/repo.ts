@@ -378,7 +378,7 @@ function addBranchestoNode(thisB: string) {
         newRepoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
       }
       document.getElementById("repo-name").innerHTML = newRepoLocalPath;
-      document.getElementById("branch-name").value = branch + '<span class="caret"></span>';
+      document.getElementById("branch-name").innerHTML = branch + '<span class="caret"></span>';
     }, function (err) {
       //If the repository has no commits, getCurrentBranch will throw an error.
       //Default values will be set for the branch labels
@@ -851,11 +851,6 @@ function updateModalText(text) {
     $('#modalW4').modal('show');
   }
 
-  //Updating stash show modal text and adding classes for highlighting
-  function updateModalText(text) {
-    document.getElementById("modal-text-box").innerHTML = text;
-    $('#modal').modal('show');
-  }
 function hidePRPanel(): void {
   // Hide PR Panel
   let prStatus1 = document.getElementById("pr-status-1");
