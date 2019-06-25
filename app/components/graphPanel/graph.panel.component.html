@@ -83,7 +83,7 @@
 
                             </td>
                             <td>
-                                <button class="btn-sm btn-danger" (click)="deleteTag(commit.oldTagName)">Delete</button>
+                                <button *ngIf="commit.hasTag" class="btn-sm btn-danger" (click)="deleteTag(commit.oldTagName)">Delete</button>
                             </td>
                               
                           </tr>

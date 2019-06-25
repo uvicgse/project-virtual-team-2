@@ -776,8 +776,8 @@ function addAndStash(options) {
 
 // Add or modify tag
 async function addOrModifyTag(commit) {
-  // A new tag must include a tag name and tag message or tag cannot be created
-  if (commit.tagName == "" && commit.tagMsg != "") {
+  // A new tag must include a tag name or tag cannot be created
+  if (commit.tagName == "") {
     window.alert("Cannot create tag without a tag name. Please add a tag name before committing");
     return;
   }
@@ -788,7 +788,7 @@ async function addOrModifyTag(commit) {
     repository = repo;
     if(commit.hasTag) {
       console.log("MODIFY - Deleting Tag");
-      return deleteTag(commit.oldTagName);
+      return deleteTag(commit.oldTagName, false);
     }
   })
   .then(()=>{
@@ -805,7 +805,8 @@ async function addOrModifyTag(commit) {
       } else{
         console.log('tag failed');
       }
-      refreshAll(repository);
+  }).then(() => {
+    refreshAll(repository);
   })
   .catch ((err) => {
     console.log("Could not add/modify tag, Error:" + err);
@@ -813,7 +814,7 @@ async function addOrModifyTag(commit) {
 }
 
 // Delete tag based on tag name and display corresponding git command to footer in VisualGit
-async function deleteTag(tagName) {
+async function deleteTag(tagName, refresh = true) {
   let repository;
   console.log(repoFullPath);
   let name = tagName.split(path.sep);
@@ -827,12 +828,14 @@ async function deleteTag(tagName) {
           .then(() => {
             console.log(`${name} deleted`);
             addCommand('git tag -d '+ name);
-
           })
           .then((res) =>{
             resolve(res);
           })
-          .catch((err) => console.log(err));
+          .catch((err) => console.log(err));      
+      }).then(() => {
+        if(refresh)
+          refreshAll(repository);
       })
       .catch((err) => console.log(err));
 
@@ -1189,16 +1192,13 @@ function getAllCommits(callback) {
   let aclist = [];
   let singleReference;
   let name;
-  console.log("Finding all commits");
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
       repos = repo;
-      console.log("fetching all remote repositories");
       return repo.getReferences(Git.Reference.TYPE.LISTALL);
     })
     .then(function (refs) {
       let count = 0;
-      console.log("getting " + refs.length + " remote repositories");
       async.whilst(
         function () {
           return count < refs.length;
@@ -1207,7 +1207,6 @@ function getAllCommits(callback) {
         function (cb) {
           // Remove tag references or because getReferenceCommit does not recognize tag references
           if (!refs[count].isTag() && !refs[count].isRemote()) {
-            console.log("referenced branch exists on remote repository");
             repos.getReferenceCommit(refs[count])
             .then(function (commit) {
               let history = commit.history(Git.Revwalk.SORT.Time);
@@ -1219,7 +1218,6 @@ function getAllCommits(callback) {
                   }
                 }
                 count++;
-                console.log(count + " out of " + allCommits.length + " commits");
                 cb();
               });
 
@@ -1228,7 +1226,6 @@ function getAllCommits(callback) {
               console.log(err);
             });
           } else {
-            console.log('current branch does not exist on remote');
             count++;
             cb();
           }
@@ -1441,18 +1438,25 @@ async function getBranchName() {
 
 
 async function pushToRemote() {
-    let branch = "";
-    await getBranchName().then((branchName) => {
-        branch = branchName;
-    });
-    //checks if the remote version of your current branch exist
-    checkIfExistOrigin(branch).then(function (remoteBranchExist) {
-        if (!remoteBranchExist) {
-            window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
-                "To push the current branch and set the remote as upstream, use\n" +
-                "\n" +
-                "    git push --set-upstream origin test-branch");
-            return;
+  let branch = "";
+  await getBranchName().then((branchName) => {
+    branch = branchName;
+  });
+  //checks if the remote version of your current branch exist
+  checkIfExistOrigin(branch).then(function (remoteBranchExist) {
+    if (!remoteBranchExist) {
+      displayPushToRemoteModal();
+      return;
+    } else {
+      // tells the user if their branch is up to date or behind the remote branch
+      getAheadBehindCommits(branch).then(function (aheadBehind) {
+        if (aheadBehind.behind !== 0) {
+          window.alert("your branch is behind remote by " + aheadBehind.behind);
+          return;
+
+        } else if (aheadBehind.ahead === 0) {
+          window.alert("Your branch is already up to date");
+          return;
         } else {
             // tells the user if their branch is up to date or behind the remote branch
             getAheadBehindCommits(branch).then(function (aheadBehind) {
@@ -1474,7 +1478,6 @@ async function pushToRemote() {
                                     ["refs/heads/" + branch + ":refs/heads/" + branch],
                                     {
                                         callbacks: {
-
                                             credentials: function () {
                                                 return createCredentials();
                                             }
@@ -1494,8 +1497,11 @@ async function pushToRemote() {
                   });
               }
             });
+          });
         }
-    });
+      });
+    }
+  });
 }
 
 
