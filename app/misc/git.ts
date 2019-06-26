@@ -576,6 +576,238 @@ function dropInPreviousDir(event, directoryPath) {
   setTimeout(function(){stageFile(directoryItemName)},1750);
 }
 
+function showMoveModal(){
+  listDirectoryItems(repoFullPath);
+  $('#move-modal').modal('show');
+}
+
+function getDirectories(directoryPath) {
+  return fs.readdirSync(directoryPath).filter(function (file) {
+    return fs.statSync(path.join(directoryPath,file)).isDirectory() || fs.statSync(path.join(directoryPath,file)).isFile();
+  });
+}
+
+// Description: Used to list the files and folders in a certain directory.
+// 
+// @param directoryPath: The path of the directory to be shown.
+function listDirectoryItems(directoryPath) {
+	let directories = getDirectories(directoryPath);
+	console.log("Getting repo directory...");
+	console.log("Displaying the files and directories at: " + directoryPath);
+	let repoDirectoryHTML = '';
+
+	// For each stash create a unique element with unique pop, drop, and apply functionality.
+	directories.forEach((directoryItem, i) => {
+		let parsedPath = (path.join(directoryPath,directories[i])).replace(/\\/g, '\\\\');
+
+		if(fs.statSync(parsedPath).isDirectory()){
+			repoDirectoryHTML +=
+				'<div id="directory-item-' + i + '" class="directory-item" ondrop="drop(event,\'' + parsedPath + '\')" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+				  '<input id="directory-id-' + i +'" type="text" value="' + directoryItem + "\\" + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
+				'</div>';
+		} else if (fs.statSync(parsedPath).isFile()) {
+			repoDirectoryHTML +=
+				'<div id="directory-item-' + i + '" class="directory-item" ondrop="drop(event,\'' + parsedPath + '\')" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondblclick="listDirectoryItems(\'' + parsedPath + '\')">' +
+				  '<input id="directory-id-' + i +'" type="text" value="' + directoryItem + '" onkeypress="renameDirectoryItem(event,\'' + parsedPath + '\',' + i + ')"></input>' +
+				'</div>';
+		}
+	});
+	document.getElementById('move-list').innerHTML = repoDirectoryHTML;
+
+  // Get last directory name in path
+  var newPath = "";
+  var prevPath = "";
+  let breakStringFrom;
+
+  // Used to get second last slash
+  let slashPosArr = [];
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      slashPosArr.push(i);
+      breakStringFrom = i;
+    }
+  }
+
+  newPath = directoryPath.slice(breakStringFrom, directoryPath.length);
+  prevPath = directoryPath.slice(0, breakStringFrom);
+
+  // If the previous path is equal to a path outside of the repo directory, don't
+  // display the previous path button (...)
+  if(prevPath == repoFullPath.slice(0,slashPosArr[slashPosArr.length - 2]) || directoryPath == repoFullPath){
+    document.getElementById('move-current-directory').innerHTML = newPath;
+  } else {
+    let parsedPrevPath = (prevPath).replace(/\\/g, '\\\\');
+    document.getElementById('move-current-directory').innerHTML = 
+    '<div>' + 
+      '<a id="move-last-directory" class="move-last-directory" ondragover="allowDrop(event)" ondrop="dropInPreviousDir(event,\'' + directoryPath.replace(/\\/g, '\\\\') + '\')" onclick="listDirectoryItems(\'' + parsedPrevPath + '\')">...</a>' + newPath + 
+    '</div>';
+  }
+}
+
+// Description: Used to handle file or directory name changes.
+// 
+// @param event: Used to listen for the ENTER button.
+// @param directoryPath: The path of that directory item.
+// @param pos: The position of the directory item in the 
+// directory list.
+function renameDirectoryItem(event,directoryPath,pos){
+  // TODO: Figure out how to disable new line but not enter
+  // Get last directory name in path
+  var prevPath = "";
+  let breakStringFrom;
+
+  // Used to get second last slash
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+
+  prevPath = directoryPath.slice(0, breakStringFrom);
+  var id = "directory-id-" + pos;
+  var element = document.getElementById(id);
+  var newName = element.value;
+  
+  if (event.keyCode == 13) {
+    // Check to see if the original directory item was a file or folder.
+    if(fs.statSync(directoryPath).isDirectory()){
+      // Check to see if the new name is a valid folder name.
+      if(isValidFolderName(newName)){
+        hideDirNameError();
+        fs.rename(directoryPath, path.join(prevPath, newName), function(err) {
+            if (err) console.log('Renaming Error: ' + err);
+        });
+      } else {
+        showDirNameError("Name Error: " + newName + " is not a valid folder name.\nNo special characters allowed. (< > : \" / \\ | ? * & % ^)");
+      }
+    } else if (fs.statSync(directoryPath).isFile()) {
+      // Check to see if the new name is a valid file name.
+      if(isValidFileName(newName)){
+        hideDirNameError();
+        fs.rename(directoryPath, path.join(prevPath, newName), function(err) {
+            if (err) console.log('Renaming Error: ' + err);
+        });
+      } else {
+        showDirNameError("Name Error: " + newName + " is not a valid file name.\n\nPlease make sure you have a valid extension.\nNo special characters allowed. (< > : \" / \\ | ? * & % ^)");
+      }
+    }
+    // Wait for files to appear in unstaged
+    setTimeout(function(){stageFile(newName)},1200);
+  }
+}
+
+// Description: Used to show errors regarding actions taken in the
+// Move modal.
+// 
+// @param message: Used to provide the user with a thorough
+// description of the error, plus what possible steps they can
+// take to prevent this error from happening.
+function showDirNameError(message){
+  let dirNameErrorElement = document.getElementById("dir-item-name-error");
+  dirNameErrorElement.innerHTML = message;
+  dirNameErrorElement.style.display = "inline-flex";
+}
+
+function hideDirNameError(){
+  let dirNameErrorElement = document.getElementById("dir-item-name-error");
+  dirNameErrorElement.style.display = "none";
+}
+
+function isValidFileName(fileName){
+  return /^[a-z0-9_.@()-]+\.[^.]+$/i.test(fileName);
+}
+
+function isValidFolderName(folderName){
+  return /^[a-zA-Z].*/.test(folderName);
+}
+
+/* Allows you to stage specific files. Assumes these files are in the 
+   unstaged file section. 
+   @param filename: The literal name of the file */
+function stageFile(filename){
+  let unstagedFileElements = document.getElementById('files-changed').children;
+  for (var i = 0; i < unstagedFileElements.length; i++) {
+    if(unstagedFileElements[i].id == filename){
+      let checkbox = unstagedFileElements[i].getElementsByTagName("input")[0];
+      try {
+        checkbox.click();
+      } catch (err) {
+        break;
+      }
+    }
+  }
+}
+
+function allowDrop(event) {
+  event.preventDefault();
+}
+
+function drag(event) {
+  event.dataTransfer.setData("directory-item-id", event.target.id);
+  event.dataTransfer.setDragImage(document.getElementById(event.target.id), 0, 0);
+  console.log("Dragging: " + event.target.id);
+}
+
+function drop(event, directoryPath) {
+  event.preventDefault();
+  var data = event.dataTransfer.getData("directory-item-id");
+  var directoryItemName = document.getElementById(data).childNodes[0].value;
+
+  // Get last directory name in path
+  var newDropItemPath = "";
+  var dropItemPath = "";
+  let breakStringFrom;
+
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+
+  var prevDirectoryPath = directoryPath.slice(0, breakStringFrom);
+  newDropItemPath = path.join(prevDirectoryPath,event.target.value);
+  dropItemPath = path.join(prevDirectoryPath,directoryItemName);
+
+  console.log("Dropped: " + data + " at " + event.target.id);
+
+  // Rename the original path to the new path plus the directory item's name.
+  fs.rename(dropItemPath, path.join(newDropItemPath, directoryItemName), function(err) {
+      if (err) console.log('Renaming Error: ' + err);
+
+      listDirectoryItems(prevDirectoryPath);
+  });
+  // Wait for files to appear in unstaged
+  setTimeout(function(){stageFile(directoryItemName)},1750);
+}
+
+function dropInPreviousDir(event, directoryPath) {
+  event.preventDefault();
+  var data = event.dataTransfer.getData("directory-item-id");
+  var directoryItemName = document.getElementById(data).childNodes[0].value;
+
+  // Get last directory name in path
+  let breakStringFrom;
+
+  for (var i = 0; i < directoryPath.length; i++) {
+    if (directoryPath[i] == "/" || directoryPath[i] == "\\") {
+      breakStringFrom = i;
+    }
+  }
+
+  var prevDirectoryPath = directoryPath.slice(0, breakStringFrom);
+
+  console.log("Dropped: " + data + " at " + event.target.id);
+
+  // Rename the original path to the previous path plus the directory item's name.
+  fs.rename(path.join(directoryPath, directoryItemName), path.join(prevDirectoryPath, directoryItemName), function(err) {
+      if (err) console.log('Renaming Error: ' + err);
+
+      listDirectoryItems(directoryPath);
+  });
+  // Wait for files to appear in unstaged
+  setTimeout(function(){stageFile(directoryItemName)},1750);
+}
+
 function passReferenceCommits(){
   Git.Repository.open(repoFullPath)
   .then(function(commits){
