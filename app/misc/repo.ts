@@ -22,6 +22,7 @@ let settingsPath = path.join(__dirname, ".settings");
 const recentFiles = path.join(settingsPath, 'recent_repos.json');
 let quickBranchTagReload: any = [];
 
+
 // Function clones repository from HTML element repoSave using downloadFunc()
 function downloadRepository() {
   let fullLocalPath;
@@ -264,6 +265,7 @@ function openRepository() {
       document.getElementById("repoCreate").text = fullLocalPath;
       saveMostRecentRepos(fullLocalPath);
 
+
     } else {
       if (checkFile.existsSync(localPath)) {
         fullLocalPath = localPath;
@@ -318,6 +320,8 @@ function addBranchestoNode(thisB: string) {
 
     // Function is called to refresh VisualGit's GUI by reloading current branch and re-drawing the commit graph
   function refreshAll(repository) {
+    console.log("Refreshing repository: ");
+    console.log(repository.getNamespace());
     document.getElementById('spinner').style.display = 'block';
     let branch;
     bname = [];
@@ -376,8 +380,10 @@ function addBranchestoNode(thisB: string) {
           }
         }
         newRepoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
+        document.getElementById("repo-name").innerHTML = newRepoLocalPath;
+      }else{
+        document.getElementById("repo-name").innerHTML = repoLocalPath;
       }
-      document.getElementById("repo-name").innerHTML = newRepoLocalPath;
       document.getElementById("branch-name").innerHTML = branch + '<span class="caret"></span>';
     }, function (err) {
       //If the repository has no commits, getCurrentBranch will throw an error.

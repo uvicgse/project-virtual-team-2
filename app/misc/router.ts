@@ -184,7 +184,7 @@ function displayFilePanel() {
   // let amendCommitButton = document.getElementById("amend-commit-button");
   // let ahead;
   // console.log('test');
-  
+
   // ahead = await checkIfExistLocalCommit();
   // console.log('AHEAD', ahead);
   // if (amendCommitButton != null){
@@ -198,20 +198,20 @@ function displayFilePanel() {
   //   }
   // }
 
-  
-  
+
+
   document.getElementById("Issues-button").style="visiblity: visible";
 }
 
 // Function displays an unclickable amend commit button if no unpushed commits exist.
 // If unpushed commits exist, function displays a clickable amend commit button
 function checkAmendButton() {
-  // Method checking whether to make amend button clickable. Button will be clickable if there is more than 
+  // Method checking whether to make amend button clickable. Button will be clickable if there is more than
   // one unpushed commit
   let amendCommitButton = document.getElementById("amend-commit-button");
   let ahead;
   checkIfExistLocalCommit().then((ahead) => {
-    console.log('AHEAD', ahead);
+    //console.log('AHEAD', ahead);
     if (amendCommitButton != null){
       amendCommitButton.style.visibility = "visible";
       if (!ahead) {
