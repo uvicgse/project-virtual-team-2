@@ -53,10 +53,10 @@ export async function getTags(beginningHash, numCommit){
   // get repo and refs in order
   await Git.Repository.open(repoFullPath).then(function(repo){
     sharedRepo = repo;
-  })
+  });
   await sharedRepo.getReferences(Git.Reference.TYPE.OID).then(function(refs){
     sharedRefs = refs;
-  })
+  });
 
   commitList = await getCommitShaFromNode(sharedRepo, beginningHash, numCommit);
   commitList = await getCommitFromShaList(commitList, sharedRepo);
@@ -65,7 +65,7 @@ export async function getTags(beginningHash, numCommit){
 
   return await new Promise(resolve=> {
     resolve(tags);
-  })
+  });
 
 }
 
@@ -254,7 +254,6 @@ function refreshStashHistory(){
                 '<li></li>' +
                 '<li></li>' +
             '</ul>' +
-
             '<div id="stash-item-' + i + '-dropdown" class="dropdown-content">' +
                 '<a data-dismiss="modal" onclick="popStash(' + i + ')">Pop</a>' +
                 '<a data-dismiss="modal" onclick="applyStash(' + i + ')">Apply</a>' +
@@ -1032,7 +1031,7 @@ function addAndCommit() {
     - Function entered from Stash button
     - stages files and stashes them
 */
-function addAndStash(options) {
+function addAndStash(options){
 
   if(options == null) options = 0;
 
@@ -1139,21 +1138,21 @@ function addAndStash(options) {
       theirCommit = null;
       changes = 0;
 
-        let branch = await getBranchName();
+      let branch = await getBranchName();
 
-        var comMessage = Git.Commit.lookup(repository, oid)
-            .then(function (commit) {
-                return commit.message();
-            });
-        var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0, 8) + " " + comMessage);
+      var comMessage = Git.Commit.lookup(repository, oid)
+          .then(function (commit) {
+              return commit.message();
+          });
+      var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0, 8) + " " + comMessage);
 
-        stagedFiles = null;
+      stagedFiles = null;
 
-        hideDiffPanel();
-        clearStagedFilesList();
-        clearCommitMessage();
+      hideDiffPanel();
+      clearStagedFilesList();
+      clearCommitMessage();
 
-        stashName = "On " + branch + ": " + stashMessage;
+      stashName = "On " + branch + ": " + stashMessage;
 
       for (let i = 0; i < filesToAdd.length; i++) {
         addCommand("git add " + filesToAdd[i]);
@@ -1192,8 +1191,8 @@ function addAndStash(options) {
         updateModalText("Unexpected Error: " + err.message + "\nPlease restart and try again.");
       }
     });
-  }
 }
+
 
 // Add or modify tag
 // @params commit: CommitItem object
