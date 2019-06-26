@@ -365,6 +365,7 @@ body .add-repository-panel .back-button {
   position: absolute;
   padding: 15px;
   opacity: 0.7;
+  cursor: pointer;
 }
 
 body .add-repository-panel .back-button:hover {
@@ -1059,6 +1060,7 @@ body .pull-request-panel {
   height: 100%;
   overflow: hidden;
   width: 60px;
+  cursor: pointer;
 }
 
 .right-pr-nav i img {
@@ -1318,3 +1320,7 @@ body .pull-request-panel {
 }
 
 /* Stash-functions END */
+
+.footer-last-row {
+  font-size: 12px;
+}
