@@ -20,7 +20,7 @@ let jsonfile = require('jsonfile');
 let path = require('path');
 let settingsPath = path.join(__dirname, ".settings");
 const recentFiles = path.join(settingsPath, 'recent_repos.json');
-let quickBranchTagReload: any = []; 
+let quickBranchTagReload: any = [];
 
 // Function clones repository from HTML element repoSave using downloadFunc()
 function downloadRepository() {
@@ -369,6 +369,27 @@ function addBranchestoNode(thisB: string) {
           localBranches.push(bp);
           displayBranch(bp, "branch-dropdown", "checkoutLocalBranch(this)");
         }
+
+          newRepoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
+          document.getElementById("repo-name").innerHTML = newRepoLocalPath;
+        } else {
+          document.getElementById("repo-name").innerHTML = repoLocalPath;
+        }
+        document.getElementById("branch-name").innerHTML = branch + '<span class="caret"></span>';
+      }, function (err) {
+        //If the repository has no commits, getCurrentBranch will throw an error.
+        //Default values will be set for the branch labels
+        window.alert("Warning:\n" +
+          "No branches have been found in this repository.\n" +
+          "This is likely because there have been no commits made.");
+        console.log("No branches found. Setting default label values to master");
+        console.log("Updating the labels and graph");
+        drawGraph();
+        document.getElementById("repo-name").innerHTML = repoLocalPath;
+        //default label set to master
+        document.getElementById("branch-name").innerHTML = "master" + '<span class="caret"></span>';
+      });
+  }
 
   // Function gets all branches
   function getAllBranches() {

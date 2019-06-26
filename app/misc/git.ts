@@ -806,14 +806,11 @@ function dropInPreviousDir(event, directoryPath) {
   setTimeout(function(){stageFile(directoryItemName)},1750);
 }
 
-function passReferenceCommits(){
-  Git.Repository.open(repoFullPath)
-  .then(function(commits){
-    sortedListOfCommits(commits);
-  })
+
 }
 
-/* 
+
+/*
 Function takes array of commits and stores the commits in sorted order in variable commitHistory
 */
 function sortedListOfCommits(commits){
@@ -903,7 +900,7 @@ function stage() {
 }
 
 // Function performs corresponding 'git add' and 'git commit' commands
-// If creating a commit is successful and tag name also exists, a tag is added to the commit that is created 
+// If creating a commit is successful and tag name also exists, a tag is added to the commit that is created
 // After creating a commit, clear staged files list, commit, and tag dialog boxes, and refresh VisualGit GUI
 function addAndCommit() {
   commitMessage = document.getElementById('commit-message-input').value;
@@ -1665,7 +1662,7 @@ function fetchStatus() {
         });
       }).then(function () {
         displayAheadBehind();
-        updateModalText("Local status is up to date");
+        updateModalText("Fetch complete!");
       });
 }
 
@@ -1969,7 +1966,7 @@ function commitModal() {
   addAndCommit();
 }
 
-// Function opens a modal that displays current branch information 
+// Function opens a modal that displays current branch information
 async function openBranchModal(stashIndex) {
 
   if (stashIndex == null) stashIndex = 0;
@@ -2185,7 +2182,7 @@ function mergeLocalBranches(element) {
 }
 
 // Function attempts to merge commits. If merge conflict exist, function will display an merge conflict error.
-// If merge conflict does not exist, function will display success. 
+// If merge conflict does not exist, function will display success.
 // Finally, function will refresh VisualGit's GUI
 function mergeCommits(from) {
   let repos;
@@ -2219,7 +2216,7 @@ function mergeCommits(from) {
     });
 }
 
-// Function attemps to rebase commits 
+// Function attemps to rebase commits
 // Note: Function does not appear to be properly working
 function rebaseCommits(from: string, to: string) {
   let repos;
@@ -2454,7 +2451,7 @@ function Reload() {
   location.reload();
 }
 
-// Function is very complex. Note: do not think this function is ever called 
+// Function is very complex. Note: do not think this function is ever called
 function displayModifiedFiles() {
   modifiedFiles = [];
   let selectedFile = "";
@@ -2595,18 +2592,33 @@ function displayModifiedFiles() {
           fileElement.id = file.filePath;
           fileElement.draggable="true";
 
+          // Variables
+          const filepanel = document.querySelector("div.file-panel");
+          const stagepanel = document.querySelector("div.staged-files-header");
+          // create top and bottom boundary for drag release
+          const topboundary = stagepanel.getBoundingClientRect();
+          const bottomboundary = filepanel.getBoundingClientRect();
+
           /* Functions for handling Drag and Drop - From unstage to stage*/
           function handleDragStart(e){
             e.dataTransfer.setData("text", e.target.id);
+            e.target.style.opacity = "0.4";
+          }
+          // Handle Drag outside events container
+          function handleDrag(e){
+            e.preventDefault();
+            document.getElementById("staged-files-header").style.borderTop = "3px dotted red";
+            document.getElementById("staged-files-header").style.borderLeft = "3px dotted red";
+            document.getElementById("staged-files-header").style.borderRight = "3px dotted red";
+            document.getElementById("files-staged").style.borderLeft = "3px dotted red";
+            document.getElementById("files-staged").style.borderRight = "3px dotted red";
+            document.getElementById("files-staged").style.borderBottom = "3px dotted red";
           }
           function handleDragEnd(e) {
             e.preventDefault();
-            const filepanel = document.querySelector("div.file-panel");
-            const stagepanel = document.querySelector("div.staged-files-header");
-            // create top and bottom boundary for drag release
-            const topboundary = stagepanel.getBoundingClientRect();
-            const bottomboundary = filepanel.getBoundingClientRect();
-
+            e.target.style.opacity = "1";
+            document.getElementById("staged-files-header").style.border = "";
+            document.getElementById("files-staged").style.border = "";
             // mouse pointer location while dragging
             var x_axis = e.clientX;
             var y_axis = e.clientY;
@@ -2620,6 +2632,7 @@ function displayModifiedFiles() {
 
           // Activate function on mouse drag start and end
           fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('drag', handleDrag, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
@@ -2711,22 +2724,36 @@ function displayModifiedFiles() {
           fileElement.draggable="true";
           fileElement.appendChild(filePath);
 
+          // Variables
+          const filepanel = document.querySelector("div.file-panel");
+          const stagepanel = document.querySelector("div.staged-files-header");
+          // create top and bottom boundary for drag release
+          const bottomboundary = stagepanel.getBoundingClientRect();
+          const topboundary = filepanel.getBoundingClientRect();
+
           /* Functions for handling Drag and Drop - From stage to unstage*/
           function handleDragStart(e){
             e.dataTransfer.setData("text", e.target.id);
+            e.target.style.opacity = "0.4";
+          }
+          function handleDrag(e){
+            e.preventDefault();
+            document.getElementById("modified-files-header").style.borderTop = "3px dotted red";
+            document.getElementById("modified-files-header").style.borderLeft = "3px dotted red";
+            document.getElementById("modified-files-header").style.borderRight = "3px dotted red";
+            document.getElementById("files-changed").style.borderLeft = "3px dotted red";
+            document.getElementById("files-changed").style.borderRight = "3px dotted red";
+            document.getElementById("files-changed").style.borderBottom = "3px dotted red";
+            e.target.style.cursor = "move";
           }
           function handleDragEnd(e) {
             e.preventDefault();
-            const filepanel = document.querySelector("div.file-panel");
-            const stagepanel = document.querySelector("div.staged-files-header");
-            // create top and bottom boundary for drag release
-            const bottomboundary = stagepanel.getBoundingClientRect();
-            const topboundary = filepanel.getBoundingClientRect();
-
+            e.target.style.opacity = "1";
+            document.getElementById("modified-files-header").style.border = "";
+            document.getElementById("files-changed").style.border = "";
             // mouse pointer location while dragging
             var x_axis = e.clientX;
             var y_axis = e.clientY;
-
             // check if the drag ends within the boundary
             if((x_axis >= topboundary.left && x_axis <= topboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.top)){
               checkbox.click();
@@ -2736,6 +2763,7 @@ function displayModifiedFiles() {
 
           // Activate function on mouse drag start and end
           fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('drag', handleDrag, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
