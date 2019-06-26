@@ -576,15 +576,16 @@ function makeNode(c, column: number) {
     let tagName = "";
     let count = 1;
 
-    
-    
+
+
     // you can access the result from the promise from getTags here
     getTags(c.toString(), count).then((commitList) => {
-        let commit = commitList.find((commit) => {  
+        let commit = commitList.find((commit) => {
             return commit.commitSha === c.toString();
         })
-
-        tagName = (commit.hasTag) ? commit.tagName : "";
+        if(commit != undefined){
+            tagName = (commit.hasTag) ? commit.tagName : "";
+        }
         //console.log("HERE TAG: " + tagName;
     }).then(() => {
 
