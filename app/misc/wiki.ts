@@ -8,7 +8,7 @@ interface wikiPage {
     pageName: string;
     pageContent: string;
 }
-
+// Function displays the wiki
 function openWiki() {
     if (openDisabled){
         return;
@@ -30,7 +30,7 @@ function openWiki() {
     console.log(getWikiUrl()!);
     externalLinkButton.setAttribute("href", getWikiUrl()! + "/wiki");
 }
-
+//Functions clones the wiki or throws an error message if the wiki does not exist
 function cloneWiki() {
     options = {
         fetchOpts: {
@@ -88,12 +88,12 @@ function findPageNames(wikiPath: string, callback: () => void) {
     });
 
 }
-
+//Function reads the wiki directory
 function readFileContents(wikiDirectory: string) {
     let markdownFile = readFile.read(wikiDirectory, null);
     return markdownFile;
 }
-
+// Function displays wiki
 function displayWiki() : void {
     let marked = require('marked');
     let wiki_page_counter = 0;
@@ -135,7 +135,7 @@ function displayWiki() : void {
         wiki_titles.appendChild(wiki_content_template);*/
     });
 }
-
+// Function gets the updated wiki from the remote repository and merges it with the local branch
 function updateWiki() {
     let localWikiPath = repoFullPath + "\\wiki";
     let repository;
@@ -178,7 +178,7 @@ function updateWiki() {
         })
 
 }
-
+// Functions gets the wiki URL by using the name of the repository
 function getWikiUrl(){
 
     if (readFile.exists(repoFullPath + "/.git/config")) {
