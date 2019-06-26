@@ -24,6 +24,7 @@ let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
+
 export class CommitItem {
   public tagName: string;
   public oldTagName: string;
@@ -43,9 +44,10 @@ export class CommitItem {
 }
 
 
-//
-// Abstract from issue 40
-//
+/* Function finds equal number of commits and corresponding tags (if exist) based on beginningHash and numCommits
+@param beginningHash (the SHA of a commit or a first commit SHA in a series of commits)
+@param numCommit (the number of commits being considered)
+@returns array of CommitItem equal to numCommit */
 export async function getTags(beginningHash, numCommit){
   let commitList
   let tags;
@@ -69,7 +71,7 @@ export async function getTags(beginningHash, numCommit){
 
 }
 
-// Return an array of commit objects from array of commit shas
+// Return an array of nodegit commit objects from array of commit shas
 async function getCommitFromShaList(commitList, repo) {
   return await Promise.all(commitList.map(async (sha) => {
     const commit = await repo.getCommit(sha);
@@ -77,7 +79,12 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of CommitItems based on size of commitList
+/* For each element in commitList, this function either creates a CommitItem that includes a
+tag information or creates a CommitItem without a tag information (because commit does not have a tag)
+@param commitList contains an array of nodegit commit objects
+@param sharedRefs contains an array of references in the repository
+@returns an array of CommitItem based on length of commitList
+*/
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
@@ -85,16 +92,16 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let found = false;
   let tags;
   let temp;
-// Create array of tags
-tItems = await Promise.all(sharedRefs.map(async (ref) => {
-  if (ref.isTag()) {
-    console.log(ref);
-    temp = await getRefObject(repo, ref);
-    tag = temp.tag;
-    commit = temp.commit;
-    return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
-  }
-}));
+  // Create array of tags
+  tItems = await Promise.all(sharedRefs.map(async (ref) => {
+    if (ref.isTag()) {
+      console.log(ref);
+      temp = await getRefObject(repo, ref);
+      tag = temp.tag;
+      commit = temp.commit;
+      return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
+    }
+  }));
 
   // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
   // If unable to match a tag with a commit, return CommitItem without tag name and message
@@ -115,7 +122,11 @@ tItems = await Promise.all(sharedRefs.map(async (ref) => {
   });
 }
 
-// get each commit's sha for a graph node
+/* Function gets desired number of commit SHAs from current branch based on function params
+@param beginningHash: first commit SHA of numCommit number of commits being considered
+@param numCommit: number of commits that are being considered
+@returns an array of commit SHAs of length numCommit
+*/
 async function getCommitShaFromNode(repo, beginningHash, numCommit) {
   let commitList = [];
   let commitListRet = [];
@@ -265,12 +276,13 @@ function refreshStashHistory(){
     - function entered onclick from stash dropdown menu
 */
 async function showStash(index){
-  updateModalText("Show not fully functional");
-/*
   let stashOid = stashIds[index];
   let filesChanged = 0;
   let insertions = 0;
   let deletions = 0;
+  let msg = [""];
+  msg.pop();
+
   let repository = await Git.Repository.open(repoFullPath).then(function(repoResult){
     return repoResult;
     console.log("found a repository");
@@ -290,74 +302,55 @@ async function showStash(index){
           | Git.Diff.OPTION.IGNORE_WHITESPACE_CHANGE
           | Git.Diff.OPTION.IGNORE_WHITESPACE_EOL
           | Git.Diff.OPTION.SKIP_BINARY_CHECK
-      /});
+      */});
     })
     .then(function(diff) {
       console.log("found diff of commit and stash");
       return diff[0].patches();
     })
     .then(function(patches) {
-      let msg = "";
-      return new Promise((resolve, reject) => {
-        patches.forEach(function(patch) {
-          let newFilePath = patch.newFile().path();
-          filesChanged++;
-          console.log("Diff stats: "+ newFilePath);
-          console.log(patch.lineStats());
-          patch.hunks().then(function(hunks) {
-            hunks.forEach(function(hunk){
-              let plus = "";
-              let min = "";
-              insertions += hunk.newLines();
-              deletions += hunk.oldLines();
+      return patches.forEach(function(patch) {
+        let newFilePath = patch.newFile().path();
+        filesChanged++;
+        return patch.hunks().then(function(hunks) {
+          hunks.forEach(function(hunk){
+            let plus = "";
+            let min = "";
+            insertions += hunk.newLines();
+            deletions += hunk.oldLines();
 
-              for(var i = 0; i < hunk.newLines(); i++){
-                plus += "+";
-              }
-
-              for(var j = 0; j < hunk.oldLines(); j++){
-                min += "-";
-              }
-              msg += newFilePath + " | " + plus + min + "\n";
-              return msg;
-            });
-            console.log(msg);
-            return msg;
+            for(var i = 0; i < hunk.newLines(); i++){
+              plus += "+";
+            }
+            for(var j = 0; j < hunk.oldLines(); j++){
+              min += "-";
+            }
+            msg.push(newFilePath + " | " + plus + min + "\n");
           });
-          return msg;
         });
-        resolve(msg);
       });
-     // return msg;
     })
-    .then(async function(p){
-      let msg = await p;
-      msg += filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)\n";
-      updateModalText(msg);
-      resolve(msg);
+    .then(function(){
+      setTimeout(function(){
+        msg.push(" " + filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)");
+        console.log("Displaying diff...");
+        resolve(msg);
+      }, 200);
     }, function (err) {
       console.log("git.ts, func showStash(): in promise, " + err);
       reject(err);
     });
   });
-
   let showMsg = await p;
 
-  console.log("Files Changed in display: " + filesChanged);
-  console.log("Insertions in display: " + insertions);
-  console.log("Deletions in display: "+ deletions);
-  console.log(showMsg);
- // updateModalText(showMsg);
+  updateModalText(showMsg);
+
+}
+
+
+/*
+Function takes array of commits and stores the commits in sorted order in variable commitHistory
 */
-}
-
-function passReferenceCommits(){
-  Git.Repository.open(repoFullPath)
-  .then(function(commits){
-    sortedListOfCommits(commits);
-  })
-}
-
 function sortedListOfCommits(commits){
 
     while (commits.length > 0) {
@@ -393,6 +386,7 @@ function cloneFromRemote() {
   switchToClonePanel();
 }
 
+// Change color scheme based on user's stored settings
 function refreshColor() {
   const userColorFilePath = ".settings/user_color.txt";
 
@@ -405,6 +399,7 @@ function refreshColor() {
   }
 }
 
+// Stages all the files stored in HTML element 'file'
 function stage() {
   let repository;
 
@@ -442,6 +437,9 @@ function stage() {
   }
 }
 
+// Function performs corresponding 'git add' and 'git commit' commands
+// If creating a commit is successful and tag name also exists, a tag is added to the commit that is created
+// After creating a commit, clear staged files list, commit, and tag dialog boxes, and refresh VisualGit GUI
 function addAndCommit() {
   commitMessage = document.getElementById('commit-message-input').value;
   let tagMessage = document.getElementById('tag-message-input').value;
@@ -569,7 +567,6 @@ function addAndCommit() {
 function addAndStash(options) {
 
   if(options == null) options = 0;
-
 
   var command = "git stash "; //default command for console
   var stashName = ""; //default stash name for stashHistory
@@ -730,6 +727,10 @@ function addAndStash(options) {
 }
 
 // Add or modify tag
+// @params commit: CommitItem object
+// Function checks to see if commit param has a tag. If commit has a tag, tag is delete. Then, a new tag is created using the new tag name and tag message.
+// If commit param does not have a tag, function creates a new tag using the new tag name and new tag message.
+// Finally, function refreshes VisualGit's GUI
 async function addOrModifyTag(commit) {
   // A new tag must include a tag name or tag cannot be created
   if (commit.tagName == "") {
@@ -782,7 +783,7 @@ async function deleteTag(tagName, refresh = true) {
           .then((res) =>{
             resolve(res);
           })
-          .catch((err) => console.log(err));      
+          .catch((err) => console.log(err));
       }).then(() => {
         if(refresh)
           refreshAll(repository);
@@ -1090,7 +1091,7 @@ async function branchStash(index) {
 
 }
 
-
+// Function clears the list of files in HTML element files-staged and adds user guidance text to files-staged
 function clearStagedFilesList() {
   let filePanel = document.getElementById("files-staged");
   while (filePanel.firstChild) {
@@ -1126,7 +1127,7 @@ function clearCommitMessage() {
 }
 
 
-
+// Function that returns an array of commits in local remote
 function getAllCommits(callback) {
   clearModifiedFilesList();
   let repos;
@@ -1180,7 +1181,7 @@ function getAllCommits(callback) {
     });
 }
 
-
+// Function returns the current status of the local repository (whether it is ahead or behind or up to date)
 function fetchStatus() {
   let repository;
   Git.Repository.open(repoFullPath)
@@ -1200,10 +1201,11 @@ function fetchStatus() {
         });
       }).then(function () {
         displayAheadBehind();
-        updateModalText("Local status is up to date");
+        updateModalText("Fetch complete!");
       });
 }
 
+// Function operates a "git pull" command from remote repository
 async function pullFromRemote() {
   let branch;
   branch = await getBranchName();
@@ -1505,6 +1507,7 @@ function commitModal() {
   addAndCommit();
 }
 
+// Function opens a modal that displays current branch information
 async function openBranchModal(stashIndex) {
 
   if (stashIndex == null) stashIndex = 0;
@@ -1528,6 +1531,7 @@ async function openBranchModal(stashIndex) {
     }
 }
 
+// Function creates branch based on branchName in HTML element branch-name-input.
 async function createBranch() {
   let branchName = document.getElementById("branch-name-input").value;
   let branchExists = await Git.Repository.open(repoFullPath).then(function(repo){
@@ -1678,6 +1682,7 @@ function deleteRemoteBranch() {
     })
 }
 
+// Function merges local branches and refreshes VisualGit's GUI
 function mergeLocalBranches(element) {
   let bn = element.innerHTML;
   let fromBranch;
@@ -1717,6 +1722,9 @@ function mergeLocalBranches(element) {
     });
 }
 
+// Function attempts to merge commits. If merge conflict exist, function will display an merge conflict error.
+// If merge conflict does not exist, function will display success.
+// Finally, function will refresh VisualGit's GUI
 function mergeCommits(from) {
   let repos;
   let index;
@@ -1749,6 +1757,8 @@ function mergeCommits(from) {
     });
 }
 
+// Function attemps to rebase commits
+// Note: Function does not appear to be properly working
 function rebaseCommits(from: string, to: string) {
   let repos;
   let index;
@@ -1786,6 +1796,7 @@ function rebaseCommits(from: string, to: string) {
     });
 }
 
+// Function displays rebase modal
 function rebaseInMenu(from: string, to: string) {
   let p1 = document.getElementById("fromRebase");
   let p2 = document.getElementById("toRebase");
@@ -1804,6 +1815,7 @@ function mergeInMenu(from: string) {
   $("#mergeModal").modal('show');
 }
 
+// Function attempts to reset commits and will refresh VisualGit's GUI when reset is completed (or failed)
 function resetCommit(name: string) {
   let repos;
   Git.Repository.open(repoFullPath)
@@ -1910,6 +1922,7 @@ async function amendLastCommit(newMessage: string) {
   }
 }
 
+// Function reverts a single commit and refreshes VisualGit's GUI
 function revertCommit() {
 
   let repos;
@@ -1978,7 +1991,7 @@ function Reload() {
   location.reload();
 }
 
-
+// Function is very complex. Note: do not think this function is ever called
 function displayModifiedFiles() {
   modifiedFiles = [];
   let selectedFile = "";
@@ -2033,7 +2046,7 @@ function displayModifiedFiles() {
         }
 
 
-        // Find HOW the file has been modified
+        // Find how the file has been modified
         function calculateModification(status) {
           if (status.isNew()) {
             return "NEW";
@@ -2119,18 +2132,33 @@ function displayModifiedFiles() {
           fileElement.id = file.filePath;
           fileElement.draggable="true";
 
+          // Variables
+          const filepanel = document.querySelector("div.file-panel");
+          const stagepanel = document.querySelector("div.staged-files-header");
+          // create top and bottom boundary for drag release
+          const topboundary = stagepanel.getBoundingClientRect();
+          const bottomboundary = filepanel.getBoundingClientRect();
+
           /* Functions for handling Drag and Drop - From unstage to stage*/
           function handleDragStart(e){
             e.dataTransfer.setData("text", e.target.id);
+            e.target.style.opacity = "0.4";
+          }
+          // Handle Drag outside events container
+          function handleDrag(e){
+            e.preventDefault();
+            document.getElementById("staged-files-header").style.borderTop = "3px dotted red";
+            document.getElementById("staged-files-header").style.borderLeft = "3px dotted red";
+            document.getElementById("staged-files-header").style.borderRight = "3px dotted red";
+            document.getElementById("files-staged").style.borderLeft = "3px dotted red";
+            document.getElementById("files-staged").style.borderRight = "3px dotted red";
+            document.getElementById("files-staged").style.borderBottom = "3px dotted red";
           }
           function handleDragEnd(e) {
             e.preventDefault();
-            const filepanel = document.querySelector("div.file-panel");
-            const stagepanel = document.querySelector("div.staged-files-header");
-            // create top and bottom boundary for drag release
-            const topboundary = stagepanel.getBoundingClientRect();
-            const bottomboundary = filepanel.getBoundingClientRect();
-
+            e.target.style.opacity = "1";
+            document.getElementById("staged-files-header").style.border = "";
+            document.getElementById("files-staged").style.border = "";
             // mouse pointer location while dragging
             var x_axis = e.clientX;
             var y_axis = e.clientY;
@@ -2144,6 +2172,7 @@ function displayModifiedFiles() {
 
           // Activate function on mouse drag start and end
           fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('drag', handleDrag, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
@@ -2235,22 +2264,36 @@ function displayModifiedFiles() {
           fileElement.draggable="true";
           fileElement.appendChild(filePath);
 
+          // Variables
+          const filepanel = document.querySelector("div.file-panel");
+          const stagepanel = document.querySelector("div.staged-files-header");
+          // create top and bottom boundary for drag release
+          const bottomboundary = stagepanel.getBoundingClientRect();
+          const topboundary = filepanel.getBoundingClientRect();
+
           /* Functions for handling Drag and Drop - From stage to unstage*/
           function handleDragStart(e){
             e.dataTransfer.setData("text", e.target.id);
+            e.target.style.opacity = "0.4";
+          }
+          function handleDrag(e){
+            e.preventDefault();
+            document.getElementById("modified-files-header").style.borderTop = "3px dotted red";
+            document.getElementById("modified-files-header").style.borderLeft = "3px dotted red";
+            document.getElementById("modified-files-header").style.borderRight = "3px dotted red";
+            document.getElementById("files-changed").style.borderLeft = "3px dotted red";
+            document.getElementById("files-changed").style.borderRight = "3px dotted red";
+            document.getElementById("files-changed").style.borderBottom = "3px dotted red";
+            e.target.style.cursor = "move";
           }
           function handleDragEnd(e) {
             e.preventDefault();
-            const filepanel = document.querySelector("div.file-panel");
-            const stagepanel = document.querySelector("div.staged-files-header");
-            // create top and bottom boundary for drag release
-            const bottomboundary = stagepanel.getBoundingClientRect();
-            const topboundary = filepanel.getBoundingClientRect();
-
+            e.target.style.opacity = "1";
+            document.getElementById("modified-files-header").style.border = "";
+            document.getElementById("files-changed").style.border = "";
             // mouse pointer location while dragging
             var x_axis = e.clientX;
             var y_axis = e.clientY;
-
             // check if the drag ends within the boundary
             if((x_axis >= topboundary.left && x_axis <= topboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.top)){
               checkbox.click();
@@ -2260,6 +2303,7 @@ function displayModifiedFiles() {
 
           // Activate function on mouse drag start and end
           fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('drag', handleDrag, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
@@ -2391,6 +2435,18 @@ function displayModifiedFiles() {
           element.style.backgroundColor = "#84db00";
         } else if (line.charAt(0) === "-") {
           element.style.backgroundColor = "#ff2448";
+
+        /* Issue-2
+             Removes text saying < \ no newline at end of file in the diff-panel.
+            This will cause any newline at end of file to be omitted whether it
+            was created by git or not. What gets printed out is left up to the developer (shown below)
+          */
+        } else if (line.charAt(0) === "<") {
+            line = "";
+            //line = "end of file"
+            //line = "No newline at end of file"
+            //line = "Newline omitted"
+            //line can be anything the dev wants
         }
 
         // If not a changed line, origin will be a space character, so still need to slice
@@ -2441,6 +2497,7 @@ function calculateModification(status) {
   }
 }
 
+// Function deletes file based on filePath parameter
 function deleteFile(filePath: string) {
   let newFilePath = filePath.replace(/\\/gi, "/");
   if (fs.existsSync(newFilePath)) {
@@ -2457,6 +2514,7 @@ function deleteFile(filePath: string) {
   }
 }
 
+// Function removes untracked files from git tree. The function mimics "git clean"
 function cleanRepo() {
   let fileCount = 0;
   Git.Repository.open(repoFullPath)

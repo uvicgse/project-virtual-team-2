@@ -581,35 +581,6 @@ body .footer .status-panel {
   border-style: solid;
 }
 
-body .footer .status-panel .fetch-button-wrapper {
-  /* positioned relative to its normal position(bottom left corner) */
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  border: 0;
-}
-
-body .footer .status-panel .fetch-button-wrapper .fetch-button {
-  /*sequences of white space are collapsed and lines are broken at newline characters*/
-  white-space: pre-line;
-  position: static;
-  display: block;
-  margin: 8px;
-
-  height: 40px;
-  border-radius: 10px;
-  border: 0;
-  padding: 0 15px;
-  background-color: #39c0ba;
-  color: #fff;
-}
-
-body .footer .status-panel .fetch-button:hover {
-  opacity: 0.8;
-}
-
 body .footer .terminal .git-command {
   margin: 10px;
 }
@@ -1028,7 +999,7 @@ in the model that pops-up when you click on a node */
 
 #tagDiv table {
  margin:2px;
-} 
+}
 .error {
   background-color: #fce4e4;
   border: 1px solid #cc0033;
@@ -1248,6 +1219,7 @@ body .pull-request-panel {
   margin-left: 10px;
 }
 
+
 .stash-item {
   display: inline-flex;
   align-items: center;
@@ -1332,6 +1304,21 @@ body .pull-request-panel {
 .stash-function-buttons {
   text-align: center;
 }
+
+#stash-show-modal-body {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+}
+
+.plus {
+  color: green;
+}
+
+.minus {
+  color: red;
+}
+
 /* Stash-functions END */
 
 .footer-last-row {
