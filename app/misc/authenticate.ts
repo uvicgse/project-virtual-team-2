@@ -50,6 +50,8 @@ const options = {
 };
 const myApiOauth = electronOauth2(OauthConfig, windowParams);
 
+// Using oauth to get the client credentials directly from their github accounts, 
+// if the access token is invalid, this function will throw an error message
 function authenticateUser(callback) {
   // use oauth call to get token
   myApiOauth.getAccessToken(options)
@@ -162,6 +164,8 @@ function searchRepoName() {
     }
   });
 }
+// This function gets user credentials from github, if their github credentials are invalid,
+// It throws an error message. 
 
 function getUserInfo(callback) {
   cred = createCredentials();
