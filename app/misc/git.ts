@@ -1094,7 +1094,6 @@ async function branchStash(index) {
       });
     clearBranchErrorText();
   }
-
 }
 
 // Function clears the list of files in HTML element files-staged and adds user guidance text to files-staged
