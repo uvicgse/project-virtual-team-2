@@ -20,7 +20,7 @@ let jsonfile = require('jsonfile');
 let path = require('path');
 let settingsPath = path.join(__dirname, ".settings");
 const recentFiles = path.join(settingsPath, 'recent_repos.json');
-let quickBranchTagReload: any = []; 
+let quickBranchTagReload: any = [];
 
 // Function clones repository from HTML element repoSave using downloadFunc()
 function downloadRepository() {
@@ -533,7 +533,7 @@ function openRepository() {
                 tr.innerHTML = listTD.outerHTML
                 quickBranchTagReload[thisIndex].type = "both"
                 quickBranchTagReload[thisIndex].html = tr.innerHTML
-                
+
               // just remote so far
               } else {
                 listTD.innerHTML = a.outerHTML
@@ -552,7 +552,7 @@ function openRepository() {
               tr.innerHTML = listTD.outerHTML
               let tagObj = {html: tr.outerHTML, type: "tag", name: name, onclick:onclick}
               quickBranchTagReload.push(tagObj)
-              
+
             // Local Branch
             } else {
               // already remote -> make both
@@ -563,14 +563,14 @@ function openRepository() {
                 tr.innerHTML = listTD.outerHTML
                 quickBranchTagReload[thisIndex].type = "both"
                 quickBranchTagReload[thisIndex].html = tr.innerHTML
-                
+
               // just local so far
               } else {
                 a.innerHTML = `${name}<img src='./assets/local-branch.png' width='20' height='20' align='right' title='Local'>`;
                 listTD.innerHTML = a.outerHTML
                 tr.innerHTML = listTD.outerHTML
                 let localObj = {html: tr.innerHTML,type: "local", name: name, onclick:onclick}
-                quickBranchTagReload.push(localObj)    
+                quickBranchTagReload.push(localObj)
               }
             }
           })
@@ -621,7 +621,7 @@ function openRepository() {
             buttonTD.innerHTML += button.outerHTML
             tr.innerHTML += buttonTD.outerHTML
             tagsTab.appendChild(tr)
-          } 
+          }
       }
     })
   }
@@ -703,9 +703,11 @@ function openRepository() {
               .then(function () {
                 refreshAll(repo);
               }, function (err) {
-                console.log("repo.tx, line 271, cannot checkout local branch: " + err);
+                console.log("repo.ts, func checkoutLocalBranch(), cannot checkout local branch: " + err);
+                updateModalText("Cannot checkout local branch: "+err+" Please restart VisualGit");
+
               });
-            
+
           });
       })
   }
@@ -749,7 +751,7 @@ function openRepository() {
             console.log("Pull successful");
           });
       }, function (err) {
-        console.log("repo.ts, line 306, could not pull from repository" + err);
+        console.log("repo.ts, checkoutRemoteBranch(), could not pull from repository" + err);
       })
   }
 

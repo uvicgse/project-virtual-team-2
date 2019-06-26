@@ -92,16 +92,16 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let found = false;
   let tags;
   let temp;
-// Create array of tags
-tItems = await Promise.all(sharedRefs.map(async (ref) => {
-  if (ref.isTag()) {
-    console.log(ref);
-    temp = await getRefObject(repo, ref);
-    tag = temp.tag;
-    commit = temp.commit;
-    return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
-  }
-}));
+  // Create array of tags
+  tItems = await Promise.all(sharedRefs.map(async (ref) => {
+    if (ref.isTag()) {
+      console.log(ref);
+      temp = await getRefObject(repo, ref);
+      tag = temp.tag;
+      commit = temp.commit;
+      return new CommitItem(tag.name(), commit.message(), tag.message(), commit.sha(), true);
+    }
+  }));
 
   // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
   // If unable to match a tag with a commit, return CommitItem without tag name and message
@@ -276,12 +276,13 @@ function refreshStashHistory(){
     - function entered onclick from stash dropdown menu
 */
 async function showStash(index){
-  updateModalText("Show not fully functional");
-/*
   let stashOid = stashIds[index];
   let filesChanged = 0;
   let insertions = 0;
   let deletions = 0;
+  let msg = [""];
+  msg.pop();
+
   let repository = await Git.Repository.open(repoFullPath).then(function(repoResult){
     return repoResult;
     console.log("found a repository");
@@ -301,75 +302,53 @@ async function showStash(index){
           | Git.Diff.OPTION.IGNORE_WHITESPACE_CHANGE
           | Git.Diff.OPTION.IGNORE_WHITESPACE_EOL
           | Git.Diff.OPTION.SKIP_BINARY_CHECK
-      /});
+      */});
     })
     .then(function(diff) {
       console.log("found diff of commit and stash");
       return diff[0].patches();
     })
     .then(function(patches) {
-      let msg = "";
-      return new Promise((resolve, reject) => {
-        patches.forEach(function(patch) {
-          let newFilePath = patch.newFile().path();
-          filesChanged++;
-          console.log("Diff stats: "+ newFilePath);
-          console.log(patch.lineStats());
-          patch.hunks().then(function(hunks) {
-            hunks.forEach(function(hunk){
-              let plus = "";
-              let min = "";
-              insertions += hunk.newLines();
-              deletions += hunk.oldLines();
+      return patches.forEach(function(patch) {
+        let newFilePath = patch.newFile().path();
+        filesChanged++;
+        return patch.hunks().then(function(hunks) {
+          hunks.forEach(function(hunk){
+            let plus = "";
+            let min = "";
+            insertions += hunk.newLines();
+            deletions += hunk.oldLines();
 
-              for(var i = 0; i < hunk.newLines(); i++){
-                plus += "+";
-              }
-
-              for(var j = 0; j < hunk.oldLines(); j++){
-                min += "-";
-              }
-              msg += newFilePath + " | " + plus + min + "\n";
-              return msg;
-            });
-            console.log(msg);
-            return msg;
+            for(var i = 0; i < hunk.newLines(); i++){
+              plus += "+";
+            }
+            for(var j = 0; j < hunk.oldLines(); j++){
+              min += "-";
+            }
+            msg.push(newFilePath + " | " + plus + min + "\n");
           });
-          return msg;
         });
-        resolve(msg);
       });
-     // return msg;
     })
-    .then(async function(p){
-      let msg = await p;
-      msg += filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)\n";
-      updateModalText(msg);
-      resolve(msg);
+    .then(function(){
+      setTimeout(function(){
+        msg.push(" " + filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)");
+        console.log("Displaying diff...");
+        resolve(msg);
+      }, 200);
     }, function (err) {
       console.log("git.ts, func showStash(): in promise, " + err);
       reject(err);
     });
   });
-
   let showMsg = await p;
 
-  console.log("Files Changed in display: " + filesChanged);
-  console.log("Insertions in display: " + insertions);
-  console.log("Deletions in display: "+ deletions);
-  console.log(showMsg);
- // updateModalText(showMsg);
-*/
+  updateModalText(showMsg);
+
 }
 
-function passReferenceCommits(){
-  Git.Repository.open(repoFullPath)
-  .then(function(commits){
-    sortedListOfCommits(commits);
-  })
-}
 
-/* 
+/*
 Function takes array of commits and stores the commits in sorted order in variable commitHistory
 */
 function sortedListOfCommits(commits){
@@ -459,7 +438,7 @@ function stage() {
 }
 
 // Function performs corresponding 'git add' and 'git commit' commands
-// If creating a commit is successful and tag name also exists, a tag is added to the commit that is created 
+// If creating a commit is successful and tag name also exists, a tag is added to the commit that is created
 // After creating a commit, clear staged files list, commit, and tag dialog boxes, and refresh VisualGit GUI
 function addAndCommit() {
   commitMessage = document.getElementById('commit-message-input').value;
@@ -588,7 +567,6 @@ function addAndCommit() {
 function addAndStash(options) {
 
   if(options == null) options = 0;
-
 
   var command = "git stash "; //default command for console
   var stashName = ""; //default stash name for stashHistory
@@ -805,7 +783,7 @@ async function deleteTag(tagName, refresh = true) {
           .then((res) =>{
             resolve(res);
           })
-          .catch((err) => console.log(err));      
+          .catch((err) => console.log(err));
       }).then(() => {
         if(refresh)
           refreshAll(repository);
@@ -1223,7 +1201,7 @@ function fetchStatus() {
         });
       }).then(function () {
         displayAheadBehind();
-        updateModalText("Local status is up to date");
+        updateModalText("Fetch complete!");
       });
 }
 
@@ -1529,7 +1507,7 @@ function commitModal() {
   addAndCommit();
 }
 
-// Function opens a modal that displays current branch information 
+// Function opens a modal that displays current branch information
 async function openBranchModal(stashIndex) {
 
   if (stashIndex == null) stashIndex = 0;
@@ -1745,7 +1723,7 @@ function mergeLocalBranches(element) {
 }
 
 // Function attempts to merge commits. If merge conflict exist, function will display an merge conflict error.
-// If merge conflict does not exist, function will display success. 
+// If merge conflict does not exist, function will display success.
 // Finally, function will refresh VisualGit's GUI
 function mergeCommits(from) {
   let repos;
@@ -1779,7 +1757,7 @@ function mergeCommits(from) {
     });
 }
 
-// Function attemps to rebase commits 
+// Function attemps to rebase commits
 // Note: Function does not appear to be properly working
 function rebaseCommits(from: string, to: string) {
   let repos;
@@ -2013,7 +1991,7 @@ function Reload() {
   location.reload();
 }
 
-// Function is very complex. Note: do not think this function is ever called 
+// Function is very complex. Note: do not think this function is ever called
 function displayModifiedFiles() {
   modifiedFiles = [];
   let selectedFile = "";
@@ -2426,6 +2404,18 @@ function displayModifiedFiles() {
           element.style.backgroundColor = "#84db00";
         } else if (line.charAt(0) === "-") {
           element.style.backgroundColor = "#ff2448";
+
+        /* Issue-2
+             Removes text saying < \ no newline at end of file in the diff-panel.
+            This will cause any newline at end of file to be omitted whether it
+            was created by git or not. What gets printed out is left up to the developer (shown below)
+          */
+        } else if (line.charAt(0) === "<") {
+            line = "";
+            //line = "end of file"
+            //line = "No newline at end of file"
+            //line = "Newline omitted"
+            //line can be anything the dev wants
         }
 
         // If not a changed line, origin will be a space character, so still need to slice
