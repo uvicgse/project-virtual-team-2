@@ -6,15 +6,16 @@ VisualGit is a visually-oriented desktop client for Git aimed at helping student
 
 ### Prerequisites
 
+
 `Node.js` and its package manager - `npm` (Node Package Manager) are used to manage VisualGit's dependencies. To run
 this project,`node v10.15.3` and `npm v6.4.1` is required. Downgrading your `node` version can be done through `nvm` (Node
 Version Manager). To setup `node` to have the correct version, see the
-[Project Setup](https://github.com/uvicgse/project-seed/wiki/Project-Setup).
+[Project Setup](https://github.com/uvicgse/project-virtual-team-2/wiki/Project-Setup).
 
 You need to have python version 2.7 installed on your machine.
 
 **_Note:_** _If you used `Homebrew` to install `node` on macOS, you may need to reinstall `node` by uninstalling the `brew`
-version first. See the [Project Setup](https://github.com/uvicgse/project-seed/wiki/Project-Setup) to do so._
+version first. See the [Project Setup](https://github.com/uvicgse/project-virtual-team-2/wiki/Project-Setup). to do so._
 
 ### Repository Setup
 The repository can be cloned using either HTTPS or SSH, but SSH will be needed for making pull requests.
@@ -34,7 +35,7 @@ then... You need to have to find the directory where python 2.7 is. On mac you c
 cd project-seed
 npm config set python {path to python2.7}
 npm install
-<<<<<<< HEAD
+````
 then if you get install errors and you have windows you may need to do some troubleshooting if you get an error for nodegyp
 
 ````
@@ -103,6 +104,13 @@ When stashing, the user is able to add a message to the stash, keep the files be
 This allows the user to safely save their work without committing and checkout a seperate branch.
 The stash can then be reapplied to the working directory by selecting the stash from the stash list and clicking on the apply button. However, the stash may not be applied on files with unsafe merge conflicts. To remedy this, either stage the files with conflicts or resolve the modified files manually.
 If the user applies the stash using the pop button, the stash will be dropped from the stash list.
+
+### Tagging support
+A user now can add tags to certain commits. Tags are usually used to denote a version or a release number.
+There are a few ways to add tags:
+* A user now can associate a tag when they are making a new commit. From the tag text panel on the bottom left corner.
+* A user can add or modify a tag on a preexisting commit. The user can navigate to the commit graph and when the user expand the graph, they will see each commit with a tag box associated with it. From there they can add a new tag or modify it if it already exist. 
+* Additionally, the user can browse and search existing tags from the branch list at the header.
 
 
 # Help
