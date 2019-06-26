@@ -338,7 +338,7 @@ function addBranchestoNode(thisB: string) {
         //Get the list of branches from the repo
         return repository.getReferences(Git.Reference.TYPE.LISTALL);
       })
-      .then(function (branchList) {
+ .then(function (branchList) {
         let count = 0;
         clearBranchElement();
         //for each branch
@@ -364,41 +364,50 @@ function addBranchestoNode(thisB: string) {
               }
             }
           }, function (err) {
-            console.log("repo.ts, refreshAll(), could not find referenced branch" + err);
+            console.log("repo.ts, line 273, could not find referenced branch" + err);
           });
-
-        if (branchList[i].isRemote()) {
-          if (localBranches.indexOf(bp) < 0) {
-            displayBranch(bp, "branch-dropdown", "checkoutRemoteBranch(this)");
+          if (branchList[i].isRemote()) {
+            if (localBranches.indexOf(bp) < 0) {
+              displayBranch(bp, "branch-dropdown", "checkoutRemoteBranch(this)");
+            }
+          } else {
+            localBranches.push(bp);
+            displayBranch(bp, "branch-dropdown", "checkoutLocalBranch(this)");
           }
+
+        }
+      })
+      .then(function () {
+        console.log("Updating the graph and the labels");
+        drawGraph();
+        var newRepoLocalPath = "";
+        let breakStringFrom;
+        if (repoLocalPath.length > 20) {
+          for (var i = 0; i < repoLocalPath.length; i++) {
+            if (repoLocalPath[i] == "/" || repoLocalPath[i] == "\\") {
+              breakStringFrom = i;
+            }
+          }
+          newRepoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
+          document.getElementById("repo-name").innerHTML = newRepoLocalPath;
         } else {
-          localBranches.push(bp);
-          displayBranch(bp, "branch-dropdown", "checkoutLocalBranch(this)");
+          document.getElementById("repo-name").innerHTML = repoLocalPath;
         }
-
-
-          }
-        }
-        newRepoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
-        document.getElementById("repo-name").innerHTML = newRepoLocalPath;
-      }else{
+        document.getElementById("branch-name").innerHTML = branch + '<span class="caret"></span>';
+      }, function (err) {
+        //If the repository has no commits, getCurrentBranch will throw an error.
+        //Default values will be set for the branch labels
+        window.alert("Warning:\n" +
+          "No branches have been found in this repository.\n" +
+          "This is likely because there have been no commits made.");
+        console.log("No branches found. Setting default label values to master");
+        console.log("Updating the labels and graph");
+        drawGraph();
         document.getElementById("repo-name").innerHTML = repoLocalPath;
-      }
-      document.getElementById("branch-name").innerHTML = branch + '<span class="caret"></span>';
-    }, function (err) {
-      //If the repository has no commits, getCurrentBranch will throw an error.
-      //Default values will be set for the branch labels
-      window.alert("Warning:\n" +
-        "No branches have been found in this repository.\n" +
-        "This is likely because there have been no commits made.");
-      console.log("No branches found. Setting default label values to master");
-      console.log("Updating the labels and graph");
-      drawGraph();
-      document.getElementById("repo-name").innerHTML = repoLocalPath;
-      //default label set to master
-      document.getElementById("branch-name").innerHTML = "master" + '<span class="caret"></span>';
-    });
-}
+        //default label set to master
+        document.getElementById("branch-name").innerHTML = "master" + '<span class="caret"></span>';
+      });
+  }
 
 function getAllBranches() {
   let repos;
@@ -652,25 +661,7 @@ function checkoutLocalBranch(element) {
   if (bn.includes(img)) {
     bn = bn.substr(0, bn.lastIndexOf(img)) // remove local branch <img> tag from branch name string
 }
-    console.log("name of branch being checked out: " + bn);
-    Git.Repository.open(repoFullPath)
-      .then(function (repo) {
-        document.getElementById('spinner').style.display = 'block';
-        addCommand("git checkout " + bn);
-        repo.checkoutBranch("refs/heads/" + bn)
-          .then(function () {
-            refreshAll(repo);
-          }, function (err) {
-            repo.checkoutBranch("refs/tags/" + bn)
-              .then(function () {
-                refreshAll(repo);
-              }, function (err) {
-                console.log("repo.tx, line 271, cannot checkout local branch: " + err);
-              });
 
-          });
-      })
-  }
   console.log("name of branch being checked out: " + bn);
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
@@ -683,7 +674,7 @@ function checkoutLocalBranch(element) {
           console.log("repo.ts, checkoutLocalBranch(), cannot checkout local branch: " + err);
           updateModalText("Cannot checkout local branch: " + err + " Please restart VisualGit");
         });
-    })
+    });
 }
 
 
@@ -831,17 +822,9 @@ function updateModalText(text) {
     $('#modalW4').modal('show');
   }
 
-function hidePRPanel(): void {
-  // Hide PR Panel
-  let prStatus1 = document.getElementById("pr-status-1");
-  let prStatus2 = document.getElementById("pr-status-2");
-  if (prStatus1 != null && prStatus2 != null) {
-    prStatus1.style.display = "none";
-    prStatus2.style.display = "none";
-  }
 
   // Function is called to the pull request panel
-  function hidePRPanel(): void{
+  function hidePRPanel(){
     // Hide PR Panel
     let prStatus1 = document.getElementById("pr-status-1");
     let prStatus2 = document.getElementById("pr-status-2");
