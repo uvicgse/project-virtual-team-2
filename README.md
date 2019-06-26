@@ -35,6 +35,7 @@ cd project-seed
 npm config set python {path to python2.7}
 npm install
 ````
+
 then if you get install errors and you have windows you may need to do some troubleshooting if you get an error for nodegyp
 
 ````

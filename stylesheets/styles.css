@@ -136,7 +136,7 @@ body .navbar {
 body .navbar .dropdown-menu {
   z-index: 300;
   background-color: #282828;
-  width: 250px;
+  width: 400px;
   color: #ffffff;
 }
 
@@ -561,7 +561,7 @@ body .footer .commit-panel .commit-button-wrapper .commit-button {
   position: static;
   display: block;
   margin: 8px;
-  
+
   height: 40px;
   border-radius: 10px;
   border: 0;
@@ -746,7 +746,7 @@ div.selected-commit-diff-panel{
 
 div.selected-commit-diff-panel .commit-diff-panel-body{
   overflow-y:scroll;
-  height:90%;
+  height:50%;
   width: 100%;
   border: 3px solid #ccc;
   background-color: #FFF;
@@ -915,6 +915,7 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 }
 
 
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -1004,7 +1005,7 @@ div.wiki-header button.close-button, div.wiki-header button.open-button {
 #graphNodeClickModal table td:nth-child(2){
   width:100%;
 }
-/* Added the display: inline-block 
+/* Added the display: inline-block
 
 Added the margin top and margin bottom to add space between each of the blackboxes
 
@@ -1026,7 +1027,7 @@ in the model that pops-up when you click on a node */
 
 #tagDiv table {
  margin:2px;
-} 
+}
 .error {
   background-color: #fce4e4;
   border: 1px solid #cc0033;
@@ -1245,6 +1246,7 @@ body .pull-request-panel {
   margin-left: 10px;
 }
 
+
 .stash-item {
   display: inline-flex;
   align-items: center;
@@ -1329,4 +1331,19 @@ body .pull-request-panel {
 .stash-function-buttons {
   text-align: center;
 }
+
+#stash-show-modal-body {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+}
+
+.plus {
+  color: green;
+}
+
+.minus {
+  color: red;
+}
+
 /* Stash-functions END */

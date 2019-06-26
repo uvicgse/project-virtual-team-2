@@ -1,4 +1,4 @@
-import { Component } from "@angular/core";
+import { Component, ViewEncapsulation } from "@angular/core";
 import { RepositoryService } from "../../services/repository.service";
 import { GraphService } from "../../services/graph.service";
 
@@ -6,13 +6,19 @@ import { GraphService } from "../../services/graph.service";
 @Component({
   selector: "app-header",
   templateUrl: 'app/components/header/header.component.html',
-  providers: [RepositoryService, GraphService]
+  providers: [RepositoryService, GraphService],
+  styleUrls: [
+    'app/components/header/header.component.css'
+  ],
+  encapsulation: ViewEncapsulation.None
 })
 
 export class HeaderComponent   {
   repoName: string = "Repo name";
   repoBranch: string = "Repo branch";
   repository: any;
+  showBranches: boolean = true;
+  showTags: boolean = false;
 
   promptUserToAddRepository(): void {
     switchToAddRepositoryPanel();
@@ -82,6 +88,20 @@ export class HeaderComponent   {
       document.getElementById('Password1').classList.remove('error');
       document.getElementById('password-error-icon').style.visibility = 'hidden';
     }
+  }
+
+  displayBranches(): void {
+    document.getElementById('branchesTab').style.display = 'block'
+    document.getElementById('tagsTab').style.display = 'none'
+    var inputValue = (<HTMLInputElement>document.getElementById('branchName'));
+    inputValue.placeholder = 'Find or create branch';
+  }
+
+  displayTags(): void {
+    document.getElementById('branchesTab').style.display = 'none'
+    document.getElementById('tagsTab').style.display = 'block'
+    var inputValue = (<HTMLInputElement>document.getElementById('branchName'));
+    inputValue.placeholder = 'Find a tag';
   }
 
 }

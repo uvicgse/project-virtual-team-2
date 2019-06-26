@@ -1,4 +1,4 @@
-import {Graph, Branch} from "nodegit";
+import {Branch, Graph} from "nodegit";
 
 
 let $ = require("jquery");
@@ -24,9 +24,8 @@ let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
-export class CommitItem {
+export class TagItem {
   public tagName: string;
-  public oldTagName: string;
   public commitMsg: string;
   public tagMsg: string;
   public commitSha: string;
@@ -49,7 +48,6 @@ export class CommitItem {
 export async function getTags(beginningHash, numCommit){
   let commitList
   let tags;
-  console.log('TESTLKSJEJFKDLSFJKLDSJDFKLSJFKLSJFKLDSJ');
   let sharedRepo, sharedRefs;
   // get repo and refs in order
   await Git.Repository.open(repoFullPath).then(function(repo){
@@ -78,7 +76,7 @@ async function getCommitFromShaList(commitList, repo) {
   }));
 }
 
-// Returns an array of CommitItems based on size of commitList
+// Returns an array of tagItems based on size of commitList
 const aggregateCommits = async (commitList, repo, sharedRefs) => {
   let tag;
   let commit;
@@ -99,6 +97,7 @@ tItems = await Promise.all(sharedRefs.map(async (ref) => {
 
   // Check to see if commits match with any tags, if so, include tag name and message in CommitItem.
   // If unable to match a tag with a commit, return CommitItem without tag name and message
+
   tags = await Promise.all(commitList.map(async (commit) => {
     for (let j=0; j < tItems.length; j++) {
       if (tItems[j]) {
@@ -107,7 +106,7 @@ tItems = await Promise.all(sharedRefs.map(async (ref) => {
         }
       }
     }
-    return new CommitItem("", commit.message(), "", commit.sha(), false);
+    return new TagItem('Enter Tag Name', commit.message(), 'Enter Tag Message', commit.sha());
   }));
 
   // return tags;
@@ -223,7 +222,6 @@ function refreshStashHistory(){
       txt.forEach(function(line) {
         stashId = line.split(" ")[1];
         line = line.split(" ").slice(6, line.length).join(" ");
-        //console.log("Adding " + stashId +": "+ line + " to Stash history");
         stashHistory.unshift(line);
         stashIds.unshift(stashId);
 
@@ -259,19 +257,19 @@ function refreshStashHistory(){
     document.getElementById('stash-list').innerHTML = stashListHTML;
   }
 
-
 /* Issue 84: further implement stashing
     - git stash show stash{index} shows the deltas of
     the files between the stash and the commit it is stashed at.
     - function entered onclick from stash dropdown menu
 */
 async function showStash(index){
-  updateModalText("Show not fully functional");
-/*
   let stashOid = stashIds[index];
   let filesChanged = 0;
   let insertions = 0;
   let deletions = 0;
+  let msg = [""];
+  msg.pop();
+
   let repository = await Git.Repository.open(repoFullPath).then(function(repoResult){
     return repoResult;
     console.log("found a repository");
@@ -291,65 +289,49 @@ async function showStash(index){
           | Git.Diff.OPTION.IGNORE_WHITESPACE_CHANGE
           | Git.Diff.OPTION.IGNORE_WHITESPACE_EOL
           | Git.Diff.OPTION.SKIP_BINARY_CHECK
-      /});
+      */});
     })
     .then(function(diff) {
       console.log("found diff of commit and stash");
       return diff[0].patches();
     })
     .then(function(patches) {
-      let msg = "";
-      return new Promise((resolve, reject) => {
-        patches.forEach(function(patch) {
-          let newFilePath = patch.newFile().path();
-          filesChanged++;
-          console.log("Diff stats: "+ newFilePath);
-          console.log(patch.lineStats());
-          patch.hunks().then(function(hunks) {
-            hunks.forEach(function(hunk){
-              let plus = "";
-              let min = "";
-              insertions += hunk.newLines();
-              deletions += hunk.oldLines();
+      return patches.forEach(function(patch) {
+        let newFilePath = patch.newFile().path();
+        filesChanged++;
+        return patch.hunks().then(function(hunks) {
+          hunks.forEach(function(hunk){
+            let plus = "";
+            let min = "";
+            insertions += hunk.newLines();
+            deletions += hunk.oldLines();
 
-              for(var i = 0; i < hunk.newLines(); i++){
-                plus += "+";
-              }
-
-              for(var j = 0; j < hunk.oldLines(); j++){
-                min += "-";
-              }
-              msg += newFilePath + " | " + plus + min + "\n";
-              return msg;
-            });
-            console.log(msg);
-            return msg;
+            for(var i = 0; i < hunk.newLines(); i++){
+              plus += "+";
+            }
+            for(var j = 0; j < hunk.oldLines(); j++){
+              min += "-";
+            }
+            msg.push(newFilePath + " | " + plus + min + "\n");
           });
-          return msg;
         });
-        resolve(msg);
       });
-     // return msg;
     })
-    .then(async function(p){
-      let msg = await p;
-      msg += filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)\n";
-      updateModalText(msg);
-      resolve(msg);
+    .then(function(){
+      setTimeout(function(){
+        msg.push(" " + filesChanged + " files changed, " + insertions + " insertions(+), " + deletions + " deletions(-)");
+        console.log("Displaying diff...");
+        resolve(msg);
+      }, 200);
     }, function (err) {
       console.log("git.ts, func showStash(): in promise, " + err);
       reject(err);
     });
   });
-
   let showMsg = await p;
 
-  console.log("Files Changed in display: " + filesChanged);
-  console.log("Insertions in display: " + insertions);
-  console.log("Deletions in display: "+ deletions);
-  console.log(showMsg);
- // updateModalText(showMsg);
-*/
+  updateModalText(showMsg);
+
 }
 
 function passReferenceCommits(){
@@ -412,12 +394,10 @@ function stage() {
   Git.Repository.open(repoFullPath)
     .then(function (repoResult) {
       repository = repoResult;
-      console.log("found a repository");
       return repository.refreshIndex();
     })
 
     .then(function (indexResult) {
-      console.log("found a file to stage");
       index = indexResult;
       let filesToStage = [];
       filesToAdd = [];
@@ -430,7 +410,6 @@ function stage() {
         }
       }
       if (filesToStage.length > 0) {
-        console.log("staging files");
         stagedFiles = index.addAll(filesToStage);
       } else {
         //If no files checked, then throw error to stop empty commits
@@ -467,12 +446,10 @@ function addAndCommit() {
   Git.Repository.open(repoFullPath)
     .then(function (repoResult) {
       repository = repoResult;
-      console.log("found a repository");
       return repository.refreshIndex();
     })
 
     .then(function (indexResult) {
-      console.log("found a file to stage");
       index = indexResult;
       let filesToStage = [];
       filesToAdd = [];
@@ -485,7 +462,6 @@ function addAndCommit() {
         }
       }
       if (filesToStage.length > 0) {
-        console.log("staging files");
         return index.addAll(filesToStage);
       } else {
         //If no files checked, then throw error to stop empty commits
@@ -494,53 +470,41 @@ function addAndCommit() {
     })
 
     .then(function () {
-      console.log("found an index to write result to");
       return index.write();
     })
 
     .then(function () {
-      console.log("creating a tree object using current index");
       return index.writeTree();
     })
 
     .then(function (oidResult) {
-      console.log("changing " + oid + " to " + oidResult);
       oid = oidResult;
       return Git.Reference.nameToId(repository, "HEAD");
     })
 
     .then(function (head) {
-      console.log("found the current commit");
       return repository.getCommit(head);
     })
 
     .then(async function (parent) {
-      console.log("Verifying account");
       let sign;
 
       sign = repository.defaultSignature();
 
       commitMessage = document.getElementById('commit-message-input').value;
-      console.log("Signature to be put on commit: " + sign.toString());
 
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
-        console.log("head commit on remote: " + tid);
-        console.log("head commit on local repository: " + parent.id.toString());
         return await repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent.id().toString(), tid.trim()]);
       } else {
-        console.log('no other commits');
         return await repository.createCommit("HEAD", sign, sign, commitMessage, oid, [parent]);
       }
     })
     .then(async function (oid) {
       theirCommit = null;
-      console.log("Committing");
       changes = 0;
-      console.log("Commit successful: " + oid.tostrS());
       stagedFiles = null;
 
-      console.log(oid.tostrS());
       // Create tag if tag name is not empty
       if (tagName != "") {
         return repository.createTag(oid.tostrS(), tagName, tagMessage);
@@ -551,7 +515,6 @@ function addAndCommit() {
     })
     // will update user interface after new commit and tag has been handled
     .then(function (tag: any) {
-      console.log(oid.tostrS());
 
       hideDiffPanel();
       clearStagedFilesList();
@@ -590,7 +553,6 @@ function addAndStash(options) {
 
   if(options == null) options = 0;
 
-
   var command = "git stash "; //default command for console
   var stashName = ""; //default stash name for stashHistory
 
@@ -598,12 +560,10 @@ function addAndStash(options) {
   Git.Repository.open(repoFullPath)
     .then(function (repoResult) {
       repository = repoResult;
-      console.log("found a repository");
       return repository.refreshIndex();
     })
 
     .then(function (indexResult) {
-      console.log("found a file to stage");
       index = indexResult;
       let filesToStage = [];
       filesToAdd = [];
@@ -617,7 +577,6 @@ function addAndStash(options) {
       }
 
       if (filesToStage.length > 0) {
-        console.log("staging files");
         return index.addAll(filesToStage);
       } else if(options != 2){
         //If no files checked, then throw error to stop empty commits unless untracked option used
@@ -626,38 +585,29 @@ function addAndStash(options) {
     })
 
     .then(function () {
-      console.log("found an index to write result to");
       return index.write();
     })
 
     .then(function () {
-      console.log("creating a tree object using current index");
       return index.writeTree();
     })
 
     .then(function (oidResult) {
-      console.log("changing " + oid + " to " + oidResult);
       oid = oidResult;
       return Git.Reference.nameToId(repository, "HEAD");
     })
 
     .then(function (head) {
-      console.log("found the current commit");
       return repository.getCommit(head);
     })
 
     .then(async function (parent) {
-      console.log("Verifying account");
       let sign;
 
       sign = repository.defaultSignature();
 
-      console.log("Signature to be put on stash: " + sign.toString());
-
-      let branch = "";
-      await getBranchName().then((branchName) => {
-          branch = branchName;
-      });      console.log("Current branch: " + branch);
+      let branch;
+      branch = await getBranchName();
 
       stashMessage = document.getElementById("stash-message-input").value;
 
@@ -680,28 +630,22 @@ function addAndStash(options) {
       }
       stashName += "On " + branch + ": " + stashMessage;
 
-      console.log("Stashing: " + stashName );
 
 
       //checks if current status of the branch is merging
       if (readFile.exists(repoFullPath + "/.git/MERGE_HEAD")) {
         let tid = readFile.read(repoFullPath + "/.git/MERGE_HEAD", null);
-        console.log("head commit on remote: " + tid);
-        console.log("head commit on local repository: " + parent.id.toString());
 
         //perform git stash
         return await Git.Stash.save(repository, sign, stashMessage, options).then( (res) => {
-          console.log("Stash resolved: " + res);
         }, (rej) => {
           console.log("Stash rejected: " + rej);
         });
 
       } else {
-        console.log('no other commits');
 
         //perform git stash
         return await Git.Stash.save(repository, sign, stashMessage, options).then( (res) => {
-          console.log("Stash resolved: " + res);
         }, (rej) => {
           console.log("Stash rejected: " + rej);
         });
@@ -712,18 +656,13 @@ function addAndStash(options) {
       theirCommit = null;
       changes = 0;
 
-        let branch = "";
-        await getBranchName().then((branchName) => {
-            branch = branchName;
-        });
-        console.log("Current branch: " + branch);
+        let branch = await getBranchName();
 
         var comMessage = Git.Commit.lookup(repository, oid)
             .then(function (commit) {
                 return commit.message();
             });
         var stashName = ("WIP on " + branch + ": " + oid.tostrS().substring(0, 8) + " " + comMessage);
-        console.log("Stashing: " + stashName);
 
         stagedFiles = null;
 
@@ -732,7 +671,6 @@ function addAndStash(options) {
         clearCommitMessage();
 
         stashName = "On " + branch + ": " + stashMessage;
-        console.log("Saved as: " + stashName);
 
       for (let i = 0; i < filesToAdd.length; i++) {
         addCommand("git add " + filesToAdd[i]);
@@ -764,7 +702,6 @@ function addAndStash(options) {
      refreshAll(repository);
 
     }, function (err) { //catch any known or unknown errors that may have occured since beginning of function
-      console.log("git.ts, func addAndStash(), could not stash, " + err);
       // Added error thrown for if files not selected
       if (err.message == "No files selected to stash.") {
         updateModalText(err.message);
@@ -776,8 +713,8 @@ function addAndStash(options) {
 
 // Add or modify tag
 async function addOrModifyTag(commit) {
-  // A new tag must include a tag name and tag message or tag cannot be created
-  if (commit.tagName == "" && commit.tagMsg != "") {
+  // A new tag must include a tag name or tag cannot be created
+  if (commit.tagName == "") {
     window.alert("Cannot create tag without a tag name. Please add a tag name before committing");
     return;
   }
@@ -787,13 +724,10 @@ async function addOrModifyTag(commit) {
   .then((repo)=>{
     repository = repo;
     if(commit.hasTag) {
-      console.log("MODIFY - Deleting Tag");
-      return deleteTag(commit.oldTagName);
+      return deleteTag(commit.oldTagName, false);
     }
   })
   .then(()=>{
-    console.log("returned from delete tag");
-    console.log("ADDING Tag: " + commit.tagName + " to commit: " + commit.commitSha);
     return repository.createTag(commit.commitSha, commit.tagName, commit.tagMsg)
   })
   .then(function (tag: any) {
@@ -805,7 +739,8 @@ async function addOrModifyTag(commit) {
       } else{
         console.log('tag failed');
       }
-      refreshAll(repository);
+  }).then(() => {
+    refreshAll(repository);
   })
   .catch ((err) => {
     console.log("Could not add/modify tag, Error:" + err);
@@ -813,12 +748,10 @@ async function addOrModifyTag(commit) {
 }
 
 // Delete tag based on tag name and display corresponding git command to footer in VisualGit
-async function deleteTag(tagName) {
+async function deleteTag(tagName, refresh = true) {
   let repository;
-  console.log(repoFullPath);
   let name = tagName.split(path.sep);
   name = name[name.length-1];
-  console.log(name);
   return new Promise((resolve) => {
     Git.Repository.open(repoFullPath)
       .then((repoResult) => {
@@ -827,12 +760,14 @@ async function deleteTag(tagName) {
           .then(() => {
             console.log(`${name} deleted`);
             addCommand('git tag -d '+ name);
-
           })
           .then((res) =>{
             resolve(res);
           })
           .catch((err) => console.log(err));
+      }).then(() => {
+        if(refresh)
+          refreshAll(repository);
       })
       .catch((err) => console.log(err));
 
@@ -851,10 +786,8 @@ async function popStash(index) {
   if (index == null) index = 0; //default option pops most recent stash
 
   let repository;
-  let branch = "";
-  await getBranchName().then((branchName) => {
-      branch = branchName;
-  });
+  let branch = await getBranchName();
+
   if (modifiedFiles.length > 0) {
     updateModalText("Please commit before popping stash!");
   }
@@ -862,7 +795,6 @@ async function popStash(index) {
    Git.Repository.open(repoFullPath)
     .then( async function (repo) {
       repository = repo;
-      console.log("Popping stash at index " + index);
       addCommand("git stash pop stash@{" + index + "}");
       var stashName = stashHistory[index];
       updateModalText("Popping stash: "+ stashName);
@@ -927,7 +859,6 @@ async function popStash(index) {
            updateModalText("Unexpected Error: " + err.message);
          }
      });
-
 }
 
 /* Issue 35: Add applying functionality
@@ -938,10 +869,7 @@ async function popStash(index) {
 async function applyStash(index) {
 
   let repository;
-  let branch = "";
-    await getBranchName().then((branchName) => {
-        branch = branchName;
-    });
+  let branch = await getBranchName();
 
   if (modifiedFiles.length > 0) {
     updateModalText("Please commit before applying stash!");
@@ -1009,8 +937,8 @@ async function applyStash(index) {
          console.log("git.ts, func applyStash(): update, could not apply stash, " + err);
          updateModalText(err.message);
      });
-
 }
+
 /* Issue 35/84: Add dropping stash functionality
    copied from popStash()
     - Function entered from onclick of the given stash in Stashing options window
@@ -1021,10 +949,8 @@ async function dropStash(index) {
   if (index == null) index = 0;
 
     let repository;
-    let branch = "";
-    await getBranchName().then((branchName) => {
-        branch = branchName;
-    });
+    let branch = await getBranchName();
+
   await Git.Repository.open(repoFullPath)
     .then( async function (repo) {
       repository = repo;
@@ -1142,7 +1068,6 @@ async function branchStash(index) {
       });
     clearBranchErrorText();
   }
-
 }
 
 
@@ -1189,16 +1114,13 @@ function getAllCommits(callback) {
   let aclist = [];
   let singleReference;
   let name;
-  console.log("Finding all commits");
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
       repos = repo;
-      console.log("fetching all remote repositories");
       return repo.getReferences(Git.Reference.TYPE.LISTALL);
     })
     .then(function (refs) {
       let count = 0;
-      console.log("getting " + refs.length + " remote repositories");
       async.whilst(
         function () {
           return count < refs.length;
@@ -1207,7 +1129,6 @@ function getAllCommits(callback) {
         function (cb) {
           // Remove tag references or because getReferenceCommit does not recognize tag references
           if (!refs[count].isTag() && !refs[count].isRemote()) {
-            console.log("referenced branch exists on remote repository");
             repos.getReferenceCommit(refs[count])
             .then(function (commit) {
               let history = commit.history(Git.Revwalk.SORT.Time);
@@ -1219,7 +1140,6 @@ function getAllCommits(callback) {
                   }
                 }
                 count++;
-                console.log(count + " out of " + allCommits.length + " commits");
                 cb();
               });
 
@@ -1228,7 +1148,6 @@ function getAllCommits(callback) {
               console.log(err);
             });
           } else {
-            console.log('current branch does not exist on remote');
             count++;
             cb();
           }
@@ -1266,117 +1185,126 @@ function fetchStatus() {
 }
 
 async function pullFromRemote() {
-    let branch = "";
-    await getBranchName().then((branchName) => {
-      branch = branchName;
-    });
-    if(checkIfExistOrigin(branch)){
+  let branch;
+  branch = await getBranchName();
+  let repository;
+
+  await checkIfExistOrigin(branch).then(function (remoteExist) {
+    if (!remoteExist) {
       updateModalText("Cannot pull. No remote repositories exist.");
       return;
-    }
-    let repository;
+    } else {
+      getAheadBehindCommits(branch).then(function (aheadBehind) {
+        if (aheadBehind.ahead > 0) {
+          updateModalText("Cannot pull. you have " + aheadBehind.ahead + " commits that need to be pushed first");
+          return;
+        } else if (aheadBehind.ahead === 0 && aheadBehind.behind === 0){
+          updateModalText("Everything up date");
+          return;
+        } else {
+          Git.Repository.open(repoFullPath)
+              .then(function (repo) {
+                repository = repo;
+                console.log("Pulling new changes from the remote repository");
+                addCommand("git pull");
+                displayModal("Pulling new changes from the remote repository");
 
-    if (modifiedFiles.length > 0) {
-        updateModalText("Please commit before pulling from remote!");
-    }
-    Git.Repository.open(repoFullPath)
-        .then(function (repo) {
-            repository = repo;
-            console.log("Pulling new changes from the remote repository");
-            addCommand("git pull");
-            displayModal("Pulling new changes from the remote repository");
+                return repository.fetchAll({
+                  callbacks: {
+                    credentials: function () {
+                      return createCredentials();
+                    },
+                    certificateCheck: function () {
+                      return 1;
+                    }
+                  }
+                });
+              })
+              // Now that we're finished fetching, go ahead and merge our local branch
+              // with the new one
+              .then(function () {
+                return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
+              })
+              .then(function (oid) {
+                console.log("Looking up commit with id " + oid + " in all repositories");
+                return Git.AnnotatedCommit.lookup(repository, oid);
+              }, function (err) {
+                console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
+              })
+              .then(function (annotated) {
+                console.log("merging " + annotated + "with local forcefully");
+                Git.Merge.merge(repository, annotated, null, {
+                  checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
+                });
+                theirCommit = annotated;
+              })
+              .then(function () {
+                let conflicsExist = false;
+                let tid = "";
+                if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
+                  tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
+                  conflicsExist = tid.indexOf("Conflicts") !== -1;
+                }
 
-      return repository.fetchAll({
-        callbacks: {
-          credentials: function () {
-            return createCredentials();
-          },
-          certificateCheck: function () {
-            return 1;
-          }
+                if (conflicsExist) {
+                  let conflictedFiles = tid.split("Conflicts:")[1];
+                  refreshAll(repository);
+
+                  window.alert("Conflicts exists! Please check the following files:" + conflictedFiles +
+                      "\n Solve conflicts before you commit again!");
+                } else {
+                  updateModalText("Successfully pulled from remote branch " + branch + ", and your repo is up to date now!");
+                  refreshAll(repository);
+                }
+              });
         }
       });
-    })
-    // Now that we're finished fetching, go ahead and merge our local branch
-    // with the new one
-    .then(function () {
-      return Git.Reference.nameToId(repository, "refs/remotes/origin/" + branch);
-    })
-    .then(function (oid) {
-      console.log("Looking up commit with id " + oid + " in all repositories");
-      return Git.AnnotatedCommit.lookup(repository, oid);
-    }, function (err) {
-      console.log("fetching all remgit.ts, func pullFromRemote(), cannot find repository with old id" + err);
-    })
-    .then(function (annotated) {
-      console.log("merging " + annotated + "with local forcefully");
-      Git.Merge.merge(repository, annotated, null, {
-        checkoutStrategy: Git.Checkout.STRATEGY.FORCE,
-      });
-      theirCommit = annotated;
-    })
-    .then(function () {
-      let conflicsExist = false;
-      let tid = "";
-      if (readFile.exists(repoFullPath + "/.git/MERGE_MSG")) {
-        tid = readFile.read(repoFullPath + "/.git/MERGE_MSG", null);
-        conflicsExist = tid.indexOf("Conflicts") !== -1;
-      }
+    }
+  });
 
-            if (conflicsExist) {
-                let conflictedFiles = tid.split("Conflicts:")[1];
-                refreshAll(repository);
-
-                window.alert("Conflicts exists! Please check the following files:" + conflictedFiles +
-                    "\n Solve conflicts before you commit again!");
-            } else {
-                updateModalText("Successfully pulled from remote branch " + branch + ", and your repo is up to date now!");
-                refreshAll(repository);
-            }
-        });
 }
 
 // function to determine the status of the remote repository compared to local repository
 // functions takes the name of the branch
 function getAheadBehindCommits(branchName) {
-    let origin = "origin";
-    origin = path.join(origin, branchName);
-    return Git.Repository.open(repoFullPath).then(function (repo) {
-        // returns commit that head is pointing too (most recent local commit)
-        return repo.getHeadCommit().then(function (commit) {
-            return repo.getReferenceCommit(origin).then(function (remoteCommit) {
-                // return an object { ahead : <number of commits ahead>, behind: <number of commits behind>
-                return Graph.aheadBehind(repo, commit.id(), remoteCommit.id()).then(function (aheadBehind) {
-                    return aheadBehind;
-                });
-            }, function (e) {
-                console.log(e.message)
-            });
+  let origin = "origin";
+  origin = path.join(origin, branchName);
+  return Git.Repository.open(repoFullPath).then(function (repo) {
+    // returns commit that head is pointing too (most recent local commit)
+    return repo.getHeadCommit().then(function (commit) {
+      return repo.getReferenceCommit(origin).then(function (remoteCommit) {
+        // return an object { ahead : <number of commits ahead>, behind: <number of commits behind>
+        return Graph.aheadBehind(repo, commit.id(), remoteCommit.id()).then(function (aheadBehind) {
+          return aheadBehind;
         });
+      }, function (e) {
+        console.log(e.message)
+      });
     });
+  });
 }
 
 
 //checks if the remote version of your current branch exist
 function checkIfExistOrigin(branchName) {
-    let origin = "origin";
-    origin = path.join(origin, branchName);
-    return Git.Repository.open(repoFullPath).then(function (repo) {
-        return repo.getReferenceCommit(origin).then(function (originCommit) {
-            return true;
-        }, function (e) {
-            return false
-        });
+  let origin = "origin";
+  origin = path.join(origin, branchName);
+  return Git.Repository.open(repoFullPath).then(function (repo) {
+    return repo.getReferenceCommit(origin).then(function (originCommit) {
+      return true;
+    }, function (e) {
+      return false
     });
+  });
 }
 
 
 //calls getAheadBedhindCommits to display status of local repo to user
-function displayAheadBehind() {
-  let branch = document.getElementById("branch-name").innerText;
+async function displayAheadBehind() {
+  let branch = await getBranchName();
   let display = document.getElementById("ahead-behind-display");
 
-  checkIfExistOrigin(branch).then(function(remoteBranchExist){
+  checkIfExistOrigin(branch).then(function (remoteBranchExist) {
     //check if the remote exists
     if (!remoteBranchExist) {
       display.innerHTML = "remote does not exist";
@@ -1390,7 +1318,7 @@ function displayAheadBehind() {
           display.innerHTML = "Up to Date";
           return;
         } else {
-          display.innerHTML = "your branch is " + aheadBehind.ahead + " ahead of remote" ;
+          display.innerHTML = "your branch is " + aheadBehind.ahead + " ahead of remote";
         }
       });
     }
@@ -1439,70 +1367,119 @@ async function getBranchName() {
   });
 }
 
+//push function to remote branch, we need to push to remote and then link that to the local branch
+async function createUpstreamPush() {
+  //todo add loading until its successfull
+  displayModal("Pushing changes to remote... and setting upstream branch");
+  //todo update getting the branch with new function to get branch.
+  let branch = await getBranchName();
+  let remoteBranch = "refs/heads/";
+  let remoteName = "origin";
+  let originBranchName = "origin";
+
+  originBranchName = path.join(originBranchName, branch);
+  remoteBranch = path.join(remoteBranch, branch);
+
+  addCommand("git push -u origin " + branch);
+  Git.Repository.open(repoFullPath).then((repo) => {
+    repo.getCurrentBranch().then((ref) => {
+      repo.getRemote(remoteName).then((remote) => {
+        remote.push([remoteBranch + ":" + remoteBranch], {
+          callbacks: {
+            credentials: function () {
+              return createCredentials();
+            }
+          }
+        }).then((result) => {
+          //link to local branch
+          Branch.setUpstream(ref, originBranchName).then((setRemoteResult) => {
+            updateModalText("Set upstream success");
+          }), function (e) {
+            updateModalText("Something went wrong");
+            console.log(Error(e));
+          }
+        }), function (e) {
+          updateModalText("Something went wrong");
+          console.log(Error(e));
+        }
+      }), function (e) {
+        updateModalText("Something went wrong");
+        console.log(Error(e));
+      }
+    }), function (e) {
+      updateModalText("Something went wrong");
+      console.log(Error(e));
+    }
+  })
+
+}
+
 
 async function pushToRemote() {
-    let branch = "";
-    await getBranchName().then((branchName) => {
-        branch = branchName;
-    });
-    //checks if the remote version of your current branch exist
-    checkIfExistOrigin(branch).then(function (remoteBranchExist) {
-        if (!remoteBranchExist) {
-            window.alert("fatal: The current branch test-branch has no upstream branch.\n" +
-                "To push the current branch and set the remote as upstream, use\n" +
-                "\n" +
-                "    git push --set-upstream origin test-branch");
-            return;
+  let branch = await getBranchName();
+  //checks if the remote version of your current branch exist
+  await checkIfExistOrigin(branch).then(function(remoteBranchExist) {
+    if (!remoteBranchExist) {
+      displayPushToRemoteModal();
+      return;
+    } else {
+      // tells the user if their branch is up to date or behind the remote branch
+      getAheadBehindCommits(branch).then(function (aheadBehind) {
+        if (aheadBehind.behind !== 0) {
+          window.alert("your branch is behind remote by " + aheadBehind.behind);
+          return;
+        } else if (aheadBehind.ahead === 0) {
+          window.alert("Your branch is already up to date");
+          return;
         } else {
-            // tells the user if their branch is up to date or behind the remote branch
-            getAheadBehindCommits(branch).then(function (aheadBehind) {
-                if (aheadBehind.behind !== 0) {
-                    window.alert("your branch is behind remote by " + aheadBehind.behind);
-                    return;
+          // tells the user if their branch is up to date or behind the remote branch
+          getAheadBehindCommits(branch).then(function (aheadBehind) {
+            if (aheadBehind.behind !== 0) {
+              window.alert("your branch is behind remote by " + aheadBehind.behind);
+              return;
 
-                } else if (aheadBehind.ahead === 0) {
-                    window.alert("Your branch is already up to date");
-                    return;
-                } else {
-                    // Do the Push
-                    Git.Repository.open(repoFullPath).then(function (repo) {
-                        displayModal("Pushing changes to remote...");
-                        addCommand("git push");
-                        repo.getRemotes().then(function (remotes) {
-                            repo.getRemote(remotes[0]).then(function (remote) {
-                                return remote.push(
-                                    ["refs/heads/" + branch + ":refs/heads/" + branch],
-                                    {
-                                        callbacks: {
-
-                                            credentials: function () {
-                                                return createCredentials();
-                                            }
-                                        }
-                                    }
-                                );
-                            }, function (e) {
-                                console.log(Error(e));
-                            }).then(async function () {
-                                window.onbeforeunload = Confirmed;
-                                await refreshAll(repo);
-                                updateModalText("Push successful");
-                            });
-                        }, function (e) {
-                            console.log(Error(e));
-                        });
+            } else if (aheadBehind.ahead === 0) {
+              window.alert("Your branch is already up to date");
+              return;
+            } else {
+              // Do the Push
+              Git.Repository.open(repoFullPath).then(function (repo) {
+                displayModal("Pushing changes to remote...");
+                addCommand("git push");
+                repo.getRemotes().then(function (remotes) {
+                  repo.getRemote(remotes[0]).then(function (remote) {
+                    return remote.push(
+                        ["refs/heads/" + branch + ":refs/heads/" + branch],
+                        {
+                          callbacks: {
+                            credentials: function () {
+                              return createCredentials();
+                            }
+                          }
+                        }
+                    );
+                  }, function (e) {
+                    console.log(Error(e));
+                  }).then(async function () {
+                    window.onbeforeunload = Confirmed;
+                    await refreshAll(repo);
+                    updateModalText("Push successful");
                   });
-              }
-            });
+                }, function (e) {
+                  console.log(Error(e));
+                });
+              });
+            }
+          });
         }
-    });
+      });
+    }
+  });
 }
 
 
 
 function commitModal() {
-  // TODO: implement commit modal
-  //updateModalText("Commit inside a modal yet to be implemented");
   addAndCommit();
 }
 
@@ -1520,10 +1497,8 @@ async function openBranchModal(stashIndex) {
   $('#branch-modal').modal('show');
 
     // Shows current branch inside the branch mdoal
-    let branch = "";
-    await getBranchName().then((branchName) => {
-        branch = branchName;
-    });
+    let branch = await getBranchName();
+
     if (branch === undefined || branch == 'branch') {
         document.getElementById("currentBranchText").innerText = "Current Branch: ";
     } else {
@@ -1637,6 +1612,7 @@ function deleteLocalBranch() {
     }).then(function () {
       // refresh graph
       console.log("deleted the local branch")
+      updateModalText("The local branch: " + branchName + " has been deleted")
       refreshAll(repos);
     })
 }
@@ -1650,6 +1626,7 @@ function deleteRemoteBranch() {
 
   Git.Repository.open(repoFullPath)
     .then(function (repo) {
+      let repos = repo;
       Git.Reference.list(repo).then(function (array) {
         if (array.includes("refs/remotes/origin/" + branchName)) {  // check if the branch is remote
           console.log("this is a remote branch")
@@ -1666,6 +1643,7 @@ function deleteRemoteBranch() {
               }).then(function () {
                 console.log("deleted the remote branch")
                 updateModalText("The remote branch: " + branchName + " has been deleted")
+                refreshAll(repos);
               });
           })
         }
@@ -2391,6 +2369,18 @@ function displayModifiedFiles() {
           element.style.backgroundColor = "#84db00";
         } else if (line.charAt(0) === "-") {
           element.style.backgroundColor = "#ff2448";
+
+        /* Issue-2
+             Removes text saying < \ no newline at end of file in the diff-panel.
+            This will cause any newline at end of file to be omitted whether it
+            was created by git or not. What gets printed out is left up to the developer (shown below)
+          */
+        } else if (line.charAt(0) === "<") {
+            line = "";
+            //line = "end of file"
+            //line = "No newline at end of file"
+            //line = "Newline omitted"
+            //line can be anything the dev wants
         }
 
         // If not a changed line, origin will be a space character, so still need to slice

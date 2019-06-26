@@ -363,6 +363,8 @@ function showDiff(commitId): void {
       commitPanel.style.height = "100vh";
       commitPanel.style.width = "100vw";
       commitPanel.style.zIndex = "10";
+      commitPanel.style.display = "block";
+
     }
 
     let bodyPanel = document.getElementById("commit-diff-panel-body");
