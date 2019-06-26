@@ -22,7 +22,6 @@ let settingsPath = path.join(__dirname, ".settings");
 const recentFiles = path.join(settingsPath, 'recent_repos.json');
 let quickBranchTagReload: any = [];
 
-
 // Function clones repository from HTML element repoSave using downloadFunc()
 function downloadRepository() {
   let fullLocalPath;
@@ -677,6 +676,42 @@ function checkoutLocalBranch(element) {
     });
 }
 
+  // Function checkouts branch based on parameter element.innerHTML
+  function checkoutLocalBranch(element) {
+    let bn;
+    let img = "<img"
+    if (typeof element === "string") {
+      bn = element;
+    } else {
+      bn = element.innerHTML;
+    }
+    if (bn.includes(img)) {
+      bn = bn.substr(0, bn.lastIndexOf(img)) // remove local branch <img> tag from branch name string
+      if (bn.includes(img)) {
+        bn = bn.substr(0, bn.lastIndexOf(img)) // remove remote branch <img> tag from branch name string
+      }
+    }
+    console.log("name of branch being checked out: " + bn);
+    Git.Repository.open(repoFullPath)
+      .then(function (repo) {
+        document.getElementById('spinner').style.display = 'block';
+        addCommand("git checkout " + bn);
+        repo.checkoutBranch("refs/heads/" + bn)
+          .then(function () {
+            refreshAll(repo);
+          }, function (err) {
+            repo.checkoutBranch("refs/tags/" + bn)
+              .then(function () {
+                refreshAll(repo);
+              }, function (err) {
+                console.log("repo.ts, func checkoutLocalBranch(), cannot checkout local branch: " + err);
+                updateModalText("Cannot checkout local branch: "+err+" Please restart VisualGit");
+
+              });
+
+          });
+      })
+  }
 
 function checkoutRemoteBranch(element) {
   let bn;
@@ -715,7 +750,7 @@ function checkoutRemoteBranch(element) {
             console.log("Pull successful");
           });
       }, function (err) {
-        console.log("repo.ts, line 306, could not pull from repository" + err);
+        console.log("repo.ts, checkoutRemoteBranch(), could not pull from repository" + err);
       })
   }
 }

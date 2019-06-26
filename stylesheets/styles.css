@@ -365,6 +365,7 @@ body .add-repository-panel .back-button {
   position: absolute;
   padding: 15px;
   opacity: 0.7;
+  cursor: pointer;
 }
 
 body .add-repository-panel .back-button:hover {
@@ -578,35 +579,6 @@ body .footer .status-panel {
   width: 20%;
   text-align: center;
   border-style: solid;
-}
-
-body .footer .status-panel .fetch-button-wrapper {
-  /* positioned relative to its normal position(bottom left corner) */
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  border: 0;
-}
-
-body .footer .status-panel .fetch-button-wrapper .fetch-button {
-  /*sequences of white space are collapsed and lines are broken at newline characters*/
-  white-space: pre-line;
-  position: static;
-  display: block;
-  margin: 8px;
-
-  height: 40px;
-  border-radius: 10px;
-  border: 0;
-  padding: 0 15px;
-  background-color: #39c0ba;
-  color: #fff;
-}
-
-body .footer .status-panel .fetch-button:hover {
-  opacity: 0.8;
 }
 
 body .footer .terminal .git-command {
@@ -1088,6 +1060,7 @@ body .pull-request-panel {
   height: 100%;
   overflow: hidden;
   width: 60px;
+  cursor: pointer;
 }
 
 .right-pr-nav i img {
@@ -1246,6 +1219,7 @@ body .pull-request-panel {
   margin-left: 10px;
 }
 
+
 .stash-item {
   display: inline-flex;
   align-items: center;
@@ -1345,4 +1319,9 @@ body .pull-request-panel {
   color: red;
 }
 
+
 /* Stash-functions END */
+
+.footer-last-row {
+  font-size: 12px;
+}

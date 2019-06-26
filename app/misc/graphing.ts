@@ -35,7 +35,7 @@ function processGraph(commits: nodegit.Commit[]) {
     })
     return promise;
 }
-
+// Function sorts commits based on the commit history
 function sortCommits(commits) {
     var promise = new Promise((resolve, reject) => {
 
@@ -688,7 +688,7 @@ function makeNode(c, column: number) {
 
     console.log("commit: "+ id + ", message: " +commitList[id-1]['id']);
 }
-
+// Function connects the parent sha to the new sha with edge
 function makeEdge(sha: string, parentSha: string) {
     let fromNode = getNodeId(parentSha.toString());
     let toNode = getNodeId(sha);
@@ -698,7 +698,7 @@ function makeEdge(sha: string, parentSha: string) {
         to: toNode
     });
 }
-
+// Functions get's the sha key for each commit in the commit list
 function getNodeId(sha: string) {
     for (let i = 0; i < commitList.length; i++) {
         let c = commitList[i];
