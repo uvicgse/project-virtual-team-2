@@ -1,6 +1,7 @@
 let cs = require('color-scheme');
 let before = 'default';
 
+// Modify the color scheme of VisualGit based on color parameter
 function changeColor(color) {
   const userSettingsDirectory = ".settings/";
   const userColorFilePath = userSettingsDirectory + "user_color.txt";

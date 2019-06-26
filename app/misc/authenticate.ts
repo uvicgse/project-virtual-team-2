@@ -95,20 +95,20 @@ function createCredentials() {
 }
 
 function signInHead(callback) {
-  encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
-  continuedWithoutSignIn = false;
+  encryptTemp(document.getElementById("Email1").value, document.getElementById("Password1").value);
+  continuedWithoutSignIn = false;
   signedAfter = true;
   if (signed == 1){
-    if ((changes == 1)){
-      $("#modalW2").modal();
-    }
-    else {
-      getUserInfo(callback);
-    }
-  }
-  else{
-    getUserInfo(callback);
-  }
+    if ((changes == 1)){
+      $("#modalW2").modal();
+    }
+    else {
+      getUserInfo(callback);
+    }
+  }
+  else{
+    getUserInfo(callback);
+  }
 }
 
 function LogInAfterConfirm(callback) {
@@ -447,6 +447,7 @@ function displayIssues() {
           });
       }
     }
+    
 function getUsername() {
   if (!account) {
     console.log("Could not retrieve username, account stored is invalid")

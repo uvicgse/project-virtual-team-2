@@ -11,6 +11,7 @@ function collapseSignPanel() {
   $("#nav-collapse1").collapse("hide");
 }
 
+// Function changes VisualGit's GUI to show clone panel
 function switchToClonePanel() {
   console.log("switch to clone panel");
   hideAuthenticatePanel();
@@ -20,6 +21,7 @@ function switchToClonePanel() {
   displayClonePanel();
 }
 
+// Function changes VisualGit's GUI to show main screen
 function switchToMainPanel() {
   hideAuthenticatePanel();
   hideAddRepositoryPanel();
@@ -43,6 +45,7 @@ function switchToMainPanel() {
   previousWindow = "mainPanel";
 }
 
+// Function displays a modal telling user to sign in if user is not sign in 
 function checkSignedIn() {
   if (continuedWithoutSignIn) {
     displayModal("You need to sign in");
@@ -71,6 +74,7 @@ function switchToAddRepositoryPanelWhenNotSignedIn() {
 
 }
 
+// Function changes VisualGit's GUI to display component that allows user to open, add, or create a repository
 function switchToAddRepositoryPanel() {
   window.dispatchEvent(new Event('loadRecentRepos'));
 
@@ -98,6 +102,7 @@ function switchToAddRepositoryPanel() {
   }
 }
 
+// Function hides sign in button if Oauth token exists
 function hideSignInButton():void{
   let file = "token.json";
   fs.access(file, fs.constants.F_OK, (err) => {
@@ -121,6 +126,7 @@ function wait(ms) {
   }
 }
 
+// Function displays current sign-in user's username
 function displayUsername() {
   console.log("Display Username called");
   document.getElementById("Button_Sign_out").style.display = "block";
@@ -135,6 +141,7 @@ function displayUsername() {
   }
 }
 
+// Function displays the panel for cloning a repository
 function displayClonePanel() {
   let addRepositoryPanel = document.getElementById("add-repository-panel");
   if (addRepositoryPanel != null){
@@ -143,6 +150,7 @@ function displayClonePanel() {
   $("#open-local-repository").hide();
 }
 
+// Function displays panel that contains various command buttons in the bottom left corner of VisualGit's main component GUI
 function displayFilePanel() {
   let filePanel = document.getElementById("file-panel");
   if (filePanel != null){
@@ -194,7 +202,8 @@ function displayFilePanel() {
   
   document.getElementById("Issues-button").style="visiblity: visible";
 }
-
+// Function displays an unclickable amend commit button if no unpushed commits exist.
+// If unpushed commits exist, function displays a clickable amend commit button
 function checkAmendButton() {
   // Method checking whether to make amend button clickable. Button will be clickable if there is more than 
   // one unpushed commit
@@ -215,6 +224,7 @@ function checkAmendButton() {
   });
 }
 
+// Function displays the pull request panel
 function displayPullRequestPanel() {
   let prPanel = document.getElementById("pull-request-panel")
   if (prPanel != null) {
@@ -222,6 +232,7 @@ function displayPullRequestPanel() {
   }
 }
 
+// Function hides the pull request panel
 function hidePullRequestPanel() {
   let prPanel = document.getElementById("pull-request-panel")
   if (prPanel != null) {
@@ -229,6 +240,7 @@ function hidePullRequestPanel() {
   }
 }
 
+// Function displays the graph panel
 function displayGraphPanel() {
   let graphPanel = document.getElementById("graph-panel");
   if (graphPanel != null){
@@ -236,6 +248,7 @@ function displayGraphPanel() {
   }
 }
 
+// Function displays the component that allows a user to open, add, or create a repository
 function displayAddRepositoryPanel() {
   previousWindow = "repoPanel";
   let addRepositoryPanel = document.getElementById("add-repository-panel");
@@ -245,6 +258,7 @@ function displayAddRepositoryPanel() {
   $("#open-local-repository").show();
 }
 
+// Function hides the panel that contains basic command buttons
 function hideFilePanel() {
   let filePanel = document.getElementById("file-panel");
   if (filePanel != null){
@@ -283,7 +297,7 @@ function hideFilePanel() {
   document.getElementById("Issues-button").style="visibility: hidden";
 }
 
-
+// Function hides the graph panel
 function hideGraphPanel() {
   let graphPanel = document.getElementById("graph-panel");
   if (graphPanel != null) {
@@ -291,6 +305,7 @@ function hideGraphPanel() {
   }
 }
 
+// Function hides the component that allows a user to open, add, or create a repository
 function hideAddRepositoryPanel() {
   let addRepositoryPanel = document.getElementById("add-repository-panel");
   if (addRepositoryPanel != null) {
@@ -298,6 +313,7 @@ function hideAddRepositoryPanel() {
   }
 }
 
+// Function displays the current status of the branch (ahead, behind, or up to date with remote)
 function displayStatusPanel() {
   let statusPanel = document.getElementById("status-panel");
   if(statusPanel != null){
@@ -320,6 +336,7 @@ function displayStatusPanel() {
   }
 }
 
+// Function hides the panel that displays the current status of the branch (ahead, behind, or up to date with remote)
 function hideStatusPanel() {
   let statusPanel = document.getElementById("status-panel");
   if(statusPanel != null){
@@ -346,6 +363,7 @@ function hideStatusPanel() {
 
 }
 
+// Function displays diff panel
 function displayDiffPanel() {
   let graphPanel = document.getElementById("graph-panel");
   if (graphPanel != null) {
@@ -360,6 +378,7 @@ function displayDiffPanel() {
   displayDiffPanelButtons();
 }
 
+// Function hides diff panel
 function hideDiffPanel() {
   let diffPanel = document.getElementById("diff-panel");
   if (diffPanel != null) {
@@ -375,6 +394,7 @@ function hideDiffPanel() {
   hideDiffPanelButtons();
 }
 
+// Function hides diff panel if no files have changed
 function hideDiffPanelIfNoChange() {
   let filename = document.getElementById("diff-panel-file-name") == null ? null : document.getElementById("diff-panel-file-name")!.innerHTML;
   let filePaths = document.getElementsByClassName('file-path');
@@ -391,6 +411,7 @@ function hideDiffPanelIfNoChange() {
   filename = null;
 }
 
+// Function hides the panel for authentication
 function hideAuthenticatePanel() {
   let authenticate = document.getElementById("authenticate");
   if (authenticate != null) {
@@ -398,6 +419,7 @@ function hideAuthenticatePanel() {
   }
 }
 
+// Function displays the panel for authentication
 function displayAuthenticatePanel() {
   let authenticate = document.getElementById("authenticate");
   if (authenticate != null) {
@@ -405,6 +427,7 @@ function displayAuthenticatePanel() {
   }
 }
 
+// Function displays the visibility of save and cancel button
 function displayDiffPanelButtons() {
   let saveButton = document.getElementById("save-button");
   if (saveButton != null) {
@@ -418,6 +441,7 @@ function displayDiffPanelButtons() {
   document.getElementById("open-editor-button").style.visibility = "visible";
 }
 
+// Function hides the visibility of save and cancel button
 function hideDiffPanelButtons() {
   let saveButton = document.getElementById("save-button");
   if (saveButton != null) {
@@ -433,6 +457,7 @@ function hideDiffPanelButtons() {
   disableDiffPanelEditOnHide();
 }
 
+// Function disables Save and Cancel button
 function disableSaveCancelButton() {
   let saveButton = <HTMLInputElement>document.getElementById("save-button");
   let cancelButton = <HTMLInputElement>document.getElementById("cancel-button");
@@ -442,6 +467,7 @@ function disableSaveCancelButton() {
   cancelButton.style.backgroundColor = gray;
 }
 
+// Function undisables Save and Cancel button 
 function enableSaveCancelButton() {
   let saveButton = <HTMLInputElement>document.getElementById("save-button");
   let cancelButton = <HTMLInputElement>document.getElementById("cancel-button");
@@ -451,6 +477,7 @@ function enableSaveCancelButton() {
   cancelButton.style.backgroundColor = blue;
 }
 
+// Function prevents HTML element diff-panel-body from being modified.
 function disableDiffPanelEditOnHide() {
   let doc = document.getElementById("diff-panel-body");
   if (doc != null) {
