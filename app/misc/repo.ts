@@ -22,7 +22,7 @@ let settingsPath = path.join(__dirname, ".settings");
 const recentFiles = path.join(settingsPath, 'recent_repos.json');
 let quickBranchTagReload: any = []; 
 
-
+// Function clones repository from HTML element repoSave using downloadFunc()
 function downloadRepository() {
   let fullLocalPath;
   // Full path is determined by either handwritten directory or selected by file browser
@@ -115,6 +115,7 @@ function saveMostRecentRepos(fullLocalPath) {
   }
 }
 
+// Function clones repository from cloneURL.
 function downloadFunc(cloneURL, fullLocalPath) {
   console.log("Path of cloning repo: " + fullLocalPath);
 
@@ -171,6 +172,8 @@ function updateProgressBar(ratio) {
   progressBar.innerHTML = percentage;
 }
 
+// Function loads repository based on HTML element repoOpen. After repository has loaded, the function refreshes
+// VisualGit's GUI
 function openRepository() {
   console.log("Open Repository")
   if (document.getElementById("dirPickerOpenLocal").value === previousOpen && previousOpen != undefined) {
@@ -270,6 +273,7 @@ function openRepository() {
     document.getElementById("dirPickerOpenLocal").value = "";
   }
 
+  // function creates local repository based on value in HTML element repoCreate
   function createLocalRepository() {
     //console.log("createLocalRepo")
     if (document.getElementById("repoCreate").value == null || document.getElementById("repoCreate").value == "") {
@@ -337,6 +341,7 @@ function openRepository() {
     }
   }
 
+    // Function is called to refresh VisualGit's GUI by reloading current branch and re-drawing the commit graph
   function refreshAll(repository) {
     document.getElementById('spinner').style.display = 'block';
     let branch;
@@ -423,6 +428,7 @@ function openRepository() {
       });
   }
 
+  // Function gets all branches
   function getAllBranches() {
     let repos;
     Git.Repository.open(repoFullPath)
@@ -669,6 +675,7 @@ function openRepository() {
 
   }
 
+  // Function checkouts branch based on parameter element.innerHTML
   function checkoutLocalBranch(element) {
     let bn;
     let img = "<img"
@@ -703,6 +710,7 @@ function openRepository() {
       })
   }
 
+  // Function checkouts branch from remote repository
   function checkoutRemoteBranch(element) {
     let bn;
     let img = "<img"
@@ -745,6 +753,7 @@ function openRepository() {
       })
   }
 
+  // Function sets fullLocalPath variable to value from HTML element repoClone
   function updateLocalPath() {
     let fullLocalPath;
     // get the name of the repo from the usere entered URL
@@ -822,11 +831,13 @@ function openRepository() {
     $('#modalW4').modal('show');
   }
 
+  //Updating stash show modal text and adding classes for highlighting
   function updateModalText(text) {
     document.getElementById("modal-text-box").innerHTML = text;
     $('#modal').modal('show');
   }
 
+  // Function is called to the pull request panel
   function hidePRPanel(): void{
     // Hide PR Panel
     let prStatus1 = document.getElementById("pr-status-1");
