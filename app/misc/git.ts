@@ -223,50 +223,50 @@ async function getCommit(repo, ref) {
   - Contructs a DOM elements that gives users stash options for each stash
 */
 function refreshStashHistory(){
-    stashHistory = [""];
-    stashIds = [""];
-    let stashId;
-    console.log("retrieving stash history...");
-    if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
-      let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
-      txt.pop();
-      txt.forEach(function(line) {
-        stashId = line.split(" ")[1];
-        line = line.split(" ").slice(6, line.length).join(" ");
-        stashHistory.unshift(line);
-        stashIds.unshift(stashId);
+  stashHistory = [""];
+  stashIds = [""];
+  let stashId;
+  console.log("retrieving stash history...");
+  if(readFile.exists(repoFullPath + "/.git/logs/refs/stash")){
+    let txt = readFile.read(repoFullPath + "/.git/logs/refs/stash").split("\n");
+    txt.pop();
+    txt.forEach(function(line) {
+      stashId = line.split(" ")[1];
+      line = line.split(" ").slice(6, line.length).join(" ");
+      stashHistory.unshift(line);
+      stashIds.unshift(stashId);
 
-      });
-    }
-    stashHistory.pop();
-    let stashListHTML = '';
-
-    // For each stash create a unique element with unique pop, drop, and apply functionality.
-    stashHistory.forEach((stash, i) => {
-      stashListHTML +=
-        '<div class="stash-item">' +
-          '<span class="stash-name">' +
-              'Stash{' + i + '}: ' + stash +
-          '</span>' +
-          '<div class="stash-actions">' +
-              '<ul class="dropbtn icons" onclick="showDropdown(' + i + ')">' +
-                  '<li></li>' +
-                  '<li></li>' +
-                  '<li></li>' +
-              '</ul>' +
-
-              '<div id="stash-item-' + i + '-dropdown" class="dropdown-content">' +
-                  '<a data-dismiss="modal" onclick="popStash(' + i + ')">Pop</a>' +
-                  '<a data-dismiss="modal" onclick="applyStash(' + i + ')">Apply</a>' +
-                  '<a data-dismiss="modal" onclick="dropStash(' + i + ')">Drop</a>' +
-                  '<a data-dismiss="modal" onclick="showStash(' + i + ')">Show</a>' +
-                  '<a data-dismiss="modal" onclick="openBranchModal('+i+')">Branch</a>' +
-              '</div>' +
-          '</div>' +
-        '</div>';
     });
-    document.getElementById('stash-list').innerHTML = stashListHTML;
   }
+  stashHistory.pop();
+  let stashListHTML = '';
+
+  // For each stash create a unique element with unique pop, drop, and apply functionality.
+  stashHistory.forEach((stash, i) => {
+    stashListHTML +=
+      '<div class="stash-item">' +
+        '<span class="stash-name">' +
+            'Stash{' + i + '}: ' + stash +
+        '</span>' +
+        '<div class="stash-actions">' +
+            '<ul class="dropbtn icons" onclick="showDropdown(' + i + ')">' +
+                '<li></li>' +
+                '<li></li>' +
+                '<li></li>' +
+            '</ul>' +
+
+            '<div id="stash-item-' + i + '-dropdown" class="dropdown-content">' +
+                '<a data-dismiss="modal" onclick="popStash(' + i + ')">Pop</a>' +
+                '<a data-dismiss="modal" onclick="applyStash(' + i + ')">Apply</a>' +
+                '<a data-dismiss="modal" onclick="dropStash(' + i + ')">Drop</a>' +
+                '<a data-dismiss="modal" onclick="showStash(' + i + ')">Show</a>' +
+                '<a data-dismiss="modal" onclick="openBranchModal('+i+')">Branch</a>' +
+            '</div>' +
+        '</div>' +
+      '</div>';
+  });
+  document.getElementById('stash-list').innerHTML = stashListHTML;
+}
 
 /* Issue 84: further implement stashing
     - git stash show stash{index} shows the deltas of
@@ -342,6 +342,7 @@ async function showStash(index){
   let showMsg = await p;
 
   updateModalText(showMsg);
+}
 
 function showMoveModal(){
   listDirectoryItems(repoFullPath);

@@ -136,3 +136,4 @@ fileUpload(ev){
     switchToMainPanel();
   }
 }
+}
