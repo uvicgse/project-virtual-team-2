@@ -9,6 +9,7 @@ function getName(author: string) {
   return name;
 }
 
+// Function returns user's profile pic
 function img4User(name:string) {
   let pic;
   let first = name.trim().charAt(0).toUpperCase();
@@ -16,6 +17,7 @@ function img4User(name:string) {
   return pic;
 }
 
+// Function returns user profile image from GitHub
 function imageForUser(name: string, email: string, callback) {
   let pic;
   githubAvatarUrl(name, function(err,avatarURL){
