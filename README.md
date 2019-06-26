@@ -34,7 +34,7 @@ then... You need to have to find the directory where python 2.7 is. On mac you c
 cd project-seed
 npm config set python {path to python2.7}
 npm install
-<<<<<<< HEAD
+````
 then if you get install errors and you have windows you may need to do some troubleshooting if you get an error for nodegyp
 
 ````
@@ -103,6 +103,13 @@ When stashing, the user is able to add a message to the stash, keep the files be
 This allows the user to safely save their work without committing and checkout a seperate branch.
 The stash can then be reapplied to the working directory by selecting the stash from the stash list and clicking on the apply button. However, the stash may not be applied on files with unsafe merge conflicts. To remedy this, either stage the files with conflicts or resolve the modified files manually.
 If the user applies the stash using the pop button, the stash will be dropped from the stash list.
+
+### Tagging support
+A user now can add tags to certain commits. Tags are usually used to denote a version or a release number.
+There are a few ways to add tags:
+* A user now can associate a tag when they are making a new commit. From the tag text panel on the bottom left corner.
+* A user can add or modify a tag on a preexisting commit. The user can navigate to the commit graph and when the user expand the graph, they will see each commit with a tag box associated with it. From there they can add a new tag or modify it if it already exist. 
+* Additionally, the user can browse and search existing tags from the branch list at the header.
 
 
 # Help
