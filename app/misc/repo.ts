@@ -721,32 +721,6 @@ function checkoutRemoteBranch(element) {
         console.log("repo.ts, line 306, could not pull from repository" + err);
       })
   }
-  console.log("current branch name: " + bn);
-  let repos;
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      repos = repo;
-      addCommand("git fetch");
-      addCommand("git checkout -b " + bn);
-      let cid = remoteName[bn];
-      console.log("name of remote branch:  " + cid);
-      return Git.Commit.lookup(repo, cid);
-    })
-    .then(function (commit) {
-      console.log("commiting");
-      return Git.Branch.create(repos, bn, commit, 0);
-    })
-    .then(function (code) {
-      console.log("name of local branch " + bn);
-      repos.mergeBranches(bn, "origin/" + bn)
-        .then(function () {
-          document.getElementById('spinner').style.display = 'block';
-          refreshAll(repos);
-          console.log("Pull successful");
-        });
-    }, function (err) {
-      console.log("repo.ts, line 306, could not pull from repository" + err);
-    })
 }
 
 
