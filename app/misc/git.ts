@@ -2132,18 +2132,33 @@ function displayModifiedFiles() {
           fileElement.id = file.filePath;
           fileElement.draggable="true";
 
+          // Variables
+          const filepanel = document.querySelector("div.file-panel");
+          const stagepanel = document.querySelector("div.staged-files-header");
+          // create top and bottom boundary for drag release
+          const topboundary = stagepanel.getBoundingClientRect();
+          const bottomboundary = filepanel.getBoundingClientRect();
+
           /* Functions for handling Drag and Drop - From unstage to stage*/
           function handleDragStart(e){
             e.dataTransfer.setData("text", e.target.id);
+            e.target.style.opacity = "0.4";
+          }
+          // Handle Drag outside events container
+          function handleDrag(e){
+            e.preventDefault();
+            document.getElementById("staged-files-header").style.borderTop = "3px dotted red";
+            document.getElementById("staged-files-header").style.borderLeft = "3px dotted red";
+            document.getElementById("staged-files-header").style.borderRight = "3px dotted red";
+            document.getElementById("files-staged").style.borderLeft = "3px dotted red";
+            document.getElementById("files-staged").style.borderRight = "3px dotted red";
+            document.getElementById("files-staged").style.borderBottom = "3px dotted red";
           }
           function handleDragEnd(e) {
             e.preventDefault();
-            const filepanel = document.querySelector("div.file-panel");
-            const stagepanel = document.querySelector("div.staged-files-header");
-            // create top and bottom boundary for drag release
-            const topboundary = stagepanel.getBoundingClientRect();
-            const bottomboundary = filepanel.getBoundingClientRect();
-
+            e.target.style.opacity = "1";
+            document.getElementById("staged-files-header").style.border = "";
+            document.getElementById("files-staged").style.border = "";
             // mouse pointer location while dragging
             var x_axis = e.clientX;
             var y_axis = e.clientY;
@@ -2157,6 +2172,7 @@ function displayModifiedFiles() {
 
           // Activate function on mouse drag start and end
           fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('drag', handleDrag, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
@@ -2248,22 +2264,36 @@ function displayModifiedFiles() {
           fileElement.draggable="true";
           fileElement.appendChild(filePath);
 
+          // Variables
+          const filepanel = document.querySelector("div.file-panel");
+          const stagepanel = document.querySelector("div.staged-files-header");
+          // create top and bottom boundary for drag release
+          const bottomboundary = stagepanel.getBoundingClientRect();
+          const topboundary = filepanel.getBoundingClientRect();
+
           /* Functions for handling Drag and Drop - From stage to unstage*/
           function handleDragStart(e){
             e.dataTransfer.setData("text", e.target.id);
+            e.target.style.opacity = "0.4";
+          }
+          function handleDrag(e){
+            e.preventDefault();
+            document.getElementById("modified-files-header").style.borderTop = "3px dotted red";
+            document.getElementById("modified-files-header").style.borderLeft = "3px dotted red";
+            document.getElementById("modified-files-header").style.borderRight = "3px dotted red";
+            document.getElementById("files-changed").style.borderLeft = "3px dotted red";
+            document.getElementById("files-changed").style.borderRight = "3px dotted red";
+            document.getElementById("files-changed").style.borderBottom = "3px dotted red";
+            e.target.style.cursor = "move";
           }
           function handleDragEnd(e) {
             e.preventDefault();
-            const filepanel = document.querySelector("div.file-panel");
-            const stagepanel = document.querySelector("div.staged-files-header");
-            // create top and bottom boundary for drag release
-            const bottomboundary = stagepanel.getBoundingClientRect();
-            const topboundary = filepanel.getBoundingClientRect();
-
+            e.target.style.opacity = "1";
+            document.getElementById("modified-files-header").style.border = "";
+            document.getElementById("files-changed").style.border = "";
             // mouse pointer location while dragging
             var x_axis = e.clientX;
             var y_axis = e.clientY;
-
             // check if the drag ends within the boundary
             if((x_axis >= topboundary.left && x_axis <= topboundary.right) && (y_axis >= topboundary.top && y_axis <= bottomboundary.top)){
               checkbox.click();
@@ -2273,6 +2303,7 @@ function displayModifiedFiles() {
 
           // Activate function on mouse drag start and end
           fileElement.addEventListener('dragstart', handleDragStart, false);
+          fileElement.addEventListener('drag', handleDrag, false);
           fileElement.addEventListener('dragend',handleDragEnd, false);
 
           let checkbox = document.createElement("input");
