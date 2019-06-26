@@ -7,13 +7,14 @@ let secP = null, fromNode = null, toNode;
 
 let GraphNodeID = 0;
 
-
-
- function returnSelectedNodeValue():number{
+// Function returns the node ID on click
+function returnSelectedNodeValue():number{
     let returnValue = GraphNodeID;
     GraphNodeID = 0;
     return returnValue;
   }
+
+// Function sets up the graphing model
 function drawGraph() {
     document.getElementById('spinner').style.display = 'block';
     $('#modal').modal('show');
@@ -300,6 +301,7 @@ function drawGraph() {
     })
 }
 
+// Function displays the commit panel body
 function showDiff(commitId): void {
     let commitPanelBody = document.getElementById("commit-diff-panel-body");
     if (commitPanelBody != null) {
@@ -353,6 +355,7 @@ function showDiff(commitId): void {
     }
   }
 
+// Function displays selected commit diff panel
   function displaySelectedCommitDiffPanel(commitId): void {
     let closeButton = document.getElementById("commit-close");
     if (closeButton != null) {
