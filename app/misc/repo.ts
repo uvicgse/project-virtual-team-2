@@ -20,7 +20,7 @@ let jsonfile = require('jsonfile');
 let path = require('path');
 let settingsPath = path.join(__dirname, ".settings");
 const recentFiles = path.join(settingsPath, 'recent_repos.json');
-let quickBranchTagReload: any = [];
+let quickBranchTagReload: any = []; 
 
 // Function clones repository from HTML element repoSave using downloadFunc()
 function downloadRepository() {
@@ -253,37 +253,16 @@ function openRepository() {
           )
       }
 
-    }
-    document.getElementById('spinner').style.display = 'block';
-    refreshAll(repository);
-    console.log("Repo successfully opened");
-    updateModalText("Repository successfully opened");
-    saveMostRecentRepos(fullLocalPath);
-  },
-    function (err) {
-      updateModalText("No repository found. Select a folder with a repository.");
-      console.log("repo.ts, line 101, cannot open repository: " + err); // TODO show error on screen
-      switchToAddRepositoryPanel();
-    });
-  document.getElementById("dirPickerOpenLocal").value = "";
-}
-
-// function creates local repository based on value in HTML element repoCreate
-function createLocalRepository() {
-  //console.log("createLocalRepo")
-  if (document.getElementById("repoCreate").value == null || document.getElementById("repoCreate").value == "") {
-    document.getElementById("dirPickerCreateLocal").click();
-    let localPath = document.getElementById("dirPickerCreateLocal").files[0].webkitRelativePath;
-    let fullLocalPath = document.getElementById("dirPickerCreateLocal").files[0].path;
-    document.getElementById("repoCreate").value = fullLocalPath;
-    document.getElementById("repoCreate").text = fullLocalPath;
-    saveMostRecentRepos(fullLocalPath);
-  } else {
-    let localPath = document.getElementById("repoCreate").value;
-    let fullLocalPath;
-    if (!require('path').isAbsolute(localPath)) {
-      updateModalText('The filepath is not valid. For OSX and Ubuntu the filepath should start with /, for Windows C:\\\\')
-      return
+  // function creates local repository based on value in HTML element repoCreate
+  function createLocalRepository() {
+    //console.log("createLocalRepo")
+    if (document.getElementById("repoCreate").value == null || document.getElementById("repoCreate").value == "") {
+      document.getElementById("dirPickerCreateLocal").click();
+      let localPath = document.getElementById("dirPickerCreateLocal").files[0].webkitRelativePath;
+      let fullLocalPath = document.getElementById("dirPickerCreateLocal").files[0].path;
+      document.getElementById("repoCreate").value = fullLocalPath;
+      document.getElementById("repoCreate").text = fullLocalPath;
+      saveMostRecentRepos(fullLocalPath);
     } else {
       if (checkFile.existsSync(localPath)) {
         fullLocalPath = localPath;
@@ -336,7 +315,6 @@ function addBranchestoNode(thisB: string) {
   }
 }
 
-  // Function is called to refresh VisualGit's GUI by reloading current branch and re-drawing the commit graph
   function refreshAll(repository) {
     document.getElementById('spinner').style.display = 'block';
     let branch;
@@ -392,17 +370,21 @@ function addBranchestoNode(thisB: string) {
           displayBranch(bp, "branch-dropdown", "checkoutLocalBranch(this)");
         }
 
-      }
-    })
-    .then(function () {
-      console.log("Updating the graph and the labels");
-      drawGraph();
-      var newRepoLocalPath = "";
-      let breakStringFrom;
-      if (repoLocalPath.length > 20) {
-        for (var i = 0; i < repoLocalPath.length; i++) {
-          if (repoLocalPath[i] == "/" || repoLocalPath[i] == "\\") {
-            breakStringFrom = i;
+  // Function gets all branches
+  function getAllBranches() {
+    let repos;
+    Git.Repository.open(repoFullPath)
+      .then(function (repo) {
+        repos = repo;
+        return repo.getReferenceNames(Git.Reference.TYPE.LISTALL);
+      })
+      .then(function (branchList) {
+        clearBranchElement();
+        for (let i = 0; i < branchList.length; i++) {
+          console.log("branch discovered: " + branchList[i]);
+          let bp = branchList[i].split("/");
+          if (bp[1] !== "remotes") {
+            displayBranch(bp[bp.length - 1], "branch-dropdown", "checkoutLocalBranch(this)");
           }
         }
         newRepoLocalPath = "..." + repoLocalPath.slice(breakStringFrom, repoLocalPath.length);
@@ -674,8 +656,17 @@ function checkoutLocalBranch(element) {
   } else {
     bn = element.innerHTML;
   }
-  if (bn.includes(img)) {
-    bn = bn.substr(0, bn.lastIndexOf(img)) // remove local branch <img> tag from branch name string
+}
+
+  // Function checkouts branch based on parameter element.innerHTML
+  function checkoutLocalBranch(element) {
+    let bn;
+    let img = "<img"
+    if (typeof element === "string") {
+      bn = element;
+    } else {
+      bn = element.innerHTML;
+    }
     if (bn.includes(img)) {
       bn = bn.substr(0, bn.lastIndexOf(img)) // remove remote branch <img> tag from branch name string
     }
@@ -700,31 +691,15 @@ function checkoutLocalBranch(element) {
           });
       })
   }
-  console.log("name of branch being checked out: " + bn);
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      document.getElementById('spinner').style.display = 'block';
-      addCommand("git checkout " + bn);
-      repo.checkoutBranch("refs/heads/" + bn)
-        .then(function () {
-          refreshAll(repo);
-        }, function (err) {
-          console.log("repo.ts, checkoutLocalBranch(), cannot checkout local branch: " + err);
-          updateModalText("Cannot checkout local branch: " + err + " Please restart VisualGit");
-        });
-    })
-}
-// Function checkouts branch from remote repository
-function checkoutRemoteBranch(element) {
-  let bn;
-  let img = "<img"
-  if (typeof element === "string") {
-    bn = element;
-  } else {
-    bn = element.innerHTML;
-  }
-  if (bn.includes(img)) {
-    bn = bn.substr(0, bn.lastIndexOf(img)) // remove remote branch <img> tag from branch name string
+  // Function checkouts branch from remote repository
+  function checkoutRemoteBranch(element) {
+    let bn;
+    let img = "<img"
+    if (typeof element === "string") {
+      bn = element;
+    } else {
+      bn = element.innerHTML;
+    }
     if (bn.includes(img)) {
       bn = bn.substr(0, bn.lastIndexOf(img))  // remove local branch <img> tag from branch name string
     }
@@ -755,39 +730,13 @@ function checkoutRemoteBranch(element) {
         console.log("repo.ts, checkoutRemoteBranch(), could not pull from repository" + err);
       })
   }
-  console.log("current branch name: " + bn);
-  let repos;
-  Git.Repository.open(repoFullPath)
-    .then(function (repo) {
-      repos = repo;
-      addCommand("git fetch");
-      addCommand("git checkout -b " + bn);
-      let cid = remoteName[bn];
-      console.log("name of remote branch:  " + cid);
-      return Git.Commit.lookup(repo, cid);
-    })
-    .then(function (commit) {
-      console.log("commiting");
-      return Git.Branch.create(repos, bn, commit, 0);
-    })
-    .then(function (code) {
-      console.log("name of local branch " + bn);
-      repos.mergeBranches(bn, "origin/" + bn)
-        .then(function () {
-          document.getElementById('spinner').style.display = 'block';
-          refreshAll(repos);
-          console.log("Pull successful");
-        });
-    }, function (err) {
-      console.log("repo.ts, line 306, could not pull from repository" + err);
-    })
-}
-// Function sets fullLocalPath variable to value from HTML element repoClone
-function updateLocalPath() {
-  let fullLocalPath;
-  // get the name of the repo from the usere entered URL
-  let text = document.getElementById("repoClone").value;
-  let splitText = text.split(/\.|:|\//);
+
+  // Function sets fullLocalPath variable to value from HTML element repoClone
+  function updateLocalPath() {
+    let fullLocalPath;
+    // get the name of the repo from the usere entered URL
+    let text = document.getElementById("repoClone").value;
+    let splitText = text.split(/\.|:|\//);
 
 
   if (splitText[splitText.length - 1] == "git") {
@@ -884,20 +833,26 @@ function updateModalText(text) {
     $('#modalW4').modal('show');
   }
 
-// Function is called to the pull request panel
-function hidePRPanel(): void {
-  // Hide PR Panel
-  let prStatus1 = document.getElementById("pr-status-1");
-  let prStatus2 = document.getElementById("pr-status-2");
-  if (prStatus1 != null && prStatus2 != null) {
-    prStatus1.style.display = "none";
-    prStatus2.style.display = "none";
+  //Updating stash show modal text and adding classes for highlighting
+  function updateModalText(text) {
+    document.getElementById("modal-text-box").innerHTML = text;
+    $('#modal').modal('show');
   }
 
-  let prPanel = document.getElementById("pull-request-panel");
-  let bodyPanel = document.getElementById("body-panel");
-  let prListContainer = document.getElementById("pr-list-container");
-  let prDisplayPanel = document.getElementById("pr-display-panel");
+  // Function is called to the pull request panel
+  function hidePRPanel(): void{
+    // Hide PR Panel
+    let prStatus1 = document.getElementById("pr-status-1");
+    let prStatus2 = document.getElementById("pr-status-2");
+    if (prStatus1 != null && prStatus2 != null) {
+        prStatus1.style.display = "none";
+        prStatus2.style.display = "none";
+    }
+
+    let prPanel = document.getElementById("pull-request-panel");
+    let bodyPanel = document.getElementById("body-panel");
+    let prListContainer = document.getElementById("pr-list-container");
+    let prDisplayPanel = document.getElementById("pr-display-panel");
 
   if (prPanel != null && bodyPanel != null && prListContainer != null && prDisplayPanel != null) {
     prPanel.style.width = "60px";

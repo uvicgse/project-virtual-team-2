@@ -24,7 +24,7 @@ let commitToRevert = 0;
 let commitHead = 0;
 let commitID = 0;
 
-export class TagItem {
+export class CommitItem {
   public tagName: string;
   public commitMsg: string;
   public tagMsg: string;
@@ -120,7 +120,6 @@ const aggregateCommits = async (commitList, repo, sharedRefs) => {
     resolve(tags);
   });
 }
-
 
 /* Function gets desired number of commit SHAs from current branch based on function params
 @param beginningHash: first commit SHA of numCommit number of commits being considered
@@ -813,7 +812,6 @@ function passReferenceCommits(){
     sortedListOfCommits(commits);
   })
 }
-
 
 /* 
 Function takes array of commits and stores the commits in sorted order in variable commitHistory
@@ -1971,7 +1969,6 @@ function commitModal() {
   addAndCommit();
 }
 
-
 // Function opens a modal that displays current branch information 
 async function openBranchModal(stashIndex) {
 
@@ -1997,7 +1994,6 @@ async function openBranchModal(stashIndex) {
 }
 
 // Function creates branch based on branchName in HTML element branch-name-input.
-// 
 async function createBranch() {
   let branchName = document.getElementById("branch-name-input").value;
   let branchExists = await Git.Repository.open(repoFullPath).then(function(repo){
@@ -2458,7 +2454,6 @@ function Reload() {
   location.reload();
 }
 
-
 // Function is very complex. Note: do not think this function is ever called 
 function displayModifiedFiles() {
   modifiedFiles = [];
@@ -2514,7 +2509,7 @@ function displayModifiedFiles() {
         }
 
 
-        // Find HOW the file has been modified
+        // Find how the file has been modified
         function calculateModification(status) {
           if (status.isNew()) {
             return "NEW";

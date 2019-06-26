@@ -66,6 +66,7 @@ function checkIfInTheApp(){
   return inTheApp;
 }
 
+// Function changes VisualGit's GUI to display component that allows user to open, add, or create a repository
 function switchToAddRepositoryPanelWhenNotSignedIn() {
   previousWindow = "repoPanel";
   continuedWithoutSignIn = true;
