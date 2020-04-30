@@ -49,7 +49,7 @@
     "fs-sync": "1.0.3",
     "github-avatar-url": "1.0.0",
     "github-username": "3.0.0",
-    "jquery": "2.1.1",
+    "jquery": "3.5.0",
     "jquery-contextmenu": "2.4.2",
     "marked": "^0.6.2",
     "material-letter-icons": "^1.0.8",
