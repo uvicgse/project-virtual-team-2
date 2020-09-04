@@ -53,7 +53,7 @@
     "jquery-contextmenu": "2.4.2",
     "marked": "^0.6.2",
     "material-letter-icons": "^1.0.8",
-    "node-sass": "^4.9.0",
+    "node-sass": "^4.13.1",
     "nodegit": "^0.24.3",
     "octonode": "^0.9.5",
     "opn": "4.0.2",
